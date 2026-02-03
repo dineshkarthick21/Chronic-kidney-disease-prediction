@@ -10,6 +10,10 @@ def load_and_preprocess_data(csv_path):
     if 'id' in df.columns:
         df = df.drop('id', axis=1)
 
+    # Clean classification column - remove whitespace
+    if 'classification' in df.columns:
+        df['classification'] = df['classification'].str.strip()
+
     # Replace '?' with NaN
     df.replace('?', np.nan, inplace=True)
 
