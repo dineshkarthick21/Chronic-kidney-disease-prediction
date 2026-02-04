@@ -8,7 +8,7 @@ from feature_selection import apply_feature_selection
 
 
 def train_and_save_model():
-    X, y, scaler = load_and_preprocess_data("data/sample_test_data.csv")
+    X, y, scaler = load_and_preprocess_data("data/custom_csv.csv")
     X_selected, selector = apply_feature_selection(X, y, k=15)
 
     X_train, X_test, y_train, y_test = train_test_split(
