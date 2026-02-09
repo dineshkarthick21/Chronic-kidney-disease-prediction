@@ -1,0 +1,57 @@
+.navbar {
+  background: var(--card-bg);
+  padding: 1rem 2rem;
+  box-shadow: 0 1px 3px var(--shadow-light);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.navbar-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+}
+
+.nav-tab {
+  padding: 0.875rem 3rem;
+  font-size: 1.05rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  background: var(--input-bg);
+  color: var(--primary-color);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  letter-spacing: 0.3px;
+  border: 2px solid transparent;
+}
+
+.nav-tab:hover {
+  background: var(--border-color);
+  transform: translateY(-1px);
+}
+
+.nav-tab.active {
+  background: var(--primary-color);
+  color: white;
+  box-shadow: 0 2px 8px var(--primary-shadow);
+  border: 2px solid var(--primary-color);
+}
+
+@media (max-width: 768px) {
+  .navbar {
+    padding: 1rem;
+  }
+
+  .navbar-container {
+    flex-direction: row;
+    gap: 0.5rem;
+  }
+
+  .nav-tab {
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    flex: 1;
+  }
+}

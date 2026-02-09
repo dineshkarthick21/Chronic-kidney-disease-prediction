@@ -1,0 +1,254 @@
+.header {
+  background: var(--header-bg);
+  box-shadow: 0 1px 4px var(--shadow-color);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  transition: background 0.3s ease, box-shadow 0.3s ease;
+}
+
+.header-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  padding: 0.75rem 1.5rem;
+  gap: 2rem;
+}
+
+/* Logo Section */
+.logo-section {
+  flex-shrink: 0;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1.5rem;
+  background: linear-gradient(135deg, #2874f0 0%, #1e5bc6 100%);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.logo:hover {
+  box-shadow: 0 2px 8px rgba(40, 116, 240, 0.3);
+}
+
+.logo-icon {
+  font-size: 1.5rem;
+}
+
+.logo-text {
+  color: white;
+  font-size: 1.1rem;
+  font-weight: 700;
+  font-style: italic;
+  letter-spacing: 0.5px;
+}
+
+/* Search Section */
+.search-section {
+  flex: 1;
+  max-width: 600px;
+}
+
+.search-bar {
+  display: flex;
+  align-items: center;
+  background: var(--search-bg);
+  border-radius: 4px;
+  overflow: hidden;
+  border: 1px solid var(--primary-color);
+  transition: background 0.3s ease;
+}
+
+.search-input {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  border: none;
+  background: transparent;
+  font-size: 0.95rem;
+  color: var(--text-color);
+}
+
+.search-input::placeholder {
+  color: var(--text-secondary);
+}
+
+.search-input:focus {
+  outline: none;
+}
+
+.search-btn {
+  padding: 0.75rem 1.25rem;
+  background: var(--search-btn-bg);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--primary-color);
+  transition: background 0.2s ease;
+}
+
+.search-btn:hover {
+  background: var(--search-btn-hover);
+}
+
+/* Navigation Section */
+.nav-section {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  flex-shrink: 0;
+}
+
+.theme-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: transparent;
+  border: 2px solid var(--primary-color);
+  color: var(--primary-color);
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  transition: all 0.3s ease;
+}
+
+.theme-toggle:hover {
+  background: var(--primary-color);
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px var(--primary-shadow);
+}
+
+.theme-toggle svg {
+  transition: transform 0.3s ease;
+}
+
+.theme-toggle:hover svg {
+  transform: rotate(20deg);
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: transparent;
+  border: none;
+  color: var(--text-color);
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 0.5rem;
+  transition: color 0.2s ease;
+}
+
+.nav-item:hover {
+  color: var(--primary-color);
+}
+
+.nav-item.cart {
+  color: var(--primary-color);
+  font-weight: 600;
+}
+
+/* Sub Header */
+.sub-header {
+  background: var(--header-bg);
+  border-top: 1px solid var(--border-color);
+  box-shadow: 0 1px 2px var(--shadow-light);
+  transition: background 0.3s ease;
+}
+
+.sub-header-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0.75rem 1.5rem;
+}
+
+.location-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--text-color);
+  font-size: 0.875rem;
+}
+
+.location-info svg {
+  color: var(--text-secondary);
+}
+
+.location-text {
+  color: var(--text-secondary);
+}
+
+.location-link {
+  color: var(--primary-color);
+  text-decoration: none;
+  font-weight: 500;
+  margin-left: 0.25rem;
+}
+
+.location-link:hover {
+  text-decoration: underline;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .header-container {
+    gap: 1rem;
+  }
+
+  .nav-section {
+    gap: 1rem;
+  }
+
+  .nav-item span {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .header-container {
+    flex-wrap: wrap;
+    padding: 0.75rem 1rem;
+  }
+
+  .logo-section {
+    order: 1;
+  }
+
+  .search-section {
+    order: 3;
+    flex-basis: 100%;
+    max-width: 100%;
+    margin-top: 0.75rem;
+  }
+
+  .nav-section {
+    order: 2;
+    margin-left: auto;
+  }
+
+  .logo-text {
+    font-size: 0.95rem;
+  }
+
+  .logo {
+    padding: 0.4rem 1rem;
+  }
+
+  .sub-header-container {
+    padding: 0.5rem 1rem;
+  }
+
+  .location-info {
+    font-size: 0.8rem;
+  }
+}
