@@ -3,6 +3,7 @@ import './PredictionForm.css'
 
 const PredictionForm = ({ setResults }) => {
   const [formData, setFormData] = useState({
+    patientName: '',
     age: '',
     bp: '',
     sg: '',
@@ -82,6 +83,17 @@ const PredictionForm = ({ setResults }) => {
         <div className="form-section">
           <h3>📋 Basic Information</h3>
           <div className="form-grid">
+            <div className="form-group">
+              <label>Patient Name</label>
+              <input 
+                type="text" 
+                name="patientName" 
+                value={formData.patientName}
+                onChange={handleChange}
+                placeholder="e.g., John Doe"
+                required
+              />
+            </div>
             <div className="form-group">
               <label>Age (years)</label>
               <input 
