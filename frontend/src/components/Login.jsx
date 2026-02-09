@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import './Auth.css'
+import Loader from './Loader'
 
 const Login = ({ onLogin, onSwitchToSignup }) => {
   const [formData, setFormData] = useState({
@@ -8,6 +9,7 @@ const Login = ({ onLogin, onSwitchToSignup }) => {
   })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [showLoader, setShowLoader] = useState(false)
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -23,35 +25,37 @@ const Login = ({ onLogin, onSwitchToSignup }) => {
     setLoading(true)
     setError('')
 
-    // Simulate API call
-    setTimeout(() => {
-      if (formData.email && formData.password) {
-        // Mock successful login
-        onLogin({ email: formData.email, name: formData.email.split('@')[0] })
+    try {
+      const response = await fetch('http://localhost:5000/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+      })
+      const data = await response.json()
+      if (response.ok) {
+        // Store token in localStorage
+        localStorage.setItem('token', data.token)
+        localStorage.setItem('user', JSON.stringify(data.user))
+        // Show loader before navigating to home
+        setShowLoader(true)
+        // Loader will automatically call onLogin after animation
       } else {
-        setError('Please fill in all fields')
+        setError(data.message || 'Login failed')
+        setLoading(false)
       }
+    } catch (error) {
+      setError('Connection error. Please try again.')
       setLoading(false)
-    }, 1000)
+    }
+  }
 
-    // Actual implementation:
-    // try {
-    //   const response = await fetch('http://localhost:5000/api/login', {
-    //     method: 'POST',
-    //     headers: { 'Content-Type': 'application/json' },
-    //     body: JSON.stringify(formData)
-    //   })
-    //   const data = await response.json()
-    //   if (response.ok) {
-    //     onLogin(data.user)
-    //   } else {
-    //     setError(data.message || 'Login failed')
-    //   }
-    // } catch (error) {
-    //   setError('Connection error. Please try again.')
-    // } finally {
-    //   setLoading(false)
-    // }
+  const handleLoaderComplete = () => {
+    const userData = JSON.parse(localStorage.getItem('user'))
+    onLogin(userData)
+  }
+
+  if (showLoader) {
+    return <Loader message="Signing you in..." subMessage="Welcome back!" onComplete={handleLoaderComplete} />
   }
 
   return (

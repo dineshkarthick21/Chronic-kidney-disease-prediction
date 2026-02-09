@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import './Auth.css'
+import Loader from './Loader'
 
 const SignUp = ({ onSignUp, onSwitchToLogin }) => {
   const [formData, setFormData] = useState({
@@ -10,6 +11,7 @@ const SignUp = ({ onSignUp, onSwitchToLogin }) => {
   })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [showLoader, setShowLoader] = useState(false)
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -38,39 +40,41 @@ const SignUp = ({ onSignUp, onSwitchToLogin }) => {
       return
     }
 
-    // Simulate API call
-    setTimeout(() => {
-      if (formData.name && formData.email && formData.password) {
-        // Mock successful signup
-        onSignUp({ email: formData.email, name: formData.name })
+    try {
+      const response = await fetch('http://localhost:5000/api/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          password: formData.password
+        })
+      })
+      const data = await response.json()
+      if (response.ok) {
+        // Store token in localStorage
+        localStorage.setItem('token', data.token)
+        localStorage.setItem('user', JSON.stringify(data.user))
+        // Show loader before navigating to home
+        setShowLoader(true)
+        // Loader will automatically call onSignUp after animation
       } else {
-        setError('Please fill in all fields')
+        setError(data.message || 'Signup failed')
+        setLoading(false)
       }
+    } catch (error) {
+      setError('Connection error. Please try again.')
       setLoading(false)
-    }, 1000)
+    }
+  }
 
-    // Actual implementation:
-    // try {
-    //   const response = await fetch('http://localhost:5000/api/signup', {
-    //     method: 'POST',
-    //     headers: { 'Content-Type': 'application/json' },
-    //     body: JSON.stringify({
-    //       name: formData.name,
-    //       email: formData.email,
-    //       password: formData.password
-    //     })
-    //   })
-    //   const data = await response.json()
-    //   if (response.ok) {
-    //     onSignUp(data.user)
-    //   } else {
-    //     setError(data.message || 'Signup failed')
-    //   }
-    // } catch (error) {
-    //   setError('Connection error. Please try again.')
-    // } finally {
-    //   setLoading(false)
-    // }
+  const handleLoaderComplete = () => {
+    const userData = JSON.parse(localStorage.getItem('user'))
+    onSignUp(userData)
+  }
+
+  if (showLoader) {
+    return <Loader message="Creating your account..." subMessage="Just a moment!" onComplete={handleLoaderComplete} />
   }
 
   return (
