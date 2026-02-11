@@ -3,7 +3,6 @@ import { useTheme } from '../context/ThemeContext'
 import './Header.css'
 
 function Header({ user, onLogout }) {
-  const [searchQuery, setSearchQuery] = useState('')
   const [showDropdown, setShowDropdown] = useState(false)
   const { theme, toggleTheme } = useTheme()
   const dropdownRef = useRef(null)
@@ -33,25 +32,6 @@ function Header({ user, onLogout }) {
           <div className="logo">
             <span className="logo-icon">🏥</span>
             <span className="logo-text">CKD Predict</span>
-          </div>
-        </div>
-
-        {/* Search Section */}
-        <div className="search-section">
-          <div className="search-bar">
-            <input
-              type="text"
-              placeholder="Search for medical records, reports and more..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="search-input"
-            />
-            <button className="search-btn">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                <circle cx="11" cy="11" r="8" strokeWidth="2"/>
-                <path d="m21 21-4.35-4.35" strokeWidth="2"/>
-              </svg>
-            </button>
           </div>
         </div>
 

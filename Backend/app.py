@@ -18,11 +18,19 @@ client = MongoClient(MONGO_URI)
 db = client['ckd_prediction']
 users_collection = db['users']
 sessions_collection = db['sessions']
+admins_collection = db['admins']
+admin_sessions_collection = db['admin_sessions']
+
+# Admin secret code (change this in production!)
+ADMIN_SECRET_CODE = os.getenv('ADMIN_SECRET_CODE', 'CKD_ADMIN_2026')
 
 # Create indexes
 users_collection.create_index('email', unique=True)
 sessions_collection.create_index('token', unique=True)
 sessions_collection.create_index('expires_at', expireAfterSeconds=0)
+admins_collection.create_index('email', unique=True)
+admin_sessions_collection.create_index('token', unique=True)
+admin_sessions_collection.create_index('expires_at', expireAfterSeconds=0)
 
 
 def hash_password(password):
@@ -217,6 +225,194 @@ def health():
             'status': 'unhealthy',
             'message': str(e)
         }), 500
+
+
+# ===================== ADMIN ROUTES =====================
+
+@app.route('/api/admin/signup', methods=['POST'])
+def admin_signup():
+    """Register a new admin"""
+    try:
+        data = request.get_json()
+        
+        # Validate required fields
+        name = data.get('name', '').strip()
+        email = data.get('email', '').strip().lower()
+        password = data.get('password', '')
+        admin_code = data.get('adminCode', '')
+        
+        if not name or not email or not password or not admin_code:
+            return jsonify({'message': 'All fields are required'}), 400
+        
+        # Verify admin secret code
+        if admin_code != ADMIN_SECRET_CODE:
+            return jsonify({'message': 'Invalid admin secret code'}), 403
+        
+        if len(password) < 6:
+            return jsonify({'message': 'Password must be at least 6 characters'}), 400
+        
+        # Check if admin already exists
+        if admins_collection.find_one({'email': email}):
+            return jsonify({'message': 'Admin email already registered'}), 409
+        
+        # Hash password
+        hashed_password = hash_password(password)
+        
+        # Create admin
+        admin = {
+            'name': name,
+            'email': email,
+            'password': hashed_password,
+            'role': 'admin',
+            'created_at': datetime.utcnow(),
+            'updated_at': datetime.utcnow()
+        }
+        
+        result = admins_collection.insert_one(admin)
+        admin_id = result.inserted_id
+        
+        # Create admin session
+        token = generate_token()
+        expires_at = datetime.utcnow() + timedelta(days=7)
+        
+        admin_session = {
+            'admin_id': str(admin_id),
+            'email': email,
+            'token': token,
+            'created_at': datetime.utcnow(),
+            'expires_at': expires_at
+        }
+        
+        admin_sessions_collection.insert_one(admin_session)
+        
+        return jsonify({
+            'message': 'Admin registered successfully',
+            'admin': {
+                'id': str(admin_id),
+                'name': name,
+                'email': email,
+                'role': 'admin'
+            },
+            'token': token
+        }), 201
+        
+    except Exception as e:
+        return jsonify({'message': f'Server error: {str(e)}'}), 500
+
+
+@app.route('/api/admin/login', methods=['POST'])
+def admin_login():
+    """Authenticate an admin"""
+    try:
+        data = request.get_json()
+        
+        # Validate required fields
+        email = data.get('email', '').strip().lower()
+        password = data.get('password', '')
+        
+        if not email or not password:
+            return jsonify({'message': 'Email and password are required'}), 400
+        
+        # Find admin
+        admin = admins_collection.find_one({'email': email})
+        
+        if not admin:
+            return jsonify({'message': 'Invalid email or password'}), 401
+        
+        # Verify password
+        if not verify_password(password, admin['password']):
+            return jsonify({'message': 'Invalid email or password'}), 401
+        
+        # Create admin session
+        token = generate_token()
+        expires_at = datetime.utcnow() + timedelta(days=7)
+        
+        admin_session = {
+            'admin_id': str(admin['_id']),
+            'email': email,
+            'token': token,
+            'created_at': datetime.utcnow(),
+            'expires_at': expires_at
+        }
+        
+        admin_sessions_collection.insert_one(admin_session)
+        
+        return jsonify({
+            'message': 'Admin login successful',
+            'admin': {
+                'id': str(admin['_id']),
+                'name': admin['name'],
+                'email': admin['email'],
+                'role': 'admin'
+            },
+            'token': token
+        }), 200
+        
+    except Exception as e:
+        return jsonify({'message': f'Server error: {str(e)}'}), 500
+
+
+@app.route('/api/admin/stats', methods=['GET'])
+def admin_stats():
+    """Get dashboard statistics"""
+    try:
+        token = request.headers.get('Authorization', '').replace('Bearer ', '')
+        
+        if not token:
+            return jsonify({'message': 'No token provided'}), 401
+        
+        # Verify admin session
+        admin_session = admin_sessions_collection.find_one({'token': token})
+        
+        if not admin_session or admin_session['expires_at'] < datetime.utcnow():
+            return jsonify({'message': 'Invalid or expired token'}), 401
+        
+        # Count total users
+        total_users = users_collection.count_documents({})
+        
+        # Count active sessions
+        active_sessions = sessions_collection.count_documents({
+            'expires_at': {'$gt': datetime.utcnow()}
+        })
+        
+        return jsonify({
+            'totalUsers': total_users,
+            'totalPredictions': 0,  # Can be updated if you track predictions
+            'activeSessions': active_sessions
+        }), 200
+        
+    except Exception as e:
+        return jsonify({'message': f'Server error: {str(e)}'}), 500
+
+
+@app.route('/api/admin/users', methods=['GET'])
+def admin_users():
+    """Get list of all users"""
+    try:
+        token = request.headers.get('Authorization', '').replace('Bearer ', '')
+        
+        if not token:
+            return jsonify({'message': 'No token provided'}), 401
+        
+        # Verify admin session
+        admin_session = admin_sessions_collection.find_one({'token': token})
+        
+        if not admin_session or admin_session['expires_at'] < datetime.utcnow():
+            return jsonify({'message': 'Invalid or expired token'}), 401
+        
+        # Get all users (exclude password field)
+        users = list(users_collection.find({}, {'password': 0}))
+        
+        # Convert ObjectId to string
+        for user in users:
+            user['_id'] = str(user['_id'])
+        
+        return jsonify({
+            'users': users
+        }), 200
+        
+    except Exception as e:
+        return jsonify({'message': f'Server error: {str(e)}'}), 500
 
 
 if __name__ == '__main__':

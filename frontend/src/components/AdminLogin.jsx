@@ -2,7 +2,7 @@ import { useState } from 'react'
 import './Auth.css'
 import Loader from './Loader'
 
-const Login = ({ onLogin, onSwitchToSignup, onSwitchToAdmin }) => {
+const AdminLogin = ({ onAdminLogin, onSwitchToAdminSignup, onBackToUserLogin }) => {
   const [formData, setFormData] = useState({
     email: '',
     password: ''
@@ -26,21 +26,20 @@ const Login = ({ onLogin, onSwitchToSignup, onSwitchToAdmin }) => {
     setError('')
 
     try {
-      const response = await fetch('http://localhost:5000/api/login', {
+      const response = await fetch('http://localhost:5000/api/admin/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
       })
       const data = await response.json()
       if (response.ok) {
-        // Store token in localStorage
-        localStorage.setItem('token', data.token)
-        localStorage.setItem('user', JSON.stringify(data.user))
-        // Show loader before navigating to home
+        // Store admin token in localStorage
+        localStorage.setItem('adminToken', data.token)
+        localStorage.setItem('admin', JSON.stringify(data.admin))
+        // Show loader before navigating to dashboard
         setShowLoader(true)
-        // Loader will automatically call onLogin after animation
       } else {
-        setError(data.message || 'Login failed')
+        setError(data.message || 'Admin login failed')
         setLoading(false)
       }
     } catch (error) {
@@ -50,37 +49,37 @@ const Login = ({ onLogin, onSwitchToSignup, onSwitchToAdmin }) => {
   }
 
   const handleLoaderComplete = () => {
-    const userData = JSON.parse(localStorage.getItem('user'))
-    onLogin(userData)
+    const adminData = JSON.parse(localStorage.getItem('admin'))
+    onAdminLogin(adminData)
   }
 
   if (showLoader) {
-    return <Loader message="Signing you in..." subMessage="Welcome back!" onComplete={handleLoaderComplete} />
+    return <Loader message="Admin Login Successful..." subMessage="Welcome to Dashboard!" onComplete={handleLoaderComplete} />
   }
 
   return (
     <div className="auth-container">
       <div className="auth-card">
-        <button className="admin-login-btn" onClick={onSwitchToAdmin}>
-          Admin Login
+        <button className="admin-login-btn" onClick={onBackToUserLogin}>
+          User Login
         </button>
         <div className="auth-header">
-          <h1>Welcome Back</h1>
-          <p>Sign in to your CKD Prediction account</p>
+          <h1>🔐 Admin Login</h1>
+          <p>Sign in to your Admin Dashboard</p>
         </div>
 
         <form onSubmit={handleSubmit} className="auth-form">
           {error && <div className="error-message">{error}</div>}
           
           <div className="form-group">
-            <label htmlFor="email">Email Address</label>
+            <label htmlFor="email">Admin Email</label>
             <input
               type="email"
               id="email"
               name="email"
               value={formData.email}
               onChange={handleChange}
-              placeholder="Enter your email"
+              placeholder="Enter admin email"
               required
             />
           </div>
@@ -93,37 +92,29 @@ const Login = ({ onLogin, onSwitchToSignup, onSwitchToAdmin }) => {
               name="password"
               value={formData.password}
               onChange={handleChange}
-              placeholder="Enter your password"
+              placeholder="Enter admin password"
               required
             />
           </div>
 
-          <div className="form-options">
-            <label className="remember-me">
-              <input type="checkbox" />
-              <span>Remember me</span>
-            </label>
-            <a href="#" className="forgot-password">Forgot password?</a>
-          </div>
-
           <button type="submit" className="auth-btn" disabled={loading}>
-            {loading ? 'Signing in...' : 'Sign In'}
+            {loading ? 'Signing in...' : 'Sign In as Admin'}
           </button>
         </form>
 
         <div className="auth-footer">
-          <p>Don't have an account? <button onClick={onSwitchToSignup} className="switch-btn">Sign up</button></p>
+          <p>Don't have an admin account? <button onClick={onSwitchToAdminSignup} className="switch-btn">Sign up</button></p>
         </div>
       </div>
 
       <div className="auth-illustration">
         <div className="illustration-content">
-          <h2>🏥 CKD Prediction System</h2>
-          <p>Advanced machine learning for chronic kidney disease prediction</p>
+          <h2>🛡️ Admin Dashboard</h2>
+          <p>Manage users, monitor predictions, and analyze data</p>
           <div className="features">
-            <div className="feature-item">✓ Accurate predictions</div>
-            <div className="feature-item">✓ Easy-to-use interface</div>
-            <div className="feature-item">✓ Secure data handling</div>
+            <div className="feature-item">✓ User Management</div>
+            <div className="feature-item">✓ Prediction Analytics</div>
+            <div className="feature-item">✓ System Monitoring</div>
           </div>
         </div>
       </div>
@@ -131,4 +122,4 @@ const Login = ({ onLogin, onSwitchToSignup, onSwitchToAdmin }) => {
   )
 }
 
-export default Login
+export default AdminLogin
