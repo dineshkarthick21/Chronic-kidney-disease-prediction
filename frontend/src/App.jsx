@@ -10,6 +10,7 @@ import SignUp from './components/SignUp'
 import AdminLogin from './components/AdminLogin'
 import AdminSignup from './components/AdminSignup'
 import AdminDashboard from './components/AdminDashboard'
+import Loader from './components/Loader'
 
 function App() {
   const [activeTab, setActiveTab] = useState('single')
@@ -17,6 +18,7 @@ function App() {
   const [user, setUser] = useState(null)
   const [admin, setAdmin] = useState(null)
   const [authView, setAuthView] = useState('login') // 'login', 'signup', 'adminLogin', 'adminSignup'
+  const [loggingOut, setLoggingOut] = useState(false)
 
   const handleLogin = (userData) => {
     setUser(userData)
@@ -29,9 +31,14 @@ function App() {
   }
 
   const handleLogout = () => {
-    setUser(null)
-    localStorage.removeItem('user')
-    setResults(null)
+    setLoggingOut(true)
+    setTimeout(() => {
+      setUser(null)
+      localStorage.removeItem('user')
+      setResults(null)
+      setLoggingOut(false)
+      setAuthView('login')
+    }, 1500)
   }
 
   const handleAdminLogin = (adminData) => {
@@ -45,9 +52,14 @@ function App() {
   }
 
   const handleAdminLogout = () => {
-    setAdmin(null)
-    localStorage.removeItem('admin')
-    localStorage.removeItem('adminToken')
+    setLoggingOut(true)
+    setTimeout(() => {
+      setAdmin(null)
+      localStorage.removeItem('admin')
+      localStorage.removeItem('adminToken')
+      setLoggingOut(false)
+      setAuthView('login')
+    }, 1500)
   }
 
   // Check for existing session on mount
@@ -61,6 +73,11 @@ function App() {
       setUser(JSON.parse(savedUser))
     }
   }, [])
+
+  // Show loading page during logout
+  if (loggingOut) {
+    return <Loader message="Logging out..." subMessage="Please wait" />
+  }
 
   // If admin is authenticated, show admin dashboard
   if (admin) {

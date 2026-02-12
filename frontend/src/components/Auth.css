@@ -282,3 +282,31 @@
 .auth-card {
   position: relative;
 }
+
+/* Theme Toggle Button */
+.theme-toggle-auth {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  background: var(--card-bg);
+  border: 2px solid var(--primary-color);
+  color: var(--primary-color);
+  padding: 0.5rem;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 1.2rem;
+  width: 45px;
+  height: 45px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.theme-toggle-auth:hover {
+  background: var(--primary-color);
+  color: white;
+  transform: translateY(-2px) rotate(15deg);
+  box-shadow: 0 4px 12px rgba(40, 116, 240, 0.3);
+}

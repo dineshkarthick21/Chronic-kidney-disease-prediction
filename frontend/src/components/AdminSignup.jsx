@@ -1,8 +1,10 @@
 import { useState } from 'react'
+import { useTheme } from '../context/ThemeContext'
 import './Auth.css'
 import Loader from './Loader'
 
 const AdminSignup = ({ onAdminSignup, onSwitchToAdminLogin, onBackToUserLogin }) => {
+  const { theme, toggleTheme } = useTheme()
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -82,6 +84,9 @@ const AdminSignup = ({ onAdminSignup, onSwitchToAdminLogin, onBackToUserLogin })
   return (
     <div className="auth-container">
       <div className="auth-card">
+        <button className="theme-toggle-auth" onClick={toggleTheme}>
+          {theme === 'light' ? '🌙' : '☀️'}
+        </button>
         <button className="admin-login-btn" onClick={onBackToUserLogin}>
           User Login
         </button>
