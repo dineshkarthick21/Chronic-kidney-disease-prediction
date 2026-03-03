@@ -56,7 +56,7 @@ const AdminLogin = ({ onAdminLogin, onSwitchToAdminSignup, onBackToUserLogin }) 
   }
 
   if (showLoader) {
-    return <Loader message="Admin Login Successful..." subMessage="Welcome to Dashboard!" onComplete={handleLoaderComplete} />
+    return <Loader message="Signing you in..." subMessage="Go to Admin Dashboard!" onComplete={handleLoaderComplete} />
   }
 
   return (
@@ -65,12 +65,16 @@ const AdminLogin = ({ onAdminLogin, onSwitchToAdminSignup, onBackToUserLogin }) 
         <button className="theme-toggle-auth" onClick={toggleTheme}>
           {theme === 'light' ? '🌙' : '☀️'}
         </button>
-        <button className="admin-login-btn" onClick={onBackToUserLogin}>
-          User Login
-        </button>
+        
+        <div className="auth-icon">
+          <div className="icon-circle">
+            <span>🛡️</span>
+          </div>
+        </div>
+        
         <div className="auth-header">
-          <h1>🔐 Admin Login</h1>
-          <p>Sign in to your Admin Dashboard</p>
+          <h1>Admin Portal</h1>
+          <p>Sign in to Admin Dashboard</p>
         </div>
 
         <form onSubmit={handleSubmit} className="auth-form">
@@ -78,28 +82,34 @@ const AdminLogin = ({ onAdminLogin, onSwitchToAdminSignup, onBackToUserLogin }) 
           
           <div className="form-group">
             <label htmlFor="email">Admin Email</label>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              placeholder="Enter admin email"
-              required
-            />
+            <div className="input-with-icon">
+              <span className="input-icon">@</span>
+              <input
+                type="email"
+                id="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                placeholder="admin@example.com"
+                required
+              />
+            </div>
           </div>
 
           <div className="form-group">
             <label htmlFor="password">Password</label>
-            <input
-              type="password"
-              id="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              placeholder="Enter admin password"
-              required
-            />
+            <div className="input-with-icon">
+              <span className="input-icon">🔒</span>
+              <input
+                type="password"
+                id="password"
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                placeholder="Enter admin password"
+                required
+              />
+            </div>
           </div>
 
           <button type="submit" className="auth-btn" disabled={loading}>
@@ -108,19 +118,8 @@ const AdminLogin = ({ onAdminLogin, onSwitchToAdminSignup, onBackToUserLogin }) 
         </form>
 
         <div className="auth-footer">
-          <p>Don't have an admin account? <button onClick={onSwitchToAdminSignup} className="switch-btn">Sign up</button></p>
-        </div>
-      </div>
-
-      <div className="auth-illustration">
-        <div className="illustration-content">
-          <h2>🛡️ Admin Dashboard</h2>
-          <p>Manage users, monitor predictions, and analyze data</p>
-          <div className="features">
-            <div className="feature-item">✓ User Management</div>
-            <div className="feature-item">✓ Prediction Analytics</div>
-            <div className="feature-item">✓ System Monitoring</div>
-          </div>
+          <p>Don't have an admin account? <button onClick={onSwitchToAdminSignup} className="switch-btn">Sign up here</button></p>
+          <p style={{ marginTop: '0.5rem' }}><button onClick={onBackToUserLogin} className="switch-btn">← Back to User Login</button></p>
         </div>
       </div>
     </div>

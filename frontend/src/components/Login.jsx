@@ -7,7 +7,8 @@ const Login = ({ onLogin, onSwitchToSignup, onSwitchToAdmin }) => {
   const { theme, toggleTheme } = useTheme()
   const [formData, setFormData] = useState({
     email: '',
-    password: ''
+    password: '',
+    role: 'user'
   })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -57,7 +58,7 @@ const Login = ({ onLogin, onSwitchToSignup, onSwitchToAdmin }) => {
   }
 
   if (showLoader) {
-    return <Loader message="Signing you in..." subMessage="Welcome back!" onComplete={handleLoaderComplete} />
+    return <Loader message="Signing you in..." subMessage="Go to Student Dashboard!" onComplete={handleLoaderComplete} />
   }
 
   return (
@@ -66,41 +67,71 @@ const Login = ({ onLogin, onSwitchToSignup, onSwitchToAdmin }) => {
         <button className="theme-toggle-auth" onClick={toggleTheme}>
           {theme === 'light' ? '🌙' : '☀️'}
         </button>
-        <button className="admin-login-btn" onClick={onSwitchToAdmin}>
-          Admin Login
-        </button>
+        
+        <div className="auth-icon">
+          <div className="icon-circle">
+            <span>📖</span>
+          </div>
+        </div>
+        
         <div className="auth-header">
-          <h1>Welcome Back</h1>
-          <p>Sign in to your CKD Prediction account</p>
+          <h1>Welcome Back!</h1>
+          <p>Sign in to CKD Predictor</p>
         </div>
 
         <form onSubmit={handleSubmit} className="auth-form">
           {error && <div className="error-message">{error}</div>}
           
+          <div className="role-selector">
+            <label className="role-label">Sign in as</label>
+            <div className="role-tabs">
+              <button
+                type="button"
+                className={`role-tab ${formData.role === 'user' ? 'active' : ''}`}
+                onClick={() => setFormData(prev => ({ ...prev, role: 'user' }))}
+              >
+                Student
+              </button>
+              <button
+                type="button"
+                className="role-tab"
+                onClick={onSwitchToAdmin}
+              >
+                Admin
+              </button>
+            </div>
+          </div>
+          
           <div className="form-group">
             <label htmlFor="email">Email Address</label>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              placeholder="Enter your email"
-              required
-            />
+            <div className="input-with-icon">
+              <span className="input-icon">@</span>
+              <input
+                type="email"
+                id="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                placeholder="you@example.com"
+                required
+              />
+            </div>
           </div>
 
           <div className="form-group">
             <label htmlFor="password">Password</label>
-            <input
-              type="password"
-              id="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              placeholder="Enter your password"
-              required
-            />
+            <div className="input-with-icon">
+              <span className="input-icon">🔒</span>
+              <input
+                type="password"
+                id="password"
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                placeholder="Enter your password"
+                required
+              />
+            </div>
           </div>
 
           <div className="form-options">
@@ -117,19 +148,7 @@ const Login = ({ onLogin, onSwitchToSignup, onSwitchToAdmin }) => {
         </form>
 
         <div className="auth-footer">
-          <p>Don't have an account? <button onClick={onSwitchToSignup} className="switch-btn">Sign up</button></p>
-        </div>
-      </div>
-
-      <div className="auth-illustration">
-        <div className="illustration-content">
-          <h2>🏥 CKD Prediction System</h2>
-          <p>Advanced machine learning for chronic kidney disease prediction</p>
-          <div className="features">
-            <div className="feature-item">✓ Accurate predictions</div>
-            <div className="feature-item">✓ Easy-to-use interface</div>
-            <div className="feature-item">✓ Secure data handling</div>
-          </div>
+          <p>Don't have an account? <button onClick={onSwitchToSignup} className="switch-btn">Sign up here</button></p>
         </div>
       </div>
     </div>

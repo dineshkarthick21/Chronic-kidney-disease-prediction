@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useTheme } from '../context/ThemeContext'
 import './Header.css'
 
-function Header({ user, onLogout }) {
+function Header({ user, onLogout, onNavigateToProfile, onNavigateToSettings }) {
   const [showDropdown, setShowDropdown] = useState(false)
   const { theme, toggleTheme } = useTheme()
   const dropdownRef = useRef(null)
@@ -82,14 +82,14 @@ function Header({ user, onLogout }) {
                     </div>
                   </div>
                   <div className="dropdown-divider"></div>
-                  <button className="dropdown-item">
+                  <button className="dropdown-item" onClick={() => { onNavigateToProfile(); setShowDropdown(false); }}>
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                       <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" strokeWidth="2"/>
                       <circle cx="12" cy="7" r="4" strokeWidth="2"/>
                     </svg>
                     Profile
                   </button>
-                  <button className="dropdown-item">
+                  <button className="dropdown-item" onClick={() => { onNavigateToSettings(); setShowDropdown(false); }}>
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                       <circle cx="12" cy="12" r="3" strokeWidth="2"/>
                       <path d="M12 1v6m0 6v6M5.6 5.6l4.2 4.2m4.4 4.4l4.2 4.2M1 12h6m6 0h6M5.6 18.4l4.2-4.2m4.4-4.4l4.2-4.2" strokeWidth="2"/>

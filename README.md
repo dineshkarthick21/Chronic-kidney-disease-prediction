@@ -5,12 +5,14 @@ A full-stack web application with machine learning capabilities to predict Chron
 ## ✨ Features
 
 ### User Features
-- 🔐 **User Authentication** - Secure signup/login with MongoDB Atlas
+- 🎨 **Modern Landing Page** - Dynamic rotating medical images carousel with theme toggle
+- 🔐 **User Authentication** - Secure signup/login with MongoDB Atlas and modern UI
 - 📊 **Single Prediction** - Input medical parameters for instant CKD prediction
 - 📁 **CSV Upload** - Batch predictions with CSV file upload
-- 🌓 **Dark/Light Mode** - Toggle between themes for better viewing experience
+- 🌓 **Dark/Light Mode** - Seamless theme switching throughout the application
 - 📈 **Results Visualization** - View prediction results with confidence scores
-- 👤 **User Profile** - Manage account settings and view history
+- 👤 **User Profile** - Comprehensive profile management with avatar, personal info editing, and account statistics
+- ⚙️ **Settings Page** - Customize notifications, security preferences, appearance, and privacy settings
 
 ### Admin Dashboard
 - 🛡️ **Admin Authentication** - Secure admin login with secret code
@@ -27,10 +29,11 @@ A full-stack web application with machine learning capabilities to predict Chron
 ## 🚀 Tech Stack
 
 ### Frontend
-- **React 18** - Modern UI framework
-- **Vite** - Fast build tool
-- **CSS3** - Custom styling with theme support
-- **Context API** - State management
+- **React 19** - Modern UI framework with latest features
+- **Vite** - Lightning-fast build tool and dev server
+- **CSS3** - Custom styling with gradients, animations, and glass-morphism effects
+- **Context API** - Global theme state management
+- **Responsive Design** - Mobile-first approach with adaptive layouts
 
 ### Backend
 - **Flask** - Python web framework
@@ -137,19 +140,24 @@ CKD-Prediction/
 │
 └── frontend/
     ├── src/
-    │   ├── App.jsx            # Main application
+    │   ├── App.jsx            # Main application with routing
     │   ├── components/
-    │   │   ├── Login.jsx      # User login
+    │   │   ├── LandingPage.jsx # Landing page with image carousel
+    │   │   ├── Login.jsx      # User login with modern UI
     │   │   ├── SignUp.jsx     # User registration
-    │   │   ├── AdminLogin.jsx # Admin login
+    │   │   ├── AdminLogin.jsx # Admin login (separate flow)
     │   │   ├── AdminSignup.jsx # Admin registration
     │   │   ├── AdminDashboard.jsx # Admin panel
-    │   │   ├── Header.jsx     # Navigation header
-    │   │   ├── PredictionForm.jsx # Single prediction
-    │   │   ├── CSVUpload.jsx  # Batch prediction
-    │   │   └── Results.jsx    # Results display
+    │   │   ├── Header.jsx     # Navigation header with dropdown
+    │   │   ├── Navbar.jsx     # Navigation bar
+    │   │   ├── PredictionForm.jsx # Single prediction form
+    │   │   ├── CSVUpload.jsx  # Batch prediction uploader
+    │   │   ├── Results.jsx    # Results display
+    │   │   ├── Profile.jsx    # User profile management
+    │   │   ├── Settings.jsx   # Application settings
+    │   │   └── Loader.jsx     # Loading component
     │   └── context/
-    │       └── ThemeContext.jsx # Theme management
+    │       └── ThemeContext.jsx # Global theme management
     ├── package.json
     └── vite.config.js
 ```
@@ -181,15 +189,48 @@ CKD-Prediction/
   - Pus Cell, Bacteria, Hemoglobin
   - And more...
 
+## 🎨 UI/UX Highlights
+
+### Landing Page
+- **Dynamic Carousel**: 6 high-quality medical images rotating every 1.5 seconds
+- **Theme Toggle**: Smooth transition between light and dark modes
+- **Optimized Overlays**: 20-25% opacity for light theme, 85% for dark theme
+- **Call-to-Action**: Prominent Get Started button
+
+### Authentication Pages
+- **Modern Design**: Blue gradient backgrounds with glass-morphism effects
+- **Role Selection**: Easy toggle between Student and Admin roles
+- **Input Icons**: Visual feedback for email and password fields
+- **Responsive Cards**: Centered white cards that adapt to all screen sizes
+- **Single-Page Layout**: No scrolling required for better UX
+
+### Profile Page
+- **Avatar Management**: 120px circular user avatar
+- **Editable Fields**: Toggle between view and edit modes for personal information
+- **Password Security**: Dedicated password change form with validation
+- **Account Statistics**: Display predictions made, reports generated, and account age
+- **Clean Layout**: Card-based design with responsive grid
+
+### Settings Page
+- **Organized Sections**: Appearance, Notifications, Security, Preferences, Privacy
+- **Toggle Switches**: Animated switches for boolean settings (52px × 28px)
+- **Select Dropdowns**: Language, date format, and other preference options
+- **Action Buttons**: Save all settings or delete account with confirmation
+- **Icon Integration**: Visual icons for each settings category
+
 ## 🌟 Recent Updates
 
-- ✅ Removed search bar from header for cleaner UI
-- ✅ Added complete admin dashboard system
-- ✅ Implemented MongoDB Atlas integration
-- ✅ Added user session management
-- ✅ Enhanced authentication security
-- ✅ Improved responsive design
-- ✅ Added theme toggle functionality
+- ✅ **Landing Page Redesign** - Added dynamic rotating medical images carousel (6 images, 1.5s interval)
+- ✅ **Modern Authentication UI** - Redesigned login/signup pages with blue gradient and centered cards
+- ✅ **Profile Management** - Comprehensive profile page with avatar, editable personal info, password change, and account statistics
+- ✅ **Settings Page** - Complete settings management for appearance, notifications, security, preferences, and privacy
+- ✅ **Enhanced Theme System** - Improved light/dark theme toggle with optimized image overlay (20-25% for light theme)
+- ✅ **Separate Admin Flow** - Dedicated authentication pages for admin users
+- ✅ **Role-Based UI** - Student and Admin role selection with appropriate redirects
+- ✅ **Header Navigation** - Dropdown menu with Profile and Settings navigation
+- ✅ **Responsive Design** - Mobile-optimized layouts for all components
+- ✅ **User Session Management** - Enhanced MongoDB Atlas integration
+- ✅ **Single-Page Forms** - Optimized spacing for no-scroll authentication experience
 
 ## 🤝 Contributing
 

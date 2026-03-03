@@ -11,6 +11,9 @@ import AdminLogin from './components/AdminLogin'
 import AdminSignup from './components/AdminSignup'
 import AdminDashboard from './components/AdminDashboard'
 import Loader from './components/Loader'
+import LandingPage from './components/LandingPage'
+import Profile from './components/Profile'
+import Settings from './components/Settings'
 
 function App() {
   const [activeTab, setActiveTab] = useState('single')
@@ -18,7 +21,9 @@ function App() {
   const [user, setUser] = useState(null)
   const [admin, setAdmin] = useState(null)
   const [authView, setAuthView] = useState('login') // 'login', 'signup', 'adminLogin', 'adminSignup'
+  const [showLanding, setShowLanding] = useState(true) // Show landing page by default
   const [loggingOut, setLoggingOut] = useState(false)
+  const [currentView, setCurrentView] = useState('main') // 'main', 'profile', 'settings'
 
   const handleLogin = (userData) => {
     setUser(userData)
@@ -38,6 +43,7 @@ function App() {
       setResults(null)
       setLoggingOut(false)
       setAuthView('login')
+      setShowLanding(true) // Go back to landing page after logout
     }, 1500)
   }
 
@@ -59,6 +65,7 @@ function App() {
       localStorage.removeItem('adminToken')
       setLoggingOut(false)
       setAuthView('login')
+      setShowLanding(true) // Go back to landing page after logout
     }, 1500)
   }
 
@@ -69,8 +76,10 @@ function App() {
     
     if (savedAdmin) {
       setAdmin(JSON.parse(savedAdmin))
+      setShowLanding(false) // Don't show landing if user is already logged in
     } else if (savedUser) {
       setUser(JSON.parse(savedUser))
+      setShowLanding(false) // Don't show landing if user is already logged in
     }
   }, [])
 
@@ -84,8 +93,25 @@ function App() {
     return <AdminDashboard admin={admin} onLogout={handleAdminLogout} />
   }
 
-  // If not authenticated, show login/signup
+  // If not authenticated, show landing page or auth views
   if (!user) {
+    // Show landing page first
+    if (showLanding) {
+      return (
+        <LandingPage
+          onGetStarted={() => {
+            setShowLanding(false)
+            setAuthView('signup')
+          }}
+          onSignIn={() => {
+            setShowLanding(false)
+            setAuthView('login')
+          }}
+        />
+      )
+    }
+
+    // Show auth views after landing page
     if (authView === 'login') {
       return (
         <Login 
@@ -99,6 +125,7 @@ function App() {
         <SignUp 
           onSignUp={handleSignUp} 
           onSwitchToLogin={() => setAuthView('login')} 
+          onSwitchToAdminSignup={() => setAuthView('adminSignup')}
         />
       )
     } else if (authView === 'adminLogin') {
@@ -122,23 +149,36 @@ function App() {
 
   return (
     <div className="app">
-      <Header user={user} onLogout={handleLogout} />
-      <Navbar activeTab={activeTab} setActiveTab={setActiveTab} setResults={setResults} />
+      {currentView === 'profile' ? (
+        <Profile user={user} onBack={() => setCurrentView('main')} />
+      ) : currentView === 'settings' ? (
+        <Settings user={user} onBack={() => setCurrentView('main')} />
+      ) : (
+        <>
+          <Header 
+            user={user} 
+            onLogout={handleLogout}
+            onNavigateToProfile={() => setCurrentView('profile')}
+            onNavigateToSettings={() => setCurrentView('settings')}
+          />
+          <Navbar activeTab={activeTab} setActiveTab={setActiveTab} setResults={setResults} />
 
-      <main className="main-content">
-        {!results ? (
-          <>
-            {activeTab === 'single' && <PredictionForm setResults={setResults} />}
-            {activeTab === 'csv' && <CSVUpload setResults={setResults} />}
-          </>
-        ) : (
-          <Results results={results} setResults={setResults} />
-        )}
-      </main>
+          <main className="main-content">
+            {!results ? (
+              <>
+                {activeTab === 'single' && <PredictionForm setResults={setResults} />}
+                {activeTab === 'csv' && <CSVUpload setResults={setResults} />}
+              </>
+            ) : (
+              <Results results={results} setResults={setResults} />
+            )}
+          </main>
 
-      <footer className="app-footer">
-        <p>© 2026 CKD Prediction. All rights reserved.</p>
-      </footer>
+          <footer className="app-footer">
+            <p>© 2026 CKD Prediction. All rights reserved.</p>
+          </footer>
+        </>
+      )}
     </div>
   )
 }
