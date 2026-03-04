@@ -294,6 +294,24 @@
   background: #fee;
 }
 
+/* More Menu Dropdown */
+.more-menu {
+  position: relative;
+}
+
+.more-dropdown {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  right: 0;
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  box-shadow: 0 4px 20px var(--shadow-color);
+  min-width: 220px;
+  z-index: 1000;
+  overflow: hidden;
+}
+
 /* Responsive Design */
 @media (max-width: 1024px) {
   .header-container {

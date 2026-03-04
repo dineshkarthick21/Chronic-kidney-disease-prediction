@@ -1,0 +1,264 @@
+=== CKD Prediction AI Assistant - Knowledge Base ===
+
+=== About Chronic Kidney Disease (CKD) ===
+
+Chronic Kidney Disease (CKD) is a long-term condition where the kidneys don't work as well as they should. The kidneys are responsible for filtering waste and excess fluids from your blood, which are then removed from your body through urine. When kidney function declines, dangerous levels of waste and fluid can build up in your body.
+
+CKD is classified into five stages based on the severity of kidney damage:
+- Stage 1: Kidney damage with normal or increased GFR (≥90 mL/min)
+- Stage 2: Mild decrease in GFR (60-89 mL/min)
+- Stage 3: Moderate decrease in GFR (30-59 mL/min)
+- Stage 4: Severe decrease in GFR (15-29 mL/min)
+- Stage 5: Kidney failure (GFR <15 mL/min or dialysis)
+
+=== Common Symptoms of CKD ===
+
+Early-stage CKD often has no symptoms. As the disease progresses, symptoms may include:
+- Fatigue and weakness
+- Swelling in legs, ankles, or feet (edema)
+- Shortness of breath
+- Nausea and vomiting
+- Loss of appetite
+- Changes in urine output
+- Difficulty sleeping
+- Muscle cramps
+- Persistent itching
+- High blood pressure
+- Decreased mental sharpness
+- Chest pain (if fluid builds up around the heart)
+- Foamy urine indicating protein in urine
+
+=== Risk Factors for CKD ===
+
+Several factors increase the risk of developing chronic kidney disease:
+- Diabetes (both Type 1 and Type 2)
+- High blood pressure (hypertension)
+- Heart disease and cardiovascular conditions
+- Family history of kidney disease
+- Age (risk increases after 60)
+- Obesity and being overweight
+- Smoking
+- Prolonged use of certain medications (NSAIDs, certain antibiotics)
+- Abnormal kidney structure
+- Previous acute kidney injury
+- Certain ethnic backgrounds (African American, Native American, Asian American)
+
+=== Important Medical Parameters for CKD ===
+
+Our AI model evaluates several key medical parameters to predict CKD risk:
+
+1. **Blood Pressure (BP)**: Normal is around 120/80 mmHg. High blood pressure can damage kidneys.
+
+2. **Specific Gravity (SG)**: Measures urine concentration. Normal range: 1.005-1.030. Abnormal values may indicate kidney problems.
+
+3. **Albumin**: Protein in urine. Normal is negative. Presence indicates kidney damage.
+
+4. **Blood Sugar**: Normal fasting: 70-100 mg/dL. High levels (diabetes) can damage kidneys.
+
+5. **Blood Urea (BU)**: Waste product. Normal: 7-20 mg/dL. High levels indicate poor kidney function.
+
+6. **Serum Creatinine (SC)**: Waste product from muscles. Normal: 0.6-1.2 mg/dL (men), 0.5-1.1 mg/dL (women). High levels indicate kidney problems.
+
+7. **Hemoglobin (Hemo)**: Protein in red blood cells. Normal: 13.5-17.5 g/dL (men), 12-15.5 g/dL (women). Low levels common in CKD.
+
+8. **Packed Cell Volume (PCV)**: Percentage of red blood cells. Normal: 38-50% (men), 36-44% (women). Low in CKD.
+
+9. **White Blood Cell Count (WBC)**: Normal: 4,000-11,000 cells/µL. High may indicate infection or inflammation.
+
+10. **Red Blood Cell Count (RBC)**: Normal: 4.5-5.5 million cells/µL (men), 4.0-5.0 million cells/µL (women). Low in CKD.
+
+11. **Hypertension**: High blood pressure history increases CKD risk significantly.
+
+12. **Diabetes Mellitus**: Having diabetes is a major risk factor for CKD.
+
+13. **Coronary Artery Disease**: Heart disease is linked to kidney disease.
+
+14. **Appetite**: Loss of appetite is common in advanced CKD.
+
+15. **Pedal Edema**: Swelling in feet/ankles indicates fluid retention.
+
+16. **Anemia**: Common in CKD due to reduced erythropoietin production.
+
+=== About Our CKD Prediction System ===
+
+Our CKD Prediction System uses advanced machine learning technology to assess the risk of chronic kidney disease based on medical parameters and patient information. The system is designed to assist healthcare professionals in early detection and diagnosis.
+
+**How It Works:**
+1. Users input medical test results and patient information
+2. Our AI model analyzes 24+ different clinical parameters
+3. The machine learning algorithm processes the data using trained patterns
+4. The system provides a prediction: CKD or Not CKD
+5. Results include confidence scores and risk assessment
+
+**Key Features:**
+- Single Prediction: Analyze individual patient data
+- Batch CSV Upload: Process multiple patient records at once
+- Fast Analysis: Results in seconds
+- High Accuracy: Trained on extensive medical datasets
+- User-Friendly Interface: Easy data input and result visualization
+
+**Model Information:**
+Our prediction model is trained using various machine learning algorithms including:
+- Random Forest Classifier
+- Support Vector Machines (SVM)
+- Logistic Regression
+- Gradient Boosting
+- Neural Networks
+
+The model has been validated on real-world medical data and shows high accuracy in detecting CKD cases.
+
+=== When to Use This System ===
+
+This CKD prediction system is recommended when:
+- Routine health screening is needed
+- Patient shows symptoms of kidney problems
+- Patient has risk factors (diabetes, hypertension, family history)
+- Monitoring patients with existing kidney conditions
+- Quick preliminary assessment is required
+- Analyzing large patient datasets for research
+
+**Important Note:** This system is designed to assist medical professionals and should NOT replace professional medical diagnosis. Always consult with qualified healthcare providers for proper diagnosis and treatment.
+
+=== Treatment and Management of CKD ===
+
+While CKD cannot be cured in most cases, its progression can be slowed:
+
+**Medical Treatment:**
+- Blood pressure medications (ACE inhibitors, ARBs)
+- Diabetes management medications
+- Medications to lower cholesterol
+- Medications to treat anemia
+- Medications to relieve swelling
+- Phosphate binders
+- Vitamin D supplements
+
+**Lifestyle Changes:**
+- Follow a kidney-friendly diet (low sodium, controlled protein)
+- Regular exercise (as approved by doctor)
+- Maintain healthy weight
+- Quit smoking
+- Limit alcohol consumption
+- Stay hydrated (as per doctor's advice)
+- Manage underlying conditions (diabetes, hypertension)
+
+**Advanced Treatment:**
+- Dialysis (hemodialysis or peritoneal dialysis) for Stage 5 CKD
+- Kidney transplant for end-stage kidney disease
+
+=== Prevention of CKD ===
+
+Steps to prevent or reduce risk of CKD:
+1. Control blood sugar if you have diabetes
+2. Maintain healthy blood pressure
+3. Maintain healthy weight
+4. Eat a balanced, kidney-friendly diet
+5. Don't smoke
+6. Limit alcohol
+7. Exercise regularly (30 minutes most days)
+8. Get regular health checkups
+9. Drink plenty of water unless advised otherwise
+10. Avoid overuse of NSAIDs and other harmful medications
+11. Manage stress
+12. Get adequate sleep
+
+=== About Our AI Chat Assistant ===
+
+I am your CKD Prediction AI Chat Assistant. I'm here to help you understand:
+- Chronic Kidney Disease and its symptoms
+- How our prediction system works
+- What medical parameters are evaluated
+- Risk factors and prevention strategies
+- How to use the CKD prediction platform
+- Interpretation of results
+
+**What I Can Help With:**
+- Explaining CKD stages and symptoms
+- Understanding medical test parameters
+- Guidance on using the prediction system
+- Information about risk factors
+- General health advice related to kidney function
+- Questions about the AI prediction model
+
+**What I Cannot Do:**
+- Provide personal medical diagnosis
+- Prescribe medications or treatment
+- Replace consultation with healthcare providers
+- Access your personal medical records
+- Make definitive medical decisions
+
+Always consult with qualified healthcare professionals for medical advice, diagnosis, or treatment.
+
+=== Using the CKD Prediction Platform ===
+
+**For Single Predictions:**
+1. Navigate to the "Single Prediction" tab
+2. Enter patient information and medical test results
+3. Fill in all required fields accurately
+4. Click "Predict" to get results
+5. Review the prediction and confidence score
+6. Download or save results for records
+
+**For Batch CSV Upload:**
+1. Navigate to the "CSV Upload" tab
+2. Prepare your CSV file with all required columns
+3. Upload the CSV file
+4. System will process all records
+5. Download comprehensive results
+6. Review predictions for all patients
+
+**Required Data Fields:**
+- Age, Blood Pressure, Specific Gravity
+- Albumin, Sugar, Red Blood Cells, Pus Cell
+- Pus Cell Clumps, Bacteria
+- Blood Glucose Random, Blood Urea
+- Serum Creatinine, Sodium, Potassium
+- Hemoglobin, Packed Cell Volume
+- White Blood Cell Count, Red Blood Cell Count
+- Hypertension, Diabetes Mellitus
+- Coronary Artery Disease, Appetite
+- Pedal Edema, Anemia
+
+**Sample CSV Format:**
+The CSV should include columns for all medical parameters. Refer to the sample CSV provided in the system for correct formatting.
+
+=== Frequently Asked Questions ===
+
+**Q: Is this system accurate?**
+A: Our AI model has been trained on extensive medical datasets and shows high accuracy. However, it should be used as an assistive tool alongside professional medical evaluation.
+
+**Q: Can I use this for self-diagnosis?**
+A: No. This system is designed to assist healthcare professionals. Always consult with qualified doctors for diagnosis and treatment.
+
+**Q: What if I don't have all the test results?**
+A: For accurate predictions, it's important to have complete data. Consult with your healthcare provider to get the necessary tests done.
+
+**Q: How long does the prediction take?**
+A: Single predictions are typically generated within seconds. Batch CSV processing may take longer depending on the number of records.
+
+**Q: Is my data secure?**
+A: Yes, we follow standard security practices. However, for sensitive medical data, always ensure you're using the system in compliance with local healthcare regulations.
+
+**Q: Can this replace my doctor?**
+A: Absolutely not. This is an assistive tool. Always consult with qualified healthcare professionals for medical decisions.
+
+**Q: What should I do if the prediction shows CKD risk?**
+A: Consult with a nephrologist or your primary care physician immediately for proper evaluation and potential treatment.
+
+=== Contact and Support ===
+
+For technical support or questions about the platform:
+- Email: support@ckdpredict.com
+- System Dashboard: Available after login
+- Emergency: Always contact your local healthcare provider
+
+For medical emergencies, call emergency services immediately (911 in US, 999 in UK, 108 in India, etc.).
+
+=== Disclaimer ===
+
+This CKD Prediction System and AI Chat Assistant are provided for informational and educational purposes only. They do not constitute medical advice, diagnosis, or treatment. The predictions and information provided should not be used as a substitute for professional medical advice, diagnosis, or treatment. Always seek the advice of your physician or other qualified health provider with any questions you may have regarding a medical condition. Never disregard professional medical advice or delay in seeking it because of information provided by this system.
+
+The developers and operators of this system are not liable for any decisions made or actions taken based on the information provided by this AI system.
+
+=== Last Updated ===
+Knowledge Base Version: 1.0
+Last Updated: March 2026

@@ -9,6 +9,7 @@ A full-stack web application with machine learning capabilities to predict Chron
 - 🔐 **User Authentication** - Secure signup/login with MongoDB Atlas and modern UI
 - 📊 **Single Prediction** - Input medical parameters for instant CKD prediction
 - 📁 **CSV Upload** - Batch predictions with CSV file upload
+- 🤖 **AI Chat Assistant** - Intelligent RAG chatbot powered by Google Gemini for CKD Q&A
 - 🌓 **Dark/Light Mode** - Seamless theme switching throughout the application
 - 📈 **Results Visualization** - View prediction results with confidence scores
 - 👤 **User Profile** - Comprehensive profile management with avatar, personal info editing, and account statistics
@@ -25,6 +26,13 @@ A full-stack web application with machine learning capabilities to predict Chron
 - 🤖 **Random Forest Algorithm** - High-accuracy CKD prediction model
 - 🎯 **Feature Selection** - SelectKBest for optimal feature extraction
 - 📉 **Model Evaluation** - Comprehensive performance metrics
+
+### AI Chat Assistant (RAG System)
+- 🧠 **Google Gemini Integration** - Powered by Gemini Pro for intelligent responses
+- 📚 **FAISS Vector Database** - Semantic search across CKD knowledge base
+- 🔍 **Context-Aware Responses** - Retrieves relevant information before answering
+- 💬 **Natural Language Processing** - Understands and responds to medical queries
+- 📖 **Comprehensive Knowledge Base** - 17 chunks of CKD medical information
 
 ## 🚀 Tech Stack
 
@@ -47,6 +55,13 @@ A full-stack web application with machine learning capabilities to predict Chron
 - **pandas** - Data manipulation
 - **numpy** - Numerical computing
 - **Random Forest** - Classification algorithm
+
+### RAG Chatbot Backend
+- **FastAPI** - High-performance Python web framework
+- **LangChain** - LLM application framework
+- **Google Gemini Pro** - Advanced language model
+- **FAISS** - Vector similarity search
+- **HuggingFace Embeddings** - Text embeddings for semantic search
 
 ## 📋 Prerequisites
 
@@ -86,7 +101,27 @@ python app.py
 
 Backend will run on `http://localhost:5000`
 
-### 3. Frontend Setup
+### 3. RAG Chatbot Backend Setup
+
+```bash
+cd Rag-chatbot-assistent/backend
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Create .env file and add your Google Gemini API key
+echo GOOGLE_API_KEY=your_gemini_api_key_here > .env
+
+# Create vector database
+python ingest.py
+
+# Ru5 FastAPI server
+python -m uvicorn main:app --reload --port 8001
+```
+
+RAG Backend will run on `http://localhost:8001`
+
+### 4. Frontend Setup
 
 ```bash
 cd frontend
@@ -131,12 +166,15 @@ CKD-Prediction/
 │   ├── data/                   # Dataset files
 │   ├── models/                 # Trained ML models
 │   ├── notebooks/              # Jupyter notebooks
-│   │   └── eda.ipynb          # Exploratory data analysis
-│   └── src/
-│       ├── train_model.py     # Model training
-│       ├── evaluate_model.py  # Model evaluation
-│       ├── preprocess_data.py # Data preprocessing
-│       └── feature_selection.py # Feature engineering
+├── Rag-chatbot-assistent/
+│   ├── backend/
+│   │   ├── main.py            # FastAPI RAG server
+│   │   ├── ingest.py          # Vector database creation
+│   │   ├── data.txt           # CKD knowledge base
+│   │   ├── requirements.txt   # Python dependencies
+│   │   ├── .env               # Environment variables
+│   │   └── vector_db/         # FAISS vector database
+│   └── README.md              # RAG chatbot documentation
 │
 └── frontend/
     ├── src/
@@ -148,6 +186,14 @@ CKD-Prediction/
     │   │   ├── AdminLogin.jsx # Admin login (separate flow)
     │   │   ├── AdminSignup.jsx # Admin registration
     │   │   ├── AdminDashboard.jsx # Admin panel
+    │   │   ├── Header.jsx     # Navigation header with dropdown
+    │   │   ├── Navbar.jsx     # Navigation bar
+    │   │   ├── PredictionForm.jsx # Single prediction form
+    │   │   ├── CSVUpload.jsx  # Batch prediction uploader
+    │   │   ├── Results.jsx    # Results display
+    │   │   ├── Profile.jsx    # User profile management
+    │   │   ├── Settings.jsx   # Application settings
+    │   │   ├── AIChatAssistant.jsx # RAG chatbot interface
     │   │   ├── Header.jsx     # Navigation header with dropdown
     │   │   ├── Navbar.jsx     # Navigation bar
     │   │   ├── PredictionForm.jsx # Single prediction form
@@ -209,14 +255,15 @@ CKD-Prediction/
 - **Editable Fields**: Toggle between view and edit modes for personal information
 - **Password Security**: Dedicated password change form with validation
 - **Account Statistics**: Display predictions made, reports generated, and account age
-- **Clean Layout**: Card-based design with responsive grid
-
-### Settings Page
-- **Organized Sections**: Appearance, Notifications, Security, Preferences, Privacy
-- **Toggle Switches**: Animated switches for boolean settings (52px × 28px)
-- **Select Dropdowns**: Language, date format, and other preference options
-- **Action Buttons**: Save all settings or delete account with confirmation
-- **Icon Integration**: Visual icons for each settings category
+- **ClAI Chat Assistant** - NEW! Intelligent RAG chatbot powered by Google Gemini with FAISS vector search
+- ✅ **Landing Page Redesign** - Added dynamic rotating medical images carousel (6 images, 1.5s interval)
+- ✅ **Modern Authentication UI** - Redesigned login/signup pages with blue gradient and centered cards
+- ✅ **Profile Management** - Comprehensive profile page with avatar, editable personal info, password change, and account statistics
+- ✅ **Settings Page** - Complete settings management for appearance, notifications, security, preferences, and privacy
+- ✅ **Enhanced Theme System** - Improved light/dark theme toggle with optimized image overlay (20-25% for light theme)
+- ✅ **Separate Admin Flow** - Dedicated authentication pages for admin users
+- ✅ **Role-Based UI** - Student and Admin role selection with appropriate redirects
+- ✅ **Header Navigation** - Dropdown menu with Profile, Settings, and AI Chat Assistant
 
 ## 🌟 Recent Updates
 

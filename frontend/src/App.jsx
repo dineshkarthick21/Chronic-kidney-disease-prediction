@@ -14,6 +14,7 @@ import Loader from './components/Loader'
 import LandingPage from './components/LandingPage'
 import Profile from './components/Profile'
 import Settings from './components/Settings'
+import AIChatAssistant from './components/AIChatAssistant'
 
 function App() {
   const [activeTab, setActiveTab] = useState('single')
@@ -24,6 +25,7 @@ function App() {
   const [showLanding, setShowLanding] = useState(true) // Show landing page by default
   const [loggingOut, setLoggingOut] = useState(false)
   const [currentView, setCurrentView] = useState('main') // 'main', 'profile', 'settings'
+  const [showAIChat, setShowAIChat] = useState(false) // AI Chat Assistant state
 
   const handleLogin = (userData) => {
     setUser(userData)
@@ -149,6 +151,9 @@ function App() {
 
   return (
     <div className="app">
+      {/* AI Chat Assistant Overlay */}
+      {showAIChat && <AIChatAssistant onClose={() => setShowAIChat(false)} />}
+      
       {currentView === 'profile' ? (
         <Profile user={user} onBack={() => setCurrentView('main')} />
       ) : currentView === 'settings' ? (
@@ -160,6 +165,7 @@ function App() {
             onLogout={handleLogout}
             onNavigateToProfile={() => setCurrentView('profile')}
             onNavigateToSettings={() => setCurrentView('settings')}
+            onOpenAIChat={() => setShowAIChat(true)}
           />
           <Navbar activeTab={activeTab} setActiveTab={setActiveTab} setResults={setResults} />
 

@@ -2,10 +2,12 @@ import { useState, useEffect, useRef } from 'react'
 import { useTheme } from '../context/ThemeContext'
 import './Header.css'
 
-function Header({ user, onLogout, onNavigateToProfile, onNavigateToSettings }) {
+function Header({ user, onLogout, onNavigateToProfile, onNavigateToSettings, onOpenAIChat }) {
   const [showDropdown, setShowDropdown] = useState(false)
+  const [showMoreDropdown, setShowMoreDropdown] = useState(false)
   const { theme, toggleTheme } = useTheme()
   const dropdownRef = useRef(null)
+  const moreDropdownRef = useRef(null)
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -13,16 +15,19 @@ function Header({ user, onLogout, onNavigateToProfile, onNavigateToSettings }) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setShowDropdown(false)
       }
+      if (moreDropdownRef.current && !moreDropdownRef.current.contains(event.target)) {
+        setShowMoreDropdown(false)
+      }
     }
 
-    if (showDropdown) {
+    if (showDropdown || showMoreDropdown) {
       document.addEventListener('mousedown', handleClickOutside)
     }
 
     return () => {
       document.removeEventListener('mousedown', handleClickOutside)
     }
-  }, [showDropdown])
+  }, [showDropdown, showMoreDropdown])
 
   return (
     <header className="header">
@@ -110,12 +115,26 @@ function Header({ user, onLogout, onNavigateToProfile, onNavigateToSettings }) {
             </div>
           )}
           
-          <button className="nav-item">
-            <span>More</span>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-              <polyline points="6 9 12 15 18 9" strokeWidth="2"/>
-            </svg>
-          </button>
+          {user && (
+            <div className="more-menu" ref={moreDropdownRef}>
+              <button className="nav-item" onClick={() => setShowMoreDropdown(!showMoreDropdown)}>
+                <span>More</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <polyline points="6 9 12 15 18 9" strokeWidth="2"/>
+                </svg>
+              </button>
+              {showMoreDropdown && (
+                <div className="more-dropdown">
+                  <button className="dropdown-item" onClick={() => { onOpenAIChat(); setShowMoreDropdown(false); }}>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" strokeWidth="2"/>
+                    </svg>
+                    AI Chat Assistant
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
           
           <button className="nav-item cart">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
