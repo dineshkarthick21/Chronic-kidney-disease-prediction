@@ -14,6 +14,8 @@ A full-stack web application with machine learning capabilities to predict Chron
 - 📈 **Results Visualization** - View prediction results with confidence scores
 - 👤 **User Profile** - Comprehensive profile management with avatar, personal info editing, and account statistics
 - ⚙️ **Settings Page** - Customize notifications, security preferences, appearance, and privacy settings
+- 🩺 **Doctor Consultation** - Schedule and manage appointments with healthcare professionals
+- 📋 **Medical Reports** - Access and download your medical reports and prediction history
 
 ### Admin Dashboard
 - 🛡️ **Admin Authentication** - Secure admin login with secret code
@@ -115,7 +117,7 @@ echo GOOGLE_API_KEY=your_gemini_api_key_here > .env
 # Create vector database
 python ingest.py
 
-# Ru5 FastAPI server
+# Run FastAPI server
 python -m uvicorn main:app --reload --port 8001
 ```
 
@@ -194,13 +196,8 @@ CKD-Prediction/
     │   │   ├── Profile.jsx    # User profile management
     │   │   ├── Settings.jsx   # Application settings
     │   │   ├── AIChatAssistant.jsx # RAG chatbot interface
-    │   │   ├── Header.jsx     # Navigation header with dropdown
-    │   │   ├── Navbar.jsx     # Navigation bar
-    │   │   ├── PredictionForm.jsx # Single prediction form
-    │   │   ├── CSVUpload.jsx  # Batch prediction uploader
-    │   │   ├── Results.jsx    # Results display
-    │   │   ├── Profile.jsx    # User profile management
-    │   │   ├── Settings.jsx   # Application settings
+    │   │   ├── DoctorConsultation.jsx # Doctor appointment management
+    │   │   ├── Reports.jsx    # Medical reports viewer
     │   │   └── Loader.jsx     # Loading component
     │   └── context/
     │       └── ThemeContext.jsx # Global theme management
@@ -255,7 +252,12 @@ CKD-Prediction/
 - **Editable Fields**: Toggle between view and edit modes for personal information
 - **Password Security**: Dedicated password change form with validation
 - **Account Statistics**: Display predictions made, reports generated, and account age
-- **ClAI Chat Assistant** - NEW! Intelligent RAG chatbot powered by Google Gemini with FAISS vector search
+
+## 🌟 Recent Updates
+
+- ✅ **Doctor Consultation** - NEW! Schedule appointments with healthcare professionals
+- ✅ **Medical Reports** - NEW! Access and download medical reports and prediction history  
+- ✅ **AI Chat Assistant** - Intelligent RAG chatbot powered by Google Gemini with FAISS vector search
 - ✅ **Landing Page Redesign** - Added dynamic rotating medical images carousel (6 images, 1.5s interval)
 - ✅ **Modern Authentication UI** - Redesigned login/signup pages with blue gradient and centered cards
 - ✅ **Profile Management** - Comprehensive profile page with avatar, editable personal info, password change, and account statistics
@@ -264,17 +266,6 @@ CKD-Prediction/
 - ✅ **Separate Admin Flow** - Dedicated authentication pages for admin users
 - ✅ **Role-Based UI** - Student and Admin role selection with appropriate redirects
 - ✅ **Header Navigation** - Dropdown menu with Profile, Settings, and AI Chat Assistant
-
-## 🌟 Recent Updates
-
-- ✅ **Landing Page Redesign** - Added dynamic rotating medical images carousel (6 images, 1.5s interval)
-- ✅ **Modern Authentication UI** - Redesigned login/signup pages with blue gradient and centered cards
-- ✅ **Profile Management** - Comprehensive profile page with avatar, editable personal info, password change, and account statistics
-- ✅ **Settings Page** - Complete settings management for appearance, notifications, security, preferences, and privacy
-- ✅ **Enhanced Theme System** - Improved light/dark theme toggle with optimized image overlay (20-25% for light theme)
-- ✅ **Separate Admin Flow** - Dedicated authentication pages for admin users
-- ✅ **Role-Based UI** - Student and Admin role selection with appropriate redirects
-- ✅ **Header Navigation** - Dropdown menu with Profile and Settings navigation
 - ✅ **Responsive Design** - Mobile-optimized layouts for all components
 - ✅ **User Session Management** - Enhanced MongoDB Atlas integration
 - ✅ **Single-Page Forms** - Optimized spacing for no-scroll authentication experience

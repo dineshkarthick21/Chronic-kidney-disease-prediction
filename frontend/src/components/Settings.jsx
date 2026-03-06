@@ -1,9 +1,10 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useTheme } from '../context/ThemeContext'
 import './Settings.css'
 
 function Settings({ user, onBack }) {
   const { theme, toggleTheme } = useTheme()
+  const [notification, setNotification] = useState(null)
   const [settings, setSettings] = useState({
     emailNotifications: true,
     pushNotifications: false,
@@ -15,6 +16,14 @@ function Settings({ user, onBack }) {
     dateFormat: 'MM/DD/YYYY',
     dataSharing: false
   })
+
+  // Load settings from localStorage on mount
+  useEffect(() => {
+    const savedSettings = localStorage.getItem('userSettings')
+    if (savedSettings) {
+      setSettings(JSON.parse(savedSettings))
+    }
+  }, [])
 
   const handleToggle = (setting) => {
     setSettings(prev => ({
@@ -31,22 +40,61 @@ function Settings({ user, onBack }) {
   }
 
   const handleSaveSettings = () => {
-    // TODO: Add API call to save settings
-    console.log('Saving settings:', settings)
     localStorage.setItem('userSettings', JSON.stringify(settings))
-    alert('Settings saved successfully!')
+    setNotification({ type: 'success', message: 'Settings saved successfully!' })
+    
+    // Clear notification after 3 seconds
+    setTimeout(() => {
+      setNotification(null)
+    }, 3000)
   }
 
   const handleDeleteAccount = () => {
-    if (window.confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
-      // TODO: Add API call to delete account
-      console.log('Deleting account')
+    const confirmed = window.confirm(
+      '⚠️ WARNING: Are you sure you want to delete your account?\n\n' +
+      'This action will:\n' +
+      '• Permanently delete all your data\n' +
+      '• Remove all your predictions and reports\n' +
+      '• Cannot be undone\n\n' +
+      'Type "DELETE" in the prompt to confirm.'
+    )
+    
+    if (confirmed) {
+      const confirmText = prompt('Type DELETE to confirm account deletion:')
+      
+      if (confirmText === 'DELETE') {
+        // TODO: Add API call to delete account
+        console.log('Deleting account')
+        setNotification({ 
+          type: 'success', 
+          message: 'Account deletion requested. You will be logged out shortly.' 
+        })
+        
+        // Simulate account deletion
+        setTimeout(() => {
+          localStorage.clear()
+          window.location.reload()
+        }, 2000)
+      } else {
+        setNotification({ 
+          type: 'error', 
+          message: 'Account deletion cancelled. Confirmation text did not match.' 
+        })
+        setTimeout(() => setNotification(null), 3000)
+      }
     }
   }
 
   return (
     <div className="settings-page">
       <div className="settings-container">
+        {/* Notification */}
+        {notification && (
+          <div className={`notification ${notification.type}`}>
+            {notification.message}
+          </div>
+        )}
+        
         <div className="settings-header">
           <button className="back-btn" onClick={onBack}>
             ← Back

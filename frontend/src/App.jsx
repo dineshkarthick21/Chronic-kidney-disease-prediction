@@ -15,6 +15,8 @@ import LandingPage from './components/LandingPage'
 import Profile from './components/Profile'
 import Settings from './components/Settings'
 import AIChatAssistant from './components/AIChatAssistant'
+import Reports from './components/Reports'
+import DoctorConsultation from './components/DoctorConsultation'
 
 function App() {
   const [activeTab, setActiveTab] = useState('single')
@@ -24,7 +26,7 @@ function App() {
   const [authView, setAuthView] = useState('login') // 'login', 'signup', 'adminLogin', 'adminSignup'
   const [showLanding, setShowLanding] = useState(true) // Show landing page by default
   const [loggingOut, setLoggingOut] = useState(false)
-  const [currentView, setCurrentView] = useState('main') // 'main', 'profile', 'settings'
+  const [currentView, setCurrentView] = useState('main') // 'main', 'profile', 'settings', 'reports', 'consultation'
   const [showAIChat, setShowAIChat] = useState(false) // AI Chat Assistant state
 
   const handleLogin = (userData) => {
@@ -35,6 +37,11 @@ function App() {
   const handleSignUp = (userData) => {
     setUser(userData)
     localStorage.setItem('user', JSON.stringify(userData))
+  }
+
+  const handleUpdateUser = (updatedUser) => {
+    setUser(updatedUser)
+    localStorage.setItem('user', JSON.stringify(updatedUser))
   }
 
   const handleLogout = () => {
@@ -155,9 +162,26 @@ function App() {
       {showAIChat && <AIChatAssistant onClose={() => setShowAIChat(false)} />}
       
       {currentView === 'profile' ? (
-        <Profile user={user} onBack={() => setCurrentView('main')} />
+        <Profile 
+          user={user} 
+          onBack={() => setCurrentView('main')} 
+          onUpdateUser={handleUpdateUser}
+        />
       ) : currentView === 'settings' ? (
-        <Settings user={user} onBack={() => setCurrentView('main')} />
+        <Settings 
+          user={user} 
+          onBack={() => setCurrentView('main')} 
+        />
+      ) : currentView === 'reports' ? (
+        <Reports 
+          user={user} 
+          onBack={() => setCurrentView('main')}
+        />
+      ) : currentView === 'consultation' ? (
+        <DoctorConsultation
+          user={user}
+          onBack={() => setCurrentView('main')}
+        />
       ) : (
         <>
           <Header 
@@ -165,6 +189,8 @@ function App() {
             onLogout={handleLogout}
             onNavigateToProfile={() => setCurrentView('profile')}
             onNavigateToSettings={() => setCurrentView('settings')}
+            onNavigateToReports={() => setCurrentView('reports')}
+            onNavigateToConsultation={() => setCurrentView('consultation')}
             onOpenAIChat={() => setShowAIChat(true)}
           />
           <Navbar activeTab={activeTab} setActiveTab={setActiveTab} setResults={setResults} />

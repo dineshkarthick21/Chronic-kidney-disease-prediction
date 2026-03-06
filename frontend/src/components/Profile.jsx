@@ -1,8 +1,8 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useTheme } from '../context/ThemeContext'
 import './Profile.css'
 
-function Profile({ user, onBack }) {
+function Profile({ user, onBack, onUpdateUser }) {
   const { theme } = useTheme()
   const [isEditing, setIsEditing] = useState(false)
   const [formData, setFormData] = useState({
@@ -11,6 +11,17 @@ function Profile({ user, onBack }) {
     phone: user?.phone || '',
     bio: user?.bio || ''
   })
+  const [notification, setNotification] = useState(null)
+
+  // Update form data when user prop changes
+  useEffect(() => {
+    setFormData({
+      name: user?.name || '',
+      email: user?.email || '',
+      phone: user?.phone || '',
+      bio: user?.bio || ''
+    })
+  }, [user])
   const [showPasswordChange, setShowPasswordChange] = useState(false)
   const [passwordData, setPasswordData] = useState({
     currentPassword: '',
@@ -35,33 +46,66 @@ function Profile({ user, onBack }) {
   }
 
   const handleSaveProfile = () => {
-    // TODO: Add API call to update profile
-    console.log('Saving profile:', formData)
-    setIsEditing(false)
     // Update localStorage
     const updatedUser = { ...user, ...formData }
     localStorage.setItem('user', JSON.stringify(updatedUser))
+    
+    // Update parent component state
+    if (onUpdateUser) {
+      onUpdateUser(updatedUser)
+    }
+    
+    setIsEditing(false)
+    setNotification({ type: 'success', message: 'Profile updated successfully!' })
+    
+    // Clear notification after 3 seconds
+    setTimeout(() => {
+      setNotification(null)
+    }, 3000)
   }
 
   const handleChangePassword = () => {
-    // TODO: Add API call to change password
     if (passwordData.newPassword !== passwordData.confirmPassword) {
-      alert('Passwords do not match!')
+      setNotification({ type: 'error', message: 'Passwords do not match!' })
+      setTimeout(() => setNotification(null), 3000)
       return
     }
+    
+    if (passwordData.newPassword.length < 6) {
+      setNotification({ type: 'error', message: 'Password must be at least 6 characters!' })
+      setTimeout(() => setNotification(null), 3000)
+      return
+    }
+    
+    // TODO: Add API call to change password
     console.log('Changing password')
+    
     setShowPasswordChange(false)
     setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' })
+    setNotification({ type: 'success', message: 'Password updated successfully!' })
+    
+    setTimeout(() => {
+      setNotification(null)
+    }, 3000)
   }
 
   return (
     <div className="profile-page">
       <div className="profile-container">
+        {/* Notification */}
+        {notification && (
+          <div className={`notification ${notification.type}`}>
+            {notification.message}
+          </div>
+        )}
+        
         <div className="profile-header">
-          <button className="back-btn" onClick={onBack}>
-            ← Back
-          </button>
-          <h1>Profile</h1>
+          <div className="profile-header-left">
+            <button className="back-btn" onClick={onBack}>
+              ← Back
+            </button>
+            <h1>Profile</h1>
+          </div>
         </div>
 
         <div className="profile-content">

@@ -90,7 +90,7 @@ const Login = ({ onLogin, onSwitchToSignup, onSwitchToAdmin }) => {
                 className={`role-tab ${formData.role === 'user' ? 'active' : ''}`}
                 onClick={() => setFormData(prev => ({ ...prev, role: 'user' }))}
               >
-                Student
+                User
               </button>
               <button
                 type="button"

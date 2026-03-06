@@ -43,52 +43,50 @@ function CSVUpload({ setResults }) {
 
     setLoading(true)
 
-    // Simulate API call - Replace with actual backend endpoint
-    setTimeout(() => {
-      const mockResults = Array.from({ length: 5 }, (_, i) => ({
-        id: i + 1,
-        prediction: Math.random() > 0.5 ? 'CKD' : 'Not CKD',
-        confidence: (Math.random() * 30 + 70).toFixed(2)
-      }))
-
-      setResults({
-        type: 'batch',
-        fileName: file.name,
-        results: mockResults,
-        summary: {
-          total: mockResults.length,
-          ckd: mockResults.filter(r => r.prediction === 'CKD').length,
-          notCkd: mockResults.filter(r => r.prediction === 'Not CKD').length
-        }
-      })
-      setLoading(false)
-    }, 2000)
-
-    // TODO: Replace with actual API call
-    /*
     const formData = new FormData()
     formData.append('file', file)
 
     try {
+      const token = localStorage.getItem('token')
+      
+      if (!token) {
+        alert('Please login to make predictions')
+        setLoading(false)
+        return
+      }
+
       const response = await fetch('http://localhost:5000/api/predict-batch', {
         method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
         body: formData
       })
+      
       const result = await response.json()
-      setResults(result)
+      
+      if (response.ok) {
+        setResults({
+          type: 'batch',
+          fileName: file.name,
+          results: result.results,
+          summary: result.summary
+        })
+      } else {
+        alert(result.message || 'Upload failed. Please try again.')
+      }
     } catch (error) {
       console.error('Error:', error)
       alert('Upload failed. Please try again.')
     } finally {
       setLoading(false)
     }
-    */
   }
 
   const downloadSampleCSV = () => {
     const sampleData = `age,bp,sg,al,su,rbc,pc,pcc,ba,bgr,bu,sc,sod,pot,hemo,pcv,wc,rc,htn,dm,cad,appet,pe,ane
-48,80,1.020,1,0,normal,normal,notpresent,notpresent,121,36,1.2,135,4.5,15.4,44,7800,5.2,yes,yes,no,good,no,no
-62,80,1.010,2,3,normal,normal,notpresent,notpresent,423,53,1.8,138,3.8,9.6,31,7500,4.2,no,yes,no,poor,no,yes
+48,80,1.02,1,0,normal,normal,notpresent,notpresent,121,36,1.2,135,4.5,15.4,44,7800,5.2,yes,yes,no,good,no,no
+62,80,1.01,2,3,normal,normal,notpresent,notpresent,423,53,1.8,138,3.8,9.6,31,7500,4.2,no,yes,no,poor,no,yes
 45,70,1.015,0,0,normal,normal,notpresent,notpresent,117,42,1.1,140,4.2,14.5,40,6700,4.8,no,no,no,good,no,no`
 
     const blob = new Blob([sampleData], { type: 'text/csv' })

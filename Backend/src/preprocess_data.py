@@ -14,19 +14,32 @@ def load_and_preprocess_data(csv_path):
     if 'classification' in df.columns:
         df['classification'] = df['classification'].str.strip()
 
-    # Replace '?' with NaN
-    df.replace('?', np.nan, inplace=True)
+    # Replace '?' with NaN and \t with ''
+    df = df.replace(['?', '\t', ' '], np.nan)
 
     # Convert numeric columns
     for col in df.columns:
-        df[col] = pd.to_numeric(df[col], errors='ignore')
+        if col != 'classification':
+            df[col] = pd.to_numeric(df[col], errors='coerce')
 
-    # Fill missing values
+    # Fill missing values for numeric columns
     for col in df.select_dtypes(include=['float64', 'int64']).columns:
-        df[col].fillna(df[col].mean(), inplace=True)
+        if df[col].isnull().all():
+            # If entire column is NaN, fill with 0
+            df[col] = 0
+        else:
+            # Fill with median to be more robust to outliers
+            df[col] = df[col].fillna(df[col].median())
 
+    # Fill missing values for categorical columns
     for col in df.select_dtypes(include=['object']).columns:
-        df[col].fillna(df[col].mode()[0], inplace=True)
+        if col != 'classification':
+            if df[col].isnull().all():
+                df[col] = 'unknown'
+            elif not df[col].mode().empty:
+                df[col] = df[col].fillna(df[col].mode()[0])
+            else:
+                df[col] = df[col].fillna('unknown')
 
     # Encode categorical data
     le = LabelEncoder()
@@ -37,9 +50,15 @@ def load_and_preprocess_data(csv_path):
     X = df.drop('classification', axis=1)
     y = df['classification']
 
+    # Remove any remaining NaN values
+    X = X.fillna(0)
+
     # Scale features
     scaler = StandardScaler()
     X_scaled = scaler.fit_transform(X)
+    
+    # Final check - replace any NaN or inf with 0
+    X_scaled = np.nan_to_num(X_scaled, nan=0.0, posinf=0.0, neginf=0.0)
 
     return X_scaled, y, scaler
 

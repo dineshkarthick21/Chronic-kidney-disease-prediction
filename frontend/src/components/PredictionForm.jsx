@@ -44,33 +44,43 @@ const PredictionForm = ({ setResults }) => {
     e.preventDefault()
     setLoading(true)
 
-    // Simulate API call - Replace with actual backend endpoint
-    setTimeout(() => {
-      const mockResult = {
-        type: 'single',
-        prediction: Math.random() > 0.5 ? 'ckd' : 'notckd',
-        confidence: (Math.random() * 30 + 70).toFixed(2),
-        data: formData
+    try {
+      const token = localStorage.getItem('token')
+      
+      if (!token) {
+        alert('Please login to make predictions')
+        setLoading(false)
+        return
       }
-      setResults(mockResult)
-      setLoading(false)
-    }, 1500)
 
-    // Actual implementation:
-    // try {
-    //   const response = await fetch('http://localhost:5000/api/predict', {
-    //     method: 'POST',
-    //     headers: { 'Content-Type': 'application/json' },
-    //     body: JSON.stringify(formData)
-    //   })
-    //   const data = await response.json()
-    //   setResults(data)
-    // } catch (error) {
-    //   console.error('Prediction error:', error)
-    //   alert('Error making prediction. Please try again.')
-    // } finally {
-    //   setLoading(false)
-    // }
+      const response = await fetch('http://localhost:5000/api/predict', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(formData)
+      })
+      
+      const data = await response.json()
+      
+      if (response.ok) {
+        const result = {
+          type: 'single',
+          prediction: data.prediction === 'CKD' ? 'ckd' : 'notckd',
+          confidence: (data.confidence * 100).toFixed(2),
+          data: formData
+        }
+        setResults(result)
+      } else {
+        alert(data.message || 'Error making prediction. Please try again.')
+      }
+    } catch (error) {
+      console.error('Prediction error:', error)
+      alert('Error making prediction. Please try again.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (

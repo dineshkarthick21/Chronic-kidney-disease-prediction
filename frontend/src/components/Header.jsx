@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useTheme } from '../context/ThemeContext'
 import './Header.css'
 
-function Header({ user, onLogout, onNavigateToProfile, onNavigateToSettings, onOpenAIChat }) {
+function Header({ user, onLogout, onNavigateToProfile, onNavigateToSettings, onNavigateToReports, onOpenAIChat, onNavigateToConsultation }) {
   const [showDropdown, setShowDropdown] = useState(false)
   const [showMoreDropdown, setShowMoreDropdown] = useState(false)
   const { theme, toggleTheme } = useTheme()
@@ -125,6 +125,13 @@ function Header({ user, onLogout, onNavigateToProfile, onNavigateToSettings, onO
               </button>
               {showMoreDropdown && (
                 <div className="more-dropdown">
+                  <button className="dropdown-item" onClick={() => { onNavigateToConsultation(); setShowMoreDropdown(false); }}>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                      <polygon points="23 7 16 12 23 17 23 7" strokeWidth="2"/>
+                      <rect x="1" y="5" width="15" height="14" rx="2" ry="2" strokeWidth="2"/>
+                    </svg>
+                    Doctor Consultation
+                  </button>
                   <button className="dropdown-item" onClick={() => { onOpenAIChat(); setShowMoreDropdown(false); }}>
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                       <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" strokeWidth="2"/>
@@ -136,7 +143,7 @@ function Header({ user, onLogout, onNavigateToProfile, onNavigateToSettings, onO
             </div>
           )}
           
-          <button className="nav-item cart">
+          <button className="nav-item cart" onClick={onNavigateToReports}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
               <path d="M9 2L7 6h10l-2-4" strokeWidth="2"/>
               <path d="M7 6h10l1 14H6L7 6z" strokeWidth="2"/>
