@@ -854,33 +854,33 @@ def get_doctors():
             mock_doctors = [
                 {
                     'id': 1,
-                    'name': 'Dr. Sarah Johnson',
+                    'name': 'Dr. Dineshkarthick',
                     'specialization': 'Nephrologist',
-                    'experience': '15 years',
-                    'rating': 4.8,
-                    'availability': 'Mon-Fri: 9 AM - 5 PM',
-                    'avatar': '👩‍⚕️',
-                    'languages': ['English', 'Spanish']
-                },
-                {
-                    'id': 2,
-                    'name': 'Dr. Michael Chen',
-                    'specialization': 'Kidney Specialist',
                     'experience': '12 years',
                     'rating': 4.9,
                     'availability': 'Mon-Sat: 10 AM - 6 PM',
                     'avatar': '👨‍⚕️',
-                    'languages': ['English', 'Mandarin']
+                    'languages': ['English', 'Tamil', 'Hindi']
                 },
                 {
-                    'id': 3,
-                    'name': 'Dr. Emily Rodriguez',
-                    'specialization': 'Renal Medicine Expert',
+                    'id': 2,
+                    'name': 'Dr. Dharanish',
+                    'specialization': 'Kidney Specialist',
                     'experience': '10 years',
                     'rating': 4.7,
                     'availability': 'Tue-Sat: 8 AM - 4 PM',
-                    'avatar': '👩‍⚕️',
-                    'languages': ['English', 'Spanish', 'French']
+                    'avatar': '👨‍⚕️',
+                    'languages': ['English', 'Tamil']
+                },
+                {
+                    'id': 3,
+                    'name': 'Dr. Hari Saravana',
+                    'specialization': 'Renal Medicine Expert',
+                    'experience': '14 years',
+                    'rating': 4.9,
+                    'availability': 'Mon-Fri: 11 AM - 7 PM',
+                    'avatar': '👨‍⚕️',
+                    'languages': ['English', 'Tamil', 'Malayalam']
                 }
             ]
             return jsonify({'doctors': mock_doctors}), 200
@@ -890,6 +890,66 @@ def get_doctors():
             doctor['_id'] = str(doctor['_id'])
         
         return jsonify({'doctors': doctors}), 200
+        
+    except Exception as e:
+        return jsonify({'message': f'Server error: {str(e)}'}), 500
+
+
+@app.route('/api/doctors/seed', methods=['POST'])
+def seed_doctors():
+    """Initialize doctors in MongoDB (run once)"""
+    try:
+        # Check if doctors already exist
+        existing_count = doctors_collection.count_documents({})
+        if existing_count > 0:
+            return jsonify({
+                'message': 'Doctors already exist in database',
+                'count': existing_count
+            }), 200
+        
+        # Seed doctors data
+        doctors_data = [
+            {
+                'id': 1,
+                'name': 'Dr. Dineshkarthick',
+                'specialization': 'Nephrologist',
+                'experience': '12 years',
+                'rating': 4.9,
+                'availability': 'Mon-Sat: 10 AM - 6 PM',
+                'avatar': '👨‍⚕️',
+                'languages': ['English', 'Tamil', 'Hindi'],
+                'created_at': datetime.utcnow()
+            },
+            {
+                'id': 2,
+                'name': 'Dr. Dharanish',
+                'specialization': 'Kidney Specialist',
+                'experience': '10 years',
+                'rating': 4.7,
+                'availability': 'Tue-Sat: 8 AM - 4 PM',
+                'avatar': '👨‍⚕️',
+                'languages': ['English', 'Tamil'],
+                'created_at': datetime.utcnow()
+            },
+            {
+                'id': 3,
+                'name': 'Dr. Hari Saravana',
+                'specialization': 'Renal Medicine Expert',
+                'experience': '14 years',
+                'rating': 4.9,
+                'availability': 'Mon-Fri: 11 AM - 7 PM',
+                'avatar': '👨‍⚕️',
+                'languages': ['English', 'Tamil', 'Malayalam'],
+                'created_at': datetime.utcnow()
+            }
+        ]
+        
+        result = doctors_collection.insert_many(doctors_data)
+        
+        return jsonify({
+            'message': 'Doctors seeded successfully',
+            'count': len(result.inserted_ids)
+        }), 201
         
     except Exception as e:
         return jsonify({'message': f'Server error: {str(e)}'}), 500
@@ -1007,4 +1067,51 @@ def update_consultation_status(consultation_id):
 
 
 if __name__ == '__main__':
+    # Auto-seed doctors if database is empty
+    try:
+        if doctors_collection.count_documents({}) == 0:
+            print("🏥 Seeding doctors into MongoDB...")
+            doctors_data = [
+                {
+                    'id': 1,
+                    'name': 'Dr. Dineshkarthick',
+                    'specialization': 'Nephrologist',
+                    'experience': '12 years',
+                    'rating': 4.9,
+                    'availability': 'Mon-Sat: 10 AM - 6 PM',
+                    'avatar': '👨‍⚕️',
+                    'languages': ['English', 'Tamil', 'Hindi'],
+                    'created_at': datetime.utcnow()
+                },
+                {
+                    'id': 2,
+                    'name': 'Dr. Dharanish',
+                    'specialization': 'Kidney Specialist',
+                    'experience': '10 years',
+                    'rating': 4.7,
+                    'availability': 'Tue-Sat: 8 AM - 4 PM',
+                    'avatar': '👨‍⚕️',
+                    'languages': ['English', 'Tamil'],
+                    'created_at': datetime.utcnow()
+                },
+                {
+                    'id': 3,
+                    'name': 'Dr. Hari Saravana',
+                    'specialization': 'Renal Medicine Expert',
+                    'experience': '14 years',
+                    'rating': 4.9,
+                    'availability': 'Mon-Fri: 11 AM - 7 PM',
+                    'avatar': '👨‍⚕️',
+                    'languages': ['English', 'Tamil', 'Malayalam'],
+                    'created_at': datetime.utcnow()
+                }
+            ]
+            doctors_collection.insert_many(doctors_data)
+            print(f"✅ Successfully seeded {len(doctors_data)} doctors!")
+        else:
+            print(f"✅ Doctors already exist in database ({doctors_collection.count_documents({})} doctors)")
+    except Exception as e:
+        print(f"⚠️  Error seeding doctors: {e}")
+    
+    print("🚀 Starting Flask server...")
     app.run(debug=True, port=5000)

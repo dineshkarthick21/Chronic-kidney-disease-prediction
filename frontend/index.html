@@ -5,6 +5,17 @@
     <link rel="icon" type="image/svg+xml" href="/vite.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>CKD Prediction</title>
+    <script>
+      // Initialize theme immediately (before React loads)
+      (function() {
+        const savedTheme = localStorage.getItem('ckd-theme');
+        const theme = savedTheme || 'light'; // Default to light theme
+        document.documentElement.setAttribute('data-theme', theme);
+        if (!savedTheme) {
+          localStorage.setItem('ckd-theme', 'light'); // Set default to light
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

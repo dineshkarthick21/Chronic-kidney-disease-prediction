@@ -14,8 +14,16 @@ A full-stack web application with machine learning capabilities to predict Chron
 - 📈 **Results Visualization** - View prediction results with confidence scores
 - 👤 **User Profile** - Comprehensive profile management with avatar, personal info editing, and account statistics
 - ⚙️ **Settings Page** - Customize notifications, security preferences, appearance, and privacy settings
-- 🩺 **Doctor Consultation** - Schedule and manage appointments with healthcare professionals
+- 🩺 **Doctor Consultation** - Schedule and manage appointments with healthcare professionals using **Jitsi Meet video conferencing**
 - 📋 **Medical Reports** - Access and download your medical reports and prediction history
+
+### Doctor Consultation & Video Conferencing 🆕
+- 📅 **Real-time Scheduling** - Book appointments with healthcare professionals
+- 🎥 **Jitsi Meet Integration** - Secure, free video conferencing with no setup required
+- 🔒 **Unique Meeting Rooms** - Auto-generated unique room names for each consultation
+- 📲 **Instant Access** - No downloads needed, works directly in browser
+- 🌐 **Cross-Platform** - Works on desktop, mobile, and tablets
+- 🔗 **Easy Sharing** - Copy and share meeting links instantly
 
 ### Admin Dashboard
 - 🛡️ **Admin Authentication** - Secure admin login with secret code
@@ -255,8 +263,9 @@ CKD-Prediction/
 
 ## 🌟 Recent Updates
 
-- ✅ **Doctor Consultation** - NEW! Schedule appointments with healthcare professionals
-- ✅ **Medical Reports** - NEW! Access and download medical reports and prediction history  
+- ✅ **Jitsi Meet Integration** - 🆕 JUST ADDED! Secure video conferencing with no setup required
+- ✅ **Doctor Consultation** - Schedule appointments with healthcare professionals
+- ✅ **Medical Reports** - Access and download medical reports and prediction history  
 - ✅ **AI Chat Assistant** - Intelligent RAG chatbot powered by Google Gemini with FAISS vector search
 - ✅ **Landing Page Redesign** - Added dynamic rotating medical images carousel (6 images, 1.5s interval)
 - ✅ **Modern Authentication UI** - Redesigned login/signup pages with blue gradient and centered cards

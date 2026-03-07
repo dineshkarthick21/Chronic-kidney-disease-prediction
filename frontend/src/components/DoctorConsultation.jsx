@@ -34,33 +34,33 @@ function DoctorConsultation({ user, onBack }) {
         setDoctors([
           {
             id: 1,
-            name: 'Dr. Sarah Johnson',
+            name: 'Dr. Dineshkarthick',
             specialization: 'Nephrologist',
-            experience: '15 years',
-            rating: 4.8,
-            availability: 'Mon-Fri: 9 AM - 5 PM',
-            avatar: '👩‍⚕️',
-            languages: ['English', 'Spanish']
-          },
-          {
-            id: 2,
-            name: 'Dr. Michael Chen',
-            specialization: 'Kidney Specialist',
             experience: '12 years',
             rating: 4.9,
             availability: 'Mon-Sat: 10 AM - 6 PM',
             avatar: '👨‍⚕️',
-            languages: ['English', 'Mandarin']
+            languages: ['English', 'Tamil', 'Hindi']
           },
           {
-            id: 3,
-            name: 'Dr. Emily Rodriguez',
-            specialization: 'Renal Medicine Expert',
+            id: 2,
+            name: 'Dr. Dharanish',
+            specialization: 'Kidney Specialist',
             experience: '10 years',
             rating: 4.7,
             availability: 'Tue-Sat: 8 AM - 4 PM',
-            avatar: '👩‍⚕️',
-            languages: ['English', 'Spanish', 'French']
+            avatar: '👨‍⚕️',
+            languages: ['English', 'Tamil']
+          },
+          {
+            id: 3,
+            name: 'Dr. Hari Saravana',
+            specialization: 'Renal Medicine Expert',
+            experience: '14 years',
+            rating: 4.9,
+            availability: 'Mon-Fri: 11 AM - 7 PM',
+            avatar: '👨‍⚕️',
+            languages: ['English', 'Tamil', 'Malayalam']
           }
         ])
       }
@@ -70,13 +70,33 @@ function DoctorConsultation({ user, onBack }) {
       setDoctors([
         {
           id: 1,
-          name: 'Dr. Sarah Johnson',
+          name: 'Dr. Dineshkarthick',
           specialization: 'Nephrologist',
-          experience: '15 years',
-          rating: 4.8,
-          availability: 'Mon-Fri: 9 AM - 5 PM',
-          avatar: '👩‍⚕️',
-          languages: ['English', 'Spanish']
+          experience: '12 years',
+          rating: 4.9,
+          availability: 'Mon-Sat: 10 AM - 6 PM',
+          avatar: '👨‍⚕️',
+          languages: ['English', 'Tamil', 'Hindi']
+        },
+        {
+          id: 2,
+          name: 'Dr. Dharanish',
+          specialization: 'Kidney Specialist',
+          experience: '10 years',
+          rating: 4.7,
+          availability: 'Tue-Sat: 8 AM - 4 PM',
+          avatar: '👨‍⚕️',
+          languages: ['English', 'Tamil']
+        },
+        {
+          id: 3,
+          name: 'Dr. Hari Saravana',
+          specialization: 'Renal Medicine Expert',
+          experience: '14 years',
+          rating: 4.9,
+          availability: 'Mon-Fri: 11 AM - 7 PM',
+          avatar: '👨‍⚕️',
+          languages: ['English', 'Tamil', 'Malayalam']
         }
       ])
     } finally {
@@ -95,7 +115,7 @@ function DoctorConsultation({ user, onBack }) {
         const processedConsultations = (data.consultations || []).map(consultation => ({
           ...consultation,
           // Ensure meetingLink exists
-          meetingLink: consultation.meetingLink || `https://meet.google.com/${Math.random().toString(36).substring(2, 15)}`,
+          meetingLink: consultation.meetingLink || `https://meet.jit.si/CKD-Meeting-${consultation.id || Date.now()}`,
           // Ensure id exists
           id: consultation.id || consultation._id,
           // Ensure date is properly formatted
@@ -111,14 +131,14 @@ function DoctorConsultation({ user, onBack }) {
           {
             id: 1,
             doctor: {
-              name: 'Dr. Sarah Johnson',
+              name: 'Dr. Dineshkarthick',
               specialization: 'Nephrologist',
-              avatar: '👩‍⚕️'
+              avatar: '👨‍⚕️'
             },
             date: new Date(Date.now() + 86400000).toISOString(), // Tomorrow
             time: '10:00 AM',
             status: 'scheduled',
-            meetingLink: 'https://meet.google.com/abc-defg-hij',
+            meetingLink: 'https://meet.jit.si/CKD-DrDineshkarthick-Demo-123456',
             reason: 'Routine checkup'
           }
         ]
@@ -144,9 +164,13 @@ function DoctorConsultation({ user, onBack }) {
     }
 
     try {
-      // Generate a Google Meet link
-      const meetingId = Math.random().toString(36).substring(2, 15) + '-' + Math.random().toString(36).substring(2, 15)
-      const meetingLink = `https://meet.google.com/${meetingId}`
+      // Generate a Jitsi Meet link with a unique room name
+      // Format: CKD-DrName-PatientID-Timestamp
+      const doctorName = selectedDoctor.name.replace(/[^a-zA-Z]/g, '')
+      const patientId = user.email.split('@')[0].replace(/[^a-zA-Z0-9]/g, '')
+      const timestamp = Date.now().toString().slice(-6) // Last 6 digits
+      const roomName = `CKD-${doctorName}-${patientId}-${timestamp}`
+      const meetingLink = `https://meet.jit.si/${roomName}`
 
       const newConsultation = {
         id: Date.now(),
@@ -201,8 +225,8 @@ function DoctorConsultation({ user, onBack }) {
       return
     }
     
-    console.log('Opening Google Meet:', meetingLink)
-    showNotification('success', 'Opening Google Meet in new tab...')
+    console.log('Opening Jitsi Meet:', meetingLink)
+    showNotification('success', 'Opening video consultation in new tab...')
     
     // Open in new tab
     const newWindow = window.open(meetingLink, '_blank', 'noopener,noreferrer')
@@ -412,23 +436,23 @@ function DoctorConsultation({ user, onBack }) {
                             <polygon points="23 7 16 12 23 17 23 7" strokeWidth="2"/>
                             <rect x="1" y="5" width="15" height="14" rx="2" ry="2" strokeWidth="2"/>
                           </svg>
-                          <span>📹 Google Meet Link:</span>
+                          <span>📹 Video Meeting Link:</span>
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
                           <span className="meeting-link-text">
                             <a 
-                              href={consultation.meetingLink || `https://meet.google.com/new`} 
+                              href={consultation.meetingLink || `https://meet.jit.si/CKD-Meeting-${consultation.id}`} 
                               target="_blank" 
                               rel="noopener noreferrer" 
                               className="meeting-link"
                             >
-                              {consultation.meetingLink || `https://meet.google.com/${consultation.id || 'new'}`}
+                              {consultation.meetingLink || `https://meet.jit.si/CKD-Meeting-${consultation.id}`}
                             </a>
                           </span>
                           <button 
                             className="copy-link-btn" 
                             onClick={() => {
-                              const link = consultation.meetingLink || `https://meet.google.com/${consultation.id || 'new'}`;
+                              const link = consultation.meetingLink || `https://meet.jit.si/CKD-Meeting-${consultation.id}`;
                               navigator.clipboard.writeText(link);
                               showNotification('success', 'Meeting link copied to clipboard!');
                             }}
@@ -445,13 +469,13 @@ function DoctorConsultation({ user, onBack }) {
                     <div className="consultation-actions">
                       <button 
                         className="join-meeting-btn" 
-                        onClick={() => handleJoinMeeting(consultation.meetingLink || `https://meet.google.com/${consultation.id || 'new'}`)}
+                        onClick={() => handleJoinMeeting(consultation.meetingLink || `https://meet.jit.si/CKD-Meeting-${consultation.id}`)}
                       >
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                           <polygon points="23 7 16 12 23 17 23 7" strokeWidth="2"/>
                           <rect x="1" y="5" width="15" height="14" rx="2" ry="2" strokeWidth="2"/>
                         </svg>
-                        Join Google Meet
+                        Join Video Meeting
                       </button>
                       <button className="cancel-btn" onClick={() => handleCancelConsultation(consultation.id)}>
                         Cancel
@@ -514,23 +538,23 @@ function DoctorConsultation({ user, onBack }) {
                             <polygon points="23 7 16 12 23 17 23 7" strokeWidth="2"/>
                             <rect x="1" y="5" width="15" height="14" rx="2" ry="2" strokeWidth="2"/>
                           </svg>
-                          <span>📹 Google Meet Link:</span>
+                          <span>📹 Video Meeting Link:</span>
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
                           <span className="meeting-link-text">
                             <a 
-                              href={consultation.meetingLink || `https://meet.google.com/new`} 
+                              href={consultation.meetingLink || `https://meet.jit.si/CKD-Meeting-${consultation.id}`} 
                               target="_blank" 
                               rel="noopener noreferrer" 
                               className="meeting-link"
                             >
-                              {consultation.meetingLink || `https://meet.google.com/${consultation.id || 'new'}`}
+                              {consultation.meetingLink || `https://meet.jit.si/CKD-Meeting-${consultation.id}`}
                             </a>
                           </span>
                           <button 
                             className="copy-link-btn" 
                             onClick={() => {
-                              const link = consultation.meetingLink || `https://meet.google.com/${consultation.id || 'new'}`;
+                              const link = consultation.meetingLink || `https://meet.jit.si/CKD-Meeting-${consultation.id}`;
                               navigator.clipboard.writeText(link);
                               showNotification('success', 'Meeting link copied to clipboard!');
                             }}
@@ -549,14 +573,14 @@ function DoctorConsultation({ user, onBack }) {
                     <div className="consultation-actions">
                       <button 
                         className="join-meeting-btn" 
-                        onClick={() => handleJoinMeeting(consultation.meetingLink || `https://meet.google.com/${consultation.id || 'new'}`)}
+                        onClick={() => handleJoinMeeting(consultation.meetingLink || `https://meet.jit.si/CKD-Meeting-${consultation.id}`)}
                         style={{ opacity: consultation.status === 'cancelled' ? 0.6 : 1 }}
                       >
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                           <polygon points="23 7 16 12 23 17 23 7" strokeWidth="2"/>
                           <rect x="1" y="5" width="15" height="14" rx="2" ry="2" strokeWidth="2"/>
                         </svg>
-                        {consultation.status === 'completed' ? 'View Meeting Link' : 'Join Google Meet'}
+                        {consultation.status === 'completed' ? 'View Meeting Link' : 'Join Video Meeting'}
                       </button>
                     </div>
                   </div>
@@ -637,7 +661,7 @@ function DoctorConsultation({ user, onBack }) {
                     <line x1="12" y1="16" x2="12" y2="12" strokeWidth="2"/>
                     <line x1="12" y1="8" x2="12.01" y2="8" strokeWidth="2"/>
                   </svg>
-                  <p>A Google Meet link will be generated and sent to your email. You can join the meeting from the "Upcoming" tab.</p>
+                  <p>A secure video meeting link will be generated. You can join the consultation from the "Upcoming" tab.</p>
                 </div>
 
                 <div className="modal-actions">

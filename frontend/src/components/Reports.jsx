@@ -168,6 +168,12 @@ function Reports({ user, onBack }) {
           Overview
         </button>
         <button
+          className={`tab-btn ${activeTab === 'sessions' ? 'active' : ''}`}
+          onClick={() => setActiveTab('sessions')}
+        >
+          Prediction Sessions
+        </button>
+        <button
           className={`tab-btn ${activeTab === 'activity' ? 'active' : ''}`}
           onClick={() => setActiveTab('activity')}
         >
@@ -288,6 +294,88 @@ function Reports({ user, onBack }) {
                     <div className="no-data">No confidence data available</div>
                   )}
                 </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'sessions' && (
+            <div className="sessions-content">
+              {/* Prediction Sessions Table */}
+              <div className="prediction-sessions-section">
+                <div className="sessions-header">
+                  <h3 className="section-title">Prediction Sessions</h3>
+                  <div className="sessions-controls">
+                    <input 
+                      type="text" 
+                      placeholder="Search records..." 
+                      className="search-input"
+                    />
+                    <button className="filter-btn">Filter</button>
+                  </div>
+                </div>
+                
+                {predictions.length > 0 ? (
+                  <>
+                    <div className="sessions-table-container">
+                      <table className="sessions-table">
+                        <thead>
+                          <tr>
+                            <th>ID</th>
+                            <th>DATE</th>
+                            <th>RESULT</th>
+                            <th>CONFIDENCE</th>
+                            <th>FILE</th>
+                            <th>FILE</th>
+                            <th>ACTIONS</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {predictions.slice(0, 8).map((prediction, index) => (
+                            <tr key={index}>
+                              <td>{1200 + index}</td>
+                              <td>{new Date(prediction.created_at).toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' })}</td>
+                              <td>
+                                <span className={`result-badge ${
+                                  prediction.result === 'CKD' || prediction.result === 'Positive' 
+                                    ? 'positive' 
+                                    : prediction.result === 'No CKD' || prediction.result === 'Negative' || prediction.result === 'Not CKD'
+                                    ? 'negative'
+                                    : 'pending'
+                                }`}>
+                                  {prediction.result === 'CKD' ? 'POSITIVE' 
+                                    : prediction.result === 'No CKD' || prediction.result === 'Not CKD' ? 'NEGATIVE'
+                                    : prediction.result?.toUpperCase() || 'PENDING'}
+                                </span>
+                              </td>
+                              <td>{prediction.confidence ? `${parseFloat(prediction.confidence).toFixed(0)}%` : 'N/A'}</td>
+                              <td>ckd_data_{index}.csv</td>
+                              <td>ckd_data_april.csv</td>
+                              <td>
+                                <button className="action-btn view-btn">View Details</button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                    <div className="table-pagination">
+                      <span className="pagination-info">Showing 1 to {Math.min(8, predictions.length)} of {predictions.length} entries</span>
+                      <div className="pagination-controls">
+                        <button className="pagination-btn">Previous</button>
+                        <button className="pagination-btn active">1</button>
+                        <button className="pagination-btn">Next</button>
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <div className="no-data-message">
+                    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                      <path d="M9 2v4m6-4v4M3 8h18M5 4h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V6a2 2 0 012-2z" strokeWidth="2"/>
+                    </svg>
+                    <h3>No Prediction Sessions Yet</h3>
+                    <p>Start making predictions to see your sessions here</p>
+                  </div>
+                )}
               </div>
             </div>
           )}

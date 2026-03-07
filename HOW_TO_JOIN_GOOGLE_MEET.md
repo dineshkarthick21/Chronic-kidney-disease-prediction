@@ -1,11 +1,12 @@
-# 🎥 How to Join Your Doctor Consultation via Google Meet
+# 🎥 How to Join Your Doctor Consultation via Video Call
 
 ## ✅ You've Successfully Scheduled!
 
-Your consultation with **Dr. Sarah Johnson** is scheduled for:
+Your consultation with **Dr. Dineshkarthick** is scheduled for:
 - **Date**: March 6, 2026 at 12:05 PM
 - **Reason**: CKD consultation
 - **Status**: ✅ Scheduled
+- **Platform**: Jitsi Meet (Secure Video Conferencing)
 
 ---
 
@@ -17,22 +18,24 @@ Your consultation with **Dr. Sarah Johnson** is scheduled for:
 
 ### **Step 2: Find Your Scheduled Consultation**
 You'll see a card showing:
-- 👩‍⚕️ Dr. Sarah Johnson - Nephrologist
+- �‍⚕️ Dr. Dineshkarthick - Nephrologist
 - 📅 Date and time: March 6, 2026 at 12:05
 - 📝 Reason: ckd
-- 🔗 **Google Meet Link** (visible in blue)
+- 🔗 **Video Meeting Link** (visible in blue)
 - ✅ Status: Scheduled
 
 ### **Step 3: Join the Meeting (3 Options)**
 
-#### **Option A: Click "Join Google Meet" Button** ⭐ Easiest
-- Click the big green **"Join Google Meet"** button
-- A new tab will open with your Google Meet consultation
+#### **Option A: Click "Join Video Meeting" Button** ⭐ Easiest
+- Click the big green **"Join Video Meeting"** button
+- A new tab will open with your Jitsi Meet video consultation
 - Allow camera and microphone permissions when prompted
+- No account or download required!
 
 #### **Option B: Click the Meeting Link**
-- Click on the blue meeting link (e.g., `https://meet.google.com/abc-defg-hij`)
+- Click on the blue meeting link (e.g., `https://meet.jit.si/CKD-DrSarahJohnson-Patient-123456`)
 - Opens in a new tab automatically
+- Works on any browser (Chrome, Firefox, Safari, Edge)
 
 #### **Option C: Copy & Paste the Link**
 - Click the **📋 Copy** button next to the meeting link
@@ -46,6 +49,7 @@ You'll see a card showing:
 ### Before the Meeting:
 - You can join **5-10 minutes early** to test your audio/video
 - Make sure your camera and microphone are working
+- Jitsi Meet works best on Chrome/Edge browsers
 
 ### Meeting Time:
 - Join at the scheduled time (12:05 PM in your case)
@@ -59,13 +63,14 @@ You'll see a card showing:
 
 ## 🔧 Troubleshooting:
 
-### "I don't see the 'Join Google Meet' button"
+### "I don't see the 'Join Video Meeting' button"
 ✅ **Solution**: Make sure you're on the **"Upcoming"** tab, not "Schedule Appointment" or "History"
 
 ### "The meeting link doesn't work"
 ✅ **Solution**: 
 - Try copying the link and opening it in an incognito/private window
-- Or try a different browser (Chrome works best with Google Meet)
+- Try a different browser (Chrome, Edge, or Firefox work best with Jitsi Meet)
+- Clear your browser cache and cookies
 
 ### "Button is not showing up at all"
 ✅ **Solution**: 
@@ -73,15 +78,23 @@ You'll see a card showing:
 - Make sure you're logged in
 - Check that the consultation status is "Scheduled"
 
+### "Camera/Microphone not working"
+✅ **Solution**:
+- Check browser permissions for camera/microphone
+- Make sure no other app is using your camera
+- Try using Chrome or Edge browser
+- Check your device's camera/microphone settings
+
 ---
 
 ## 🔔 Important Notes:
 
-1. **Meeting Link**: Each consultation has a unique Google Meet link
-2. **One-Time Use**: The link is specific to this consultation
+1. **Meeting Link**: Each consultation has a unique Jitsi Meet room
+2. **Secure**: End-to-end encrypted video calls
 3. **Keep it Private**: Don't share the meeting link publicly
-4. **Internet Connection**: Ensure you have a stable internet connection
+4. **Internet Connection**: Ensure you have a stable internet connection (minimum 2 Mbps)
 5. **Permissions**: Allow camera and microphone access when joining
+6. **No Download**: Works directly in your browser - no app installation needed!
 
 ---
 
@@ -89,14 +102,14 @@ You'll see a card showing:
 
 ```
 ╔═══════════════════════════════════════════════════╗
-║ 👩‍⚕️ Dr. Sarah Johnson                     [Scheduled] ║
+║ �‍⚕️ Dr. Dineshkarthick                  [Scheduled] ║
 ║    Nephrologist                                   ║
 ║                                                   ║
 ║ 📅 March 6, 2026 at 12:05                        ║
 ║ 📝 Reason: ckd                                   ║
-║ 🔗 https://meet.google.com/abc-defg-hij  [📋]    ║
+║ 🔗 https://meet.jit.si/CKD-DrDinesh...  [📋]     ║
 ║                                                   ║
-║ [🎥 Join Google Meet]  [Cancel]                  ║
+║ [🎥 Join Video Meeting]  [Cancel]                ║
 ╚═══════════════════════════════════════════════════╝
 ```
 
@@ -109,6 +122,7 @@ You'll see a card showing:
 - **Quiet Space**: Find a quiet place for the consultation
 - **Questions Ready**: Prepare your questions for the doctor
 - **Medical Records**: Have your medical reports/test results ready if needed
+- **Browser Choice**: Chrome, Edge, or Firefox work best with Jitsi Meet
 
 ---
 
@@ -119,17 +133,18 @@ If you're still having trouble joining:
 2. Refresh the Doctor Consultation page
 3. Make sure you clicked on the "Upcoming" tab
 4. Check your internet connection
-5. Try using Google Chrome browser
+5. Try using Google Chrome or Microsoft Edge browser
+6. Allow camera and microphone permissions
 
-**The "Join Google Meet" button is a big green button - you can't miss it!** 🎉
+**The "Join Video Meeting" button is a big green button - you can't miss it!** 🎉
 
 ---
 
 ## 🎊 You're All Set!
 
-Everything is ready for your consultation with Dr. Sarah Johnson. Just:
+Everything is ready for your consultation with Dr. Dineshkarthick. Just:
 1. Go to **More** → **Doctor Consultation**
 2. Click **"Upcoming"** tab
-3. Click **"Join Google Meet"** button
+3. Click **"Join Video Meeting"** button
 
 See you at the consultation! 👨‍⚕️💚
