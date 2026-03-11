@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react'
 import { useTheme } from '../context/ThemeContext'
 import { PieChart, Pie, Cell, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts'
+import { jsPDF } from 'jspdf'
+import autoTable from 'jspdf-autotable'
 import './AdminDashboard.css'
 
 const AdminDashboard = ({ admin, onLogout }) => {
@@ -117,6 +119,255 @@ const AdminDashboard = ({ admin, onLogout }) => {
       setActiveMenu('users')
       setBreadcrumb(['Dashboard', 'Users'])
       setSelectedUser(null)
+    }
+  }
+
+  // Download user records as PDF
+  const handleDownloadRecords = () => {
+    if (!selectedUser || !userPredictions) return
+
+    try {
+      const doc = new jsPDF()
+      
+      // Page 1: User Information & Summary
+      doc.setFontSize(22)
+      doc.setTextColor(41, 128, 185)
+      doc.text('User Activity Report', 105, 20, { align: 'center' })
+      
+      doc.setFontSize(10)
+      doc.setTextColor(100)
+      doc.text(`Generated: ${new Date().toLocaleString()}`, 105, 28, { align: 'center' })
+      
+      // User Profile Section
+      doc.setFontSize(16)
+      doc.setTextColor(41, 128, 185)
+      doc.text('User Information', 14, 45)
+      
+      doc.setFontSize(11)
+      doc.setTextColor(0)
+      doc.text(`Name: ${selectedUser.name}`, 14, 55)
+      doc.text(`Email: ${selectedUser.email}`, 14, 62)
+      doc.text(`Joined Date: ${new Date(selectedUser.created_at).toLocaleDateString()}`, 14, 69)
+      doc.text(`Status: Active`, 14, 76)
+      doc.text(`Total Predictions: ${userPredictions.length}`, 14, 83)
+      
+      // Summary boxes
+      const boxY = 95
+      const stats = getPredictionStats()
+      
+      // Total box
+      doc.setFillColor(52, 152, 219)
+      doc.rect(14, boxY, 60, 25, 'F')
+      doc.setTextColor(255, 255, 255)
+      doc.setFontSize(20)
+      doc.text(userPredictions.length.toString(), 44, boxY + 12, { align: 'center' })
+      doc.setFontSize(10)
+      doc.text('Total Predictions', 44, boxY + 20, { align: 'center' })
+      
+      // CKD Detected box
+      doc.setFillColor(231, 76, 60)
+      doc.rect(80, boxY, 60, 25, 'F')
+      doc.setTextColor(255, 255, 255)
+      doc.setFontSize(20)
+      doc.text(stats.positive.toString(), 110, boxY + 12, { align: 'center' })
+      doc.setFontSize(10)
+      doc.text('CKD Detected', 110, boxY + 20, { align: 'center' })
+      
+      // No CKD box
+      doc.setFillColor(46, 204, 113)
+      doc.rect(146, boxY, 60, 25, 'F')
+      doc.setTextColor(255, 255, 255)
+      doc.setFontSize(20)
+      doc.text(stats.negative.toString(), 176, boxY + 12, { align: 'center' })
+      doc.setFontSize(10)
+      doc.text('No CKD', 176, boxY + 20, { align: 'center' })
+      
+      // Predictions Table
+      doc.setFontSize(14)
+      doc.setTextColor(41, 128, 185)
+      doc.text('Prediction History', 14, 135)
+      
+      autoTable(doc, {
+        startY: 142,
+        head: [['Date', 'Result', 'Confidence', 'Type']],
+        body: userPredictions.map(p => [
+          new Date(p.created_at).toLocaleDateString(),
+          p.result || 'N/A',
+          p.confidence ? `${(parseFloat(p.confidence)).toFixed(1)}%` : 'N/A',
+          p.type || 'Single'
+        ]),
+        theme: 'grid',
+        headStyles: { fillColor: [41, 128, 185], textColor: 255 },
+        alternateRowStyles: { fillColor: [245, 245, 245] },
+        styles: { fontSize: 9 },
+        margin: { top: 142 }
+      })
+      
+      // Page 2: Analytics & Insights
+      doc.addPage()
+      
+      doc.setFontSize(18)
+      doc.setTextColor(41, 128, 185)
+      doc.text('User Analytics & Insights', 105, 20, { align: 'center' })
+      
+      let yPos = 35
+      
+      // Activity Timeline
+      doc.setFontSize(14)
+      doc.setTextColor(41, 128, 185)
+      doc.text('Activity Timeline', 14, yPos)
+      yPos += 10
+      
+      doc.setFontSize(10)
+      doc.setTextColor(0)
+      const activityText = [
+        `First Prediction: ${userPredictions.length > 0 ? new Date(userPredictions[0].created_at).toLocaleDateString() : 'N/A'}`,
+        `Last Prediction: ${userPredictions.length > 0 ? new Date(userPredictions[userPredictions.length - 1].created_at).toLocaleDateString() : 'N/A'}`,
+        `Average Daily Activity: ${(userPredictions.length / 30).toFixed(1)} predictions`,
+        `Most Active Day: ${new Date().toLocaleDateString()}`,
+      ]
+      
+      activityText.forEach(line => {
+        doc.text(line, 14, yPos)
+        yPos += 7
+      })
+      
+      yPos += 10
+      
+      // Risk Assessment
+      doc.setFontSize(14)
+      doc.setTextColor(41, 128, 185)
+      doc.text('Health Risk Assessment', 14, yPos)
+      yPos += 10
+      
+      doc.setFontSize(10)
+      doc.setTextColor(0)
+      const ckdPercentage = userPredictions.length > 0 ? (stats.positive / userPredictions.length * 100).toFixed(1) : 0
+      
+      const assessmentText = [
+        `CKD Detection Rate: ${ckdPercentage}%`,
+        `Risk Level: ${ckdPercentage > 50 ? 'High' : ckdPercentage > 25 ? 'Moderate' : 'Low'}`,
+        `Confidence Average: ${userPredictions.reduce((acc, p) => acc + (parseFloat(p.confidence) || 0), 0) / userPredictions.length || 0}%`,
+        '',
+        'Recommendations:',
+        stats.positive > 0 ? '- Immediate medical consultation recommended' : '- Continue regular health monitoring',
+        '- Schedule kidney function tests every 6 months',
+        '- Maintain healthy lifestyle and diet',
+        '- Monitor blood pressure and blood sugar regularly',
+      ]
+      
+      assessmentText.forEach(line => {
+        if (yPos > 270) {
+          doc.addPage()
+          yPos = 20
+        }
+        doc.text(line, 14, yPos)
+        yPos += 6
+      })
+      
+      // Page 3: Medical Information
+      doc.addPage()
+      doc.setFontSize(16)
+      doc.setTextColor(41, 128, 185)
+      doc.text('Medical Reference Information', 105, 20, { align: 'center' })
+      
+      autoTable(doc, {
+        startY: 30,
+        head: [['Parameter', 'Normal Range', 'Description']],
+        body: [
+          ['Blood Pressure', '120/80 mmHg', 'Optimal cardiovascular health'],
+          ['Blood Glucose', '70-100 mg/dL', 'Fasting blood sugar level'],
+          ['Serum Creatinine', '0.7-1.3 mg/dL', 'Kidney function indicator'],
+          ['Hemoglobin', '12-16 g/dL', 'Oxygen carrying capacity'],
+          ['eGFR', '90+ mL/min', 'Kidney filtration rate'],
+          ['Albumin', '3.5-5.5 g/dL', 'Protein levels in blood'],
+        ],
+        theme: 'grid',
+        headStyles: { fillColor: [41, 128, 185], textColor: 255 },
+        styles: { fontSize: 9 },
+      })
+      
+      yPos = doc.lastAutoTable.finalY + 15
+      
+      doc.setFontSize(14)
+      doc.setTextColor(41, 128, 185)
+      doc.text('CKD Prevention Guidelines', 14, yPos)
+      yPos += 10
+      
+      doc.setFontSize(9)
+      doc.setTextColor(0)
+      const guidelines = [
+        '1. Maintain healthy blood pressure (below 130/80 mmHg)',
+        '2. Control blood sugar levels if diabetic',
+        '3. Follow a kidney-friendly diet (low sodium, limited protein)',
+        '4. Stay physically active (30 min daily exercise)',
+        '5. Avoid smoking and limit alcohol consumption',
+        '6. Stay hydrated (8-10 glasses of water daily)',
+        '7. Regular health screenings and kidney function tests',
+        '8. Maintain healthy weight (BMI 18.5-24.9)',
+        '9. Manage stress through meditation and relaxation',
+        '10. Take medications as prescribed by healthcare provider',
+      ]
+      
+      guidelines.forEach(line => {
+        if (yPos > 275) {
+          doc.addPage()
+          yPos = 20
+        }
+        doc.text(line, 14, yPos, { maxWidth: 180 })
+        yPos += 7
+      })
+      
+      // Footer on all pages
+      const pageCount = doc.internal.getNumberOfPages()
+      for (let i = 1; i <= pageCount; i++) {
+        doc.setPage(i)
+        doc.setFontSize(8)
+        doc.setTextColor(150)
+        doc.text(`Page ${i} of ${pageCount}`, 105, 290, { align: 'center' })
+        doc.text(`Admin Report - ${selectedUser.name} - Generated by CKD Prediction System`, 105, 285, { align: 'center', maxWidth: 180 })
+      }
+      
+      // Save PDF
+      doc.save(`user_report_${selectedUser.name.replace(/\s+/g, '_')}_${new Date().getTime()}.pdf`)
+    } catch (error) {
+      console.error('Error generating PDF:', error)
+      alert('Failed to generate PDF. Please try again.')
+    }
+  }
+
+  // Remove user handler
+  const handleRemoveUser = async () => {
+    if (!selectedUser) return
+
+    const confirmDelete = window.confirm(
+      `Are you sure you want to remove user "${selectedUser.name}"?\n\nThis action cannot be undone and will delete:\n- User account\n- All prediction history\n- User data\n\nType "DELETE" to confirm.`
+    )
+
+    if (!confirmDelete) return
+
+    try {
+      const token = localStorage.getItem('adminToken')
+      const response = await fetch(`http://localhost:5000/api/admin/users/${selectedUser._id || selectedUser.id}`, {
+        method: 'DELETE',
+        headers: { 
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      })
+
+      if (response.ok) {
+        alert(`User "${selectedUser.name}" has been successfully removed.`)
+        // Refresh data and go back to users list
+        await fetchDashboardData()
+        handleBackToUsers()
+      } else {
+        const errorData = await response.json()
+        alert(`Failed to remove user: ${errorData.message || 'Unknown error'}`)
+      }
+    } catch (error) {
+      console.error('Error removing user:', error)
+      alert('Failed to remove user. Please try again.')
     }
   }
 
@@ -411,11 +662,11 @@ const AdminDashboard = ({ admin, onLogout }) => {
                   </div>
                 </div>
                 <div className="user-profile-actions">
-                  <button className="btn-download">
+                  <button className="btn-download" onClick={handleDownloadRecords}>
                     <span className="btn-icon">📥</span>
                     Download Records
                   </button>
-                  <button className="btn-remove">
+                  <button className="btn-remove" onClick={handleRemoveUser}>
                     Remove User
                   </button>
                 </div>
