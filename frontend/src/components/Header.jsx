@@ -68,7 +68,11 @@ function Header({ user, onLogout, onNavigateToProfile, onNavigateToSettings, onN
             <div className="user-profile" ref={dropdownRef}>
               <button className="profile-btn" onClick={() => setShowDropdown(!showDropdown)}>
                 <div className="user-avatar">
-                  {user.name?.charAt(0).toUpperCase() || 'U'}
+                  {user.profilePhoto ? (
+                    <img src={user.profilePhoto} alt="Profile" className="user-avatar-img" />
+                  ) : (
+                    user.name?.charAt(0).toUpperCase() || 'U'
+                  )}
                 </div>
                 <span className="user-name">{user.name || user.email}</span>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -79,7 +83,11 @@ function Header({ user, onLogout, onNavigateToProfile, onNavigateToSettings, onN
                 <div className="profile-dropdown">
                   <div className="dropdown-header">
                     <div className="user-avatar-large">
-                      {user.name?.charAt(0).toUpperCase() || 'U'}
+                      {user.profilePhoto ? (
+                        <img src={user.profilePhoto} alt="Profile" className="user-avatar-img" />
+                      ) : (
+                        user.name?.charAt(0).toUpperCase() || 'U'
+                      )}
                     </div>
                     <div className="user-info">
                       <div className="user-name-large">{user.name || 'User'}</div>

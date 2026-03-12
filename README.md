@@ -12,8 +12,16 @@ A full-stack web application with machine learning capabilities to predict Chron
 - 🤖 **AI Chat Assistant** - Intelligent RAG chatbot powered by Google Gemini for CKD Q&A
 - 🌓 **Dark/Light Mode** - Seamless theme switching throughout the application
 - 📈 **Results Visualization** - View prediction results with confidence scores
-- 👤 **User Profile** - Comprehensive profile management with avatar, personal info editing, and account statistics
-- ⚙️ **Settings Page** - Customize notifications, security preferences, appearance, and privacy settings
+- 👤 **User Profile** - Comprehensive profile management with:
+  - 📸 **Photo Upload** - Upload and display profile pictures (5MB limit, base64 storage)
+  - ✏️ **Edit Profile** - Update name, email, phone, and bio with real-time backend sync
+  - 🔒 **Password Change** - Secure password update with validation
+  - 📊 **Account Statistics** - Real-time stats (predictions count, reports count, account age)
+  - 🖼️ **Avatar Display** - Profile photos shown across Header, Profile, and Reports pages
+- ⚙️ **Settings Page** - Tab-based customization interface:
+  - 🎨 **Appearance Tab** - Theme toggle, font size, compact mode, high contrast, language selection
+  - ⚙️ **Preferences Tab** - Auto-save, default view, tutorials, sound effects, date/time formats
+  - 🔒 **Security Tab** - Password change, session timeout, login alerts, device tracking
 - 🩺 **Doctor Consultation** - Schedule and manage appointments with healthcare professionals using **Jitsi Meet video conferencing**
 - 📋 **Medical Reports** - Access and download your medical reports and prediction history
 
@@ -221,6 +229,12 @@ CKD-Prediction/
 - `POST /api/logout` - User logout
 - `GET /api/verify` - Verify token
 
+### User Profile Management
+- `GET /api/user/profile` - Get user profile with statistics
+- `PUT /api/user/profile` - Update user profile (name, email, phone, bio)
+- `POST /api/user/change-password` - Change user password with validation
+- `PUT /api/user/profile-photo` - Upload profile photo (base64, 5MB limit)
+
 ### Admin Authentication
 - `POST /api/admin/signup` - Register admin (requires secret code)
 - `POST /api/admin/login` - Admin login
@@ -250,16 +264,34 @@ CKD-Prediction/
 
 ### Authentication Pages
 - **Modern Design**: Blue gradient backgrounds with glass-morphism effects
-- **Role Selection**: Easy toggle between Student and Admin roles
-- **Input Icons**: Visual feedback for email and password fields
-- **Responsive Cards**: Centered white cards that adapt to all screen sizes
-- **Single-Page Layout**: No scrolling required for better UX
-
-### Profile Page
-- **Avatar Management**: 120px circular user avatar
+- **Role Selection**: Easy toggle between Student a with photo upload
+- **Photo Upload**: Click avatar to upload profile picture (5MB limit, JPG/PNG/GIF)
 - **Editable Fields**: Toggle between view and edit modes for personal information
-- **Password Security**: Dedicated password change form with validation
-- **Account Statistics**: Display predictions made, reports generated, and account age
+- **Password Security**: Dedicated password change form with validation (6 char minimum)
+- **Account Statistics**: Real-time stats from database (predictions, reports, account age)
+- **Backend Integration**: All changes sync immediately with MongoDB via API
+- **Global Display**: Profile photo appears in Header dropdown and Reports page
+
+### Settings Page
+- **Tab Navigation**: Three organized tabs for easy settings management
+- **Appearance Settings**: Theme toggle (Context API sync), font size, compact mode, high contrast, 6 language options
+- **Preferences**: A (March 2026)
+
+### Latest Features
+- ✅ **Profile Photo Upload** - 🆕 Upload and display profile pictures across the entire application
+- ✅ **Enhanced Profile Management** - 🆕 Complete backend API integration for profile editing, password change, and statistics
+- ✅ **Settings Page Redesign** - 🆕 Tab-based interface (Appearance, Preferences, Security) with localStorage persistence
+- ✅ **Global Avatar Display** - 🆕 Profile photos now appear in Header dropdown, Profile page, and Reports page
+- ✅ **Password Change API** - 🆕 Backend endpoint with bcrypt validation and secure password updates
+- ✅ **Real-time Statistics** - 🆕 Account stats pulled from MongoDB (predictions count, reports count, account age)
+
+### Previous Updates
+- ✅ **Jitsi Meet Integration** - Secure video conferencing with no setup required
+- ✅ **Doctor Consultation** - Schedule appointments with healthcare professionals
+- ✅ **Medical Reports** - Access and download medical reports and prediction history  
+- ✅ **AI Chat Assistant** - Intelligent RAG chatbot powered by Google Gemini with FAISS vector search
+- ✅ **Landing Page Redesign** - Added dynamic rotating medical images carousel (6 images, 1.5s interval)
+- ✅ **Modern Authentication UI** - Redesigned login/signup pages with blue gradient and centered cards
 
 ## 🌟 Recent Updates
 

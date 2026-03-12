@@ -130,10 +130,13 @@ function Reports({ user, onBack }) {
       <div className="reports-profile-card">
         <div className="profile-info">
           <div className="profile-avatar">
-            {user?.name?.charAt(0).toUpperCase() || 'U'}
+            {user?.profilePhoto ? (
+              <img src={user.profilePhoto} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} />
+            ) : (
+              user?.name?.charAt(0).toUpperCase() || 'U'
+            )}
           </div>
-          <div className="profile-details">
-            <h2 className="profile-name">{user?.name || 'User'}</h2>
+          <div className="profile-details">\n            <h2 className="profile-name">{user?.name || 'User'}</h2>
             <span className="profile-status">ACTIVE</span>
           </div>
         </div>

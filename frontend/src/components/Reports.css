@@ -70,6 +70,7 @@
   font-weight: 700;
   color: white;
   box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+  overflow: hidden;
 }
 
 .profile-details {

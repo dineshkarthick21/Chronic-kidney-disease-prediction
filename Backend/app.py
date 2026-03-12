@@ -794,6 +794,7 @@ def save_prediction():
             'appet': data.get('appet'),
             'pe': data.get('pe'),
             'ane': data.get('ane'),
+            'saved': True,  # Mark as explicitly saved/reported
             'created_at': datetime.utcnow()
         }
         
@@ -1061,6 +1062,227 @@ def update_consultation_status(consultation_id):
             return jsonify({'message': 'Consultation updated successfully'}), 200
         else:
             return jsonify({'message': 'Consultation not found'}), 404
+        
+    except Exception as e:
+        return jsonify({'message': f'Server error: {str(e)}'}), 500
+
+
+# ===================== USER PROFILE ROUTES =====================
+
+@app.route('/api/user/profile', methods=['GET'])
+def get_user_profile():
+    """Get user profile with statistics"""
+    try:
+        token = request.headers.get('Authorization', '').replace('Bearer ', '')
+        
+        if not token:
+            return jsonify({'message': 'No token provided'}), 401
+        
+        session = sessions_collection.find_one({'token': token})
+        
+        if not session:
+            return jsonify({'message': 'Invalid token'}), 401
+        
+        from bson.objectid import ObjectId
+        user = users_collection.find_one({'_id': ObjectId(session['user_id'])})
+        
+        if not user:
+            return jsonify({'message': 'User not found'}), 401
+        
+        # Calculate statistics
+        predictions_count = predictions_collection.count_documents({'user_id': session['user_id']})
+        
+        # Calculate account age in days
+        created_at = user.get('created_at', datetime.utcnow())
+        account_age = (datetime.utcnow() - created_at).days
+        
+        # Get reports count (predictions that were saved/reported)
+        reports_count = predictions_collection.count_documents({
+            'user_id': session['user_id'],
+            'saved': True
+        })
+        
+        return jsonify({
+            'user': {
+                'id': str(user['_id']),
+                'name': user['name'],
+                'email': user['email'],
+                'phone': user.get('phone', ''),
+                'bio': user.get('bio', ''),
+                'profilePhoto': user.get('profilePhoto', ''),
+                'created_at': created_at.isoformat()
+            },
+            'statistics': {
+                'predictions_count': predictions_count,
+                'reports_count': reports_count,
+                'account_age': account_age
+            }
+        }), 200
+        
+    except Exception as e:
+        return jsonify({'message': f'Server error: {str(e)}'}), 500
+
+
+@app.route('/api/user/profile', methods=['PUT'])
+def update_user_profile():
+    """Update user profile information"""
+    try:
+        token = request.headers.get('Authorization', '').replace('Bearer ', '')
+        
+        if not token:
+            return jsonify({'message': 'No token provided'}), 401
+        
+        session = sessions_collection.find_one({'token': token})
+        
+        if not session:
+            return jsonify({'message': 'Invalid token'}), 401
+        
+        data = request.get_json()
+        
+        # Fields that can be updated
+        update_fields = {}
+        if 'name' in data:
+            update_fields['name'] = data['name'].strip()
+        if 'phone' in data:
+            update_fields['phone'] = data['phone'].strip()
+        if 'bio' in data:
+            update_fields['bio'] = data['bio'].strip()
+        if 'email' in data:
+            # Check if email already exists
+            new_email = data['email'].strip().lower()
+            from bson.objectid import ObjectId
+            existing_user = users_collection.find_one({
+                'email': new_email,
+                '_id': {'$ne': ObjectId(session['user_id'])}
+            })
+            if existing_user:
+                return jsonify({'message': 'Email already in use'}), 409
+            update_fields['email'] = new_email
+        
+        if not update_fields:
+            return jsonify({'message': 'No fields to update'}), 400
+        
+        update_fields['updated_at'] = datetime.utcnow()
+        
+        from bson.objectid import ObjectId
+        result = users_collection.update_one(
+            {'_id': ObjectId(session['user_id'])},
+            {'$set': update_fields}
+        )
+        
+        if result.modified_count > 0:
+            # Get updated user
+            user = users_collection.find_one({'_id': ObjectId(session['user_id'])})
+            return jsonify({
+                'message': 'Profile updated successfully',
+                'user': {
+                    'id': str(user['_id']),
+                    'name': user['name'],
+                    'email': user['email'],
+                    'phone': user.get('phone', ''),
+                    'bio': user.get('bio', ''),
+                    'profilePhoto': user.get('profilePhoto', '')
+                }
+            }), 200
+        else:
+            return jsonify({'message': 'No changes made'}), 200
+        
+    except Exception as e:
+        return jsonify({'message': f'Server error: {str(e)}'}), 500
+
+
+@app.route('/api/user/change-password', methods=['POST'])
+def change_password():
+    """Change user password"""
+    try:
+        token = request.headers.get('Authorization', '').replace('Bearer ', '')
+        
+        if not token:
+            return jsonify({'message': 'No token provided'}), 401
+        
+        session = sessions_collection.find_one({'token': token})
+        
+        if not session:
+            return jsonify({'message': 'Invalid token'}), 401
+        
+        data = request.get_json()
+        current_password = data.get('currentPassword', '')
+        new_password = data.get('newPassword', '')
+        
+        if not current_password or not new_password:
+            return jsonify({'message': 'Current and new passwords are required'}), 400
+        
+        if len(new_password) < 6:
+            return jsonify({'message': 'New password must be at least 6 characters'}), 400
+        
+        from bson.objectid import ObjectId
+        user = users_collection.find_one({'_id': ObjectId(session['user_id'])})
+        
+        if not user:
+            return jsonify({'message': 'User not found'}), 401
+        
+        # Verify current password
+        if not verify_password(current_password, user['password']):
+            return jsonify({'message': 'Current password is incorrect'}), 401
+        
+        # Hash new password
+        hashed_password = hash_password(new_password)
+        
+        # Update password
+        users_collection.update_one(
+            {'_id': ObjectId(session['user_id'])},
+            {'$set': {
+                'password': hashed_password,
+                'updated_at': datetime.utcnow()
+            }}
+        )
+        
+        return jsonify({'message': 'Password changed successfully'}), 200
+        
+    except Exception as e:
+        return jsonify({'message': f'Server error: {str(e)}'}), 500
+
+
+@app.route('/api/user/profile-photo', methods=['PUT'])
+def update_profile_photo():
+    """Update user profile photo"""
+    try:
+        token = request.headers.get('Authorization', '').replace('Bearer ', '')
+        
+        if not token:
+            return jsonify({'message': 'No token provided'}), 401
+        
+        session = sessions_collection.find_one({'token': token})
+        
+        if not session:
+            return jsonify({'message': 'Invalid token'}), 401
+        
+        data = request.get_json()
+        profile_photo = data.get('profilePhoto', '')
+        
+        if not profile_photo:
+            return jsonify({'message': 'Profile photo is required'}), 400
+        
+        # Validate base64 image (basic check)
+        if not profile_photo.startswith('data:image/'):
+            return jsonify({'message': 'Invalid image format'}), 400
+        
+        from bson.objectid import ObjectId
+        
+        # Update profile photo
+        result = users_collection.update_one(
+            {'_id': ObjectId(session['user_id'])},
+            {'$set': {
+                'profilePhoto': profile_photo,
+                'updated_at': datetime.utcnow()
+            }}
+        )
+        
+        if result.modified_count > 0:
+            return jsonify({'message': 'Profile photo updated successfully'}), 200
+        else:
+            # No changes made (same photo)
+            return jsonify({'message': 'Profile photo updated successfully'}), 200
         
     except Exception as e:
         return jsonify({'message': f'Server error: {str(e)}'}), 500
