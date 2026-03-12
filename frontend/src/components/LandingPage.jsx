@@ -3,7 +3,6 @@ import './LandingPage.css'
 
 const LandingPage = ({ onGetStarted, onSignIn }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
-  const [theme, setTheme] = useState('dark') // 'dark' or 'light'
 
   // Medical/Healthcare themed images for CKD prediction
   const images = [
@@ -16,20 +15,16 @@ const LandingPage = ({ onGetStarted, onSignIn }) => {
   ]
 
   useEffect(() => {
-    // Rotate images every 1.5 seconds
+    // Rotate images every 2 seconds
     const interval = setInterval(() => {
       setCurrentImageIndex((prevIndex) => (prevIndex + 1) % images.length)
-    }, 1500)
+    }, 2000)
 
     return () => clearInterval(interval)
   }, [images.length])
 
-  const toggleTheme = () => {
-    setTheme(prevTheme => prevTheme === 'dark' ? 'light' : 'dark')
-  }
-
   return (
-    <div className={`landing-page ${theme}-theme`}>
+    <div className="landing-page light-theme">
       {/* Rotating Background Images */}
       <div className="image-carousel">
         {images.map((image, index) => (
@@ -60,9 +55,6 @@ const LandingPage = ({ onGetStarted, onSignIn }) => {
             <span className="logo-text">CKD Predictor</span>
           </div>
           <div className="nav-actions">
-            <button className="theme-toggle-btn" onClick={toggleTheme} title="Toggle Theme">
-              {theme === 'dark' ? '☀️' : '🌙'}
-            </button>
             <button className="nav-signin-btn" onClick={onSignIn}>
               Sign In
             </button>

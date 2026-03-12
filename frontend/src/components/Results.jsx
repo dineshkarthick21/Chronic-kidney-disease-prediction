@@ -376,25 +376,180 @@ function Results({ results, setResults }) {
     doc.path(path, 'F')
   }
 
+  const downloadSingleResult = () => {
+    try {
+      const doc = new jsPDF()
+      
+      // Header
+      doc.setFontSize(20)
+      doc.setTextColor(41, 128, 185)
+      doc.text('CKD Patient Prediction Report', 105, 20, { align: 'center' })
+      
+      // Date and patient info
+      doc.setFontSize(10)
+      doc.setTextColor(100)
+      doc.text(`Patient: ${results.data.patientName || 'Anonymous'}`, 14, 35)
+      doc.text(`Generated: ${new Date().toLocaleString()}`, 14, 41)
+      
+      // Prediction result box
+      const boxY = 55
+      const prediction = results.prediction === 'ckd' || results.prediction === 'CKD' ? 'CKD' : 'No CKD'
+      const confidence = parseFloat(results.confidence)
+      
+      if (prediction === 'CKD') {
+        doc.setFillColor(231, 76, 60) // Red for CKD
+      } else {
+        doc.setFillColor(46, 204, 113) // Green for No CKD
+      }
+      
+      doc.rect(60, boxY, 90, 35, 'F')
+      doc.setTextColor(255, 255, 255)
+      doc.setFontSize(24)
+      doc.text(prediction, 105, boxY + 15, { align: 'center' })
+      doc.setFontSize(14)
+      doc.text(`Confidence: ${confidence}%`, 105, boxY + 28, { align: 'center' })
+      
+      // Patient Parameters Table
+      autoTable(doc, {
+        startY: 105,
+        head: [['Parameter', 'Value', 'Parameter', 'Value']],
+        body: [
+          ['Age', `${results.data.age} years`, 'Blood Pressure', `${results.data.bp} mm/Hg`],
+          ['Specific Gravity', results.data.sg, 'Albumin', results.data.al],
+          ['Sugar', results.data.su, 'RBC', results.data.rbc],
+          ['Pus Cell', results.data.pc, 'Pus Cell Clumps', results.data.pcc],
+          ['Bacteria', results.data.ba, 'Blood Glucose', `${results.data.bgr} mgs/dl`],
+          ['Blood Urea', `${results.data.bu} mgs/dl`, 'Serum Creatinine', `${results.data.sc} mgs/dl`],
+          ['Sodium', `${results.data.sod} mEq/L`, 'Potassium', `${results.data.pot} mEq/L`],
+          ['Hemoglobin', `${results.data.hemo} gms`, 'PCV', results.data.pcv],
+          ['WBC Count', `${results.data.wc} cells/cumm`, 'RBC Count', `${results.data.rc} millions/cmm`],
+          ['Hypertension', results.data.htn, 'Diabetes', results.data.dm],
+          ['CAD', results.data.cad, 'Appetite', results.data.appet],
+          ['Pedal Edema', results.data.pe, 'Anemia', results.data.ane],
+        ],
+        theme: 'grid',
+        headStyles: { fillColor: [41, 128, 185], textColor: 255, fontSize: 10 },
+        styles: { fontSize: 9, cellPadding: 3 },
+        columnStyles: {
+          0: { fontStyle: 'bold', fillColor: [240, 240, 240] },
+          2: { fontStyle: 'bold', fillColor: [240, 240, 240] }
+        }
+      })
+      
+      let yPos = doc.lastAutoTable.finalY + 15
+      
+      // Interpretation Section
+      doc.setFontSize(14)
+      doc.setTextColor(41, 128, 185)
+      doc.text('Interpretation & Recommendations', 14, yPos)
+      yPos += 10
+      
+      doc.setFontSize(10)
+      doc.setTextColor(0)
+      
+      if (prediction === 'CKD') {
+        const recommendations = [
+          '⚠️ Chronic Kidney Disease Detected',
+          '',
+          'Immediate Actions Required:',
+          '• Schedule an appointment with a nephrologist',
+          '• Get comprehensive kidney function tests (eGFR, Creatinine)',
+          '• Discuss treatment options and lifestyle modifications',
+          '',
+          'Dietary Modifications:',
+          '• Reduce sodium intake (less than 2,300mg per day)',
+          '• Limit protein intake as advised by your doctor',
+          '• Control potassium and phosphorus levels',
+          '• Stay well-hydrated (unless otherwise advised)',
+          '',
+          'Lifestyle Changes:',
+          '• Maintain healthy blood pressure (below 130/80 mmHg)',
+          '• Control blood sugar if diabetic (HbA1c < 7%)',
+          '• Regular exercise (30 minutes, 5 days/week)',
+          '• Quit smoking and limit alcohol consumption',
+        ]
+        
+        recommendations.forEach(line => {
+          if (yPos > 270) {
+            doc.addPage()
+            yPos = 20
+          }
+          doc.text(line, 14, yPos, { maxWidth: 180 })
+          yPos += 5
+        })
+      } else {
+        const recommendations = [
+          '✅ No Chronic Kidney Disease Detected',
+          '',
+          'Preventive Measures:',
+          '• Maintain regular health check-ups',
+          '• Continue healthy lifestyle practices',
+          '• Monitor blood pressure and blood sugar levels',
+          '• Stay well-hydrated (8-10 glasses daily)',
+          '• Eat a balanced diet with fruits and vegetables',
+          '• Regular exercise (150 minutes/week)',
+          '• Limit processed foods and reduce salt intake',
+          '• Avoid smoking and excessive alcohol',
+          '• Manage stress through meditation or yoga',
+          '• Get adequate sleep (7-9 hours)',
+        ]
+        
+        recommendations.forEach(line => {
+          if (yPos > 270) {
+            doc.addPage()
+            yPos = 20
+          }
+          doc.text(line, 14, yPos, { maxWidth: 180 })
+          yPos += 5
+        })
+      }
+      
+      // Medical Disclaimer
+      if (yPos > 250) {
+        doc.addPage()
+        yPos = 20
+      }
+      
+      yPos += 10
+      doc.setFontSize(12)
+      doc.setTextColor(231, 76, 60)
+      doc.text('⚕️ Medical Disclaimer', 14, yPos)
+      yPos += 8
+      
+      doc.setFontSize(9)
+      doc.setTextColor(100)
+      const disclaimer = 'This prediction is for informational purposes only and should not replace professional medical advice, diagnosis, or treatment. Always consult qualified healthcare providers for medical decisions. The AI model provides predictions based on statistical patterns and should be used as a supplementary tool for clinical decision-making.'
+      doc.text(disclaimer, 14, yPos, { maxWidth: 180, align: 'justify' })
+      
+      // Save PDF
+      const patientName = results.data.patientName || 'patient'
+      const fileName = `CKD_Report_${patientName.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`
+      doc.save(fileName)
+    } catch (error) {
+      console.error('Error generating PDF:', error)
+      alert('Failed to generate PDF. Please try again.')
+    }
+  }
+
   if (results.type === 'single') {
     return (
       <div className="results-container">
         <div className="result-card single-result">
           <h2>Prediction Result</h2>
           
-          <div className={`prediction-badge ${results.prediction === 'CKD' ? 'ckd' : 'no-ckd'}`}>
+          <div className={`prediction-badge ${results.prediction === 'CKD' || results.prediction === 'ckd' ? 'ckd' : 'no-ckd'}`}>
             <span className="prediction-icon">
-              {results.prediction === 'CKD' ? '⚠️' : '✅'}
+              {results.prediction === 'CKD' || results.prediction === 'ckd' ? '⚠️' : '✅'}
             </span>
             <div>
-              <h3>{results.prediction}</h3>
+              <h3>{results.prediction === 'CKD' || results.prediction === 'ckd' ? 'CKD' : 'No CKD'}</h3>
               <p className="confidence">Confidence: {results.confidence}%</p>
             </div>
           </div>
 
           <div className="result-interpretation">
             <h4>Interpretation:</h4>
-            {results.prediction === 'CKD' ? (
+            {results.prediction === 'CKD' || results.prediction === 'ckd' ? (
               <div className="warning-box">
                 <p><strong>Chronic Kidney Disease Detected</strong></p>
                 <p>The model predicts that the patient may have CKD based on the provided medical parameters.</p>
@@ -420,6 +575,10 @@ function Results({ results, setResults }) {
           <div className="patient-summary">
             <h4>Patient Parameters Summary:</h4>
             <div className="params-grid">
+              <div className="param-item">
+                <span className="param-label">Patient Name:</span>
+                <span className="param-value">{results.data.patientName || 'N/A'}</span>
+              </div>
               <div className="param-item">
                 <span className="param-label">Age:</span>
                 <span className="param-value">{results.data.age} years</span>
@@ -447,9 +606,14 @@ function Results({ results, setResults }) {
             </div>
           </div>
 
-          <button onClick={() => setResults(null)} className="back-btn">
-            🔙 New Prediction
-          </button>
+          <div className="action-buttons">
+            <button onClick={downloadSingleResult} className="download-btn">
+              📥 Download PDF Report
+            </button>
+            <button onClick={() => setResults(null)} className="back-btn">
+              🔙 New Prediction
+            </button>
+          </div>
         </div>
 
         <div className="disclaimer">

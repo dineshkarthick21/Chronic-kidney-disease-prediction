@@ -5,12 +5,15 @@ A full-stack web application with machine learning capabilities to predict Chron
 ## ✨ Features
 
 ### User Features
-- 🎨 **Modern Landing Page** - Dynamic rotating medical images carousel with theme toggle
+- 🎨 **Modern Landing Page** - Dynamic rotating medical images carousel (light theme only, 2-second intervals)
 - 🔐 **User Authentication** - Secure signup/login with MongoDB Atlas and modern UI
-- 📊 **Single Prediction** - Input medical parameters for instant CKD prediction
-- 📁 **CSV Upload** - Batch predictions with CSV file upload
+- 📊 **Single Prediction** - Input medical parameters with patient name for instant CKD prediction
+- 📄 **PDF Download** - Generate and download comprehensive prediction reports with patient info, parameters, and recommendations
+- 📁 **CSV Upload** - Batch predictions with CSV file upload and downloadable results
+- 📋 **Reports Dashboard** - View, manage, and download all prediction history with patient names
+- 🎓 **Health Education Center** - Access 36 categorized educational videos on CKD topics (basics, diet, treatment, prevention, lifestyle)
 - 🤖 **AI Chat Assistant** - Intelligent RAG chatbot powered by Google Gemini for CKD Q&A
-- 🌓 **Dark/Light Mode** - Seamless theme switching throughout the application
+- 🌓 **Dark/Light Mode** - Seamless theme switching throughout the application (except landing page)
 - 📈 **Results Visualization** - View prediction results with confidence scores
 - 👤 **User Profile** - Comprehensive profile management with:
   - 📸 **Photo Upload** - Upload and display profile pictures (5MB limit, base64 storage)
@@ -23,7 +26,6 @@ A full-stack web application with machine learning capabilities to predict Chron
   - ⚙️ **Preferences Tab** - Auto-save, default view, tutorials, sound effects, date/time formats
   - 🔒 **Security Tab** - Password change, session timeout, login alerts, device tracking
 - 🩺 **Doctor Consultation** - Schedule and manage appointments with healthcare professionals using **Jitsi Meet video conferencing**
-- 📋 **Medical Reports** - Access and download your medical reports and prediction history
 
 ### Doctor Consultation & Video Conferencing 🆕
 - 📅 **Real-time Scheduling** - Book appointments with healthcare professionals
@@ -32,6 +34,30 @@ A full-stack web application with machine learning capabilities to predict Chron
 - 📲 **Instant Access** - No downloads needed, works directly in browser
 - 🌐 **Cross-Platform** - Works on desktop, mobile, and tablets
 - 🔗 **Easy Sharing** - Copy and share meeting links instantly
+
+### PDF Reports & Patient Tracking 🆕
+- 📄 **Comprehensive PDF Reports** - Generate detailed prediction reports with:
+  - Patient information (name, date, timestamp)
+  - Complete parameter table with all 24 medical values
+  - Prediction result and severity assessment
+  - Key risk factors and health recommendations
+  - Lifestyle advice and medical disclaimer
+- 👤 **Patient Name Tracking** - All predictions now include patient names for better record keeping
+- 📥 **One-Click Download** - Download individual prediction reports from Results page
+- 📊 **Batch Download** - Download historical predictions from Reports dashboard
+- 🔍 **Search & Filter** - Find predictions by patient name or date
+
+### Health Education Center 🆕
+- 🎓 **36 Educational Videos** - Curated video library covering:
+  - 📚 **CKD Basics** (9 videos) - Understanding kidney disease, stages, symptoms, tests
+  - 🥗 **Diet & Nutrition** (8 videos) - Kidney-friendly foods, sodium/protein/potassium management
+  - 💊 **Treatment** (7 videos) - Dialysis, transplant, medications, home care options
+  - 🛡️ **Prevention** (5 videos) - Risk factors, diabetes, hypertension, kidney stones
+  - 🏃 **Lifestyle** (7 videos) - Exercise, stress, sleep, travel, work-life balance
+- 🔍 **Search & Filter** - Find videos by title, description, or category
+- 🎬 **YouTube Integration** - Watch videos directly or open on YouTube
+- 📱 **Responsive Player** - Full-screen modal player with metadata
+- 📍 **Easy Access** - Available from "More" dropdown menu in dashboard header
 
 ### Admin Dashboard
 - 🛡️ **Admin Authentication** - Secure admin login with secret code
@@ -57,6 +83,8 @@ A full-stack web application with machine learning capabilities to predict Chron
 ### Frontend
 - **React 19** - Modern UI framework with latest features
 - **Vite** - Lightning-fast build tool and dev server
+- **jsPDF** - Client-side PDF generation
+- **jspdf-autotable** - PDF table generation plugin
 - **CSS3** - Custom styling with gradients, animations, and glass-morphism effects
 - **Context API** - Global theme state management
 - **Responsive Design** - Mobile-first approach with adaptive layouts
@@ -198,22 +226,23 @@ CKD-Prediction/
     ├── src/
     │   ├── App.jsx            # Main application with routing
     │   ├── components/
-    │   │   ├── LandingPage.jsx # Landing page with image carousel
+    │   │   ├── LandingPage.jsx # Landing page with image carousel (light theme, 2s intervals)
     │   │   ├── Login.jsx      # User login with modern UI
     │   │   ├── SignUp.jsx     # User registration
     │   │   ├── AdminLogin.jsx # Admin login (separate flow)
     │   │   ├── AdminSignup.jsx # Admin registration
     │   │   ├── AdminDashboard.jsx # Admin panel
-    │   │   ├── Header.jsx     # Navigation header with dropdown
+    │   │   ├── Header.jsx     # Navigation header with dropdown (Profile, Settings, Education)
     │   │   ├── Navbar.jsx     # Navigation bar
-    │   │   ├── PredictionForm.jsx # Single prediction form
+    │   │   ├── PredictionForm.jsx # Single prediction form with patient name
     │   │   ├── CSVUpload.jsx  # Batch prediction uploader
-    │   │   ├── Results.jsx    # Results display
+    │   │   ├── Results.jsx    # Results display with PDF download
     │   │   ├── Profile.jsx    # User profile management
     │   │   ├── Settings.jsx   # Application settings
     │   │   ├── AIChatAssistant.jsx # RAG chatbot interface
-    │   │   ├── DoctorConsultation.jsx # Doctor appointment management
-    │   │   ├── Reports.jsx    # Medical reports viewer
+    │   │   ├── DoctorConsultation.jsx # Doctor appointment with Jitsi Meet
+    │   │   ├── Reports.jsx    # Medical reports with PDF download and patient tracking
+    │   │   ├── HealthEducation.jsx # Video library (36 CKD educational videos)
     │   │   └── Loader.jsx     # Loading component
     │   └── context/
     │       └── ThemeContext.jsx # Global theme management
@@ -228,6 +257,11 @@ CKD-Prediction/
 - `POST /api/login` - User login
 - `POST /api/logout` - User logout
 - `GET /api/verify` - Verify token
+
+### Predictions
+- `POST /api/predict` - Make single prediction (includes patient_name field)
+- `POST /api/predict/batch` - Batch predictions from CSV
+- `GET /api/predictions/history` - Get user's prediction history with patient names
 
 ### User Profile Management
 - `GET /api/user/profile` - Get user profile with statistics
@@ -257,9 +291,9 @@ CKD-Prediction/
 ## 🎨 UI/UX Highlights
 
 ### Landing Page
-- **Dynamic Carousel**: 6 high-quality medical images rotating every 1.5 seconds
-- **Theme Toggle**: Smooth transition between light and dark modes
-- **Optimized Overlays**: 20-25% opacity for light theme, 85% for dark theme
+- **Dynamic Carousel**: 6 high-quality medical images rotating every 2 seconds
+- **Light Theme Only**: Clean, professional white theme (dark theme removed)
+- **Optimized Overlays**: 20-25% opacity for optimal contrast and readability
 - **Call-to-Action**: Prominent Get Started button
 
 ### Authentication Pages
@@ -275,41 +309,27 @@ CKD-Prediction/
 ### Settings Page
 - **Tab Navigation**: Three organized tabs for easy settings management
 - **Appearance Settings**: Theme toggle (Context API sync), font size, compact mode, high contrast, 6 language options
-- **Preferences**: A (March 2026)
+- **Preferences**: Auto-save, default view, tutorials, sound effects, date/time formats
+- **Security Settings**: Password change, session timeout, login alerts, device tracking
+- **localStorage Persistence**: All settings saved locally for consistent user experience
 
-### Latest Features
-- ✅ **Profile Photo Upload** - 🆕 Upload and display profile pictures across the entire application
-- ✅ **Enhanced Profile Management** - 🆕 Complete backend API integration for profile editing, password change, and statistics
-- ✅ **Settings Page Redesign** - 🆕 Tab-based interface (Appearance, Preferences, Security) with localStorage persistence
-- ✅ **Global Avatar Display** - 🆕 Profile photos now appear in Header dropdown, Profile page, and Reports page
-- ✅ **Password Change API** - 🆕 Backend endpoint with bcrypt validation and secure password updates
-- ✅ **Real-time Statistics** - 🆕 Account stats pulled from MongoDB (predictions count, reports count, account age)
+## 🌟 Recent Updates (March 2026)
 
-### Previous Updates
-- ✅ **Jitsi Meet Integration** - Secure video conferencing with no setup required
+### 🆕 Just Added
+- ✅ **Health Education Center** - 36 categorized educational videos on CKD (basics, diet, treatment, prevention, lifestyle)
+- ✅ **PDF Report Generation** - Download comprehensive prediction reports with patient information and recommendations
+- ✅ **Patient Name Tracking** - All predictions include patient names for better record keeping
+- ✅ **Reports Dashboard** - Enhanced with PDF download and patient name display
+- ✅ **Landing Page Refinement** - Light theme only with optimized 2-second image rotation
+
+### Previous Major Updates
+- ✅ **Jitsi Meet Integration** - Secure video conferencing for doctor consultations
 - ✅ **Doctor Consultation** - Schedule appointments with healthcare professionals
-- ✅ **Medical Reports** - Access and download medical reports and prediction history  
 - ✅ **AI Chat Assistant** - Intelligent RAG chatbot powered by Google Gemini with FAISS vector search
-- ✅ **Landing Page Redesign** - Added dynamic rotating medical images carousel (6 images, 1.5s interval)
-- ✅ **Modern Authentication UI** - Redesigned login/signup pages with blue gradient and centered cards
-
-## 🌟 Recent Updates
-
-- ✅ **Jitsi Meet Integration** - 🆕 JUST ADDED! Secure video conferencing with no setup required
-- ✅ **Doctor Consultation** - Schedule appointments with healthcare professionals
-- ✅ **Medical Reports** - Access and download medical reports and prediction history  
-- ✅ **AI Chat Assistant** - Intelligent RAG chatbot powered by Google Gemini with FAISS vector search
-- ✅ **Landing Page Redesign** - Added dynamic rotating medical images carousel (6 images, 1.5s interval)
-- ✅ **Modern Authentication UI** - Redesigned login/signup pages with blue gradient and centered cards
 - ✅ **Profile Management** - Comprehensive profile page with avatar, editable personal info, password change, and account statistics
 - ✅ **Settings Page** - Complete settings management for appearance, notifications, security, preferences, and privacy
-- ✅ **Enhanced Theme System** - Improved light/dark theme toggle with optimized image overlay (20-25% for light theme)
-- ✅ **Separate Admin Flow** - Dedicated authentication pages for admin users
-- ✅ **Role-Based UI** - Student and Admin role selection with appropriate redirects
-- ✅ **Header Navigation** - Dropdown menu with Profile, Settings, and AI Chat Assistant
-- ✅ **Responsive Design** - Mobile-optimized layouts for all components
-- ✅ **User Session Management** - Enhanced MongoDB Atlas integration
-- ✅ **Single-Page Forms** - Optimized spacing for no-scroll authentication experience
+- ✅ **Landing Page Redesign** - Added dynamic rotating medical images carousel
+- ✅ **Modern Authentication UI** - Redesigned login/signup pages with blue gradient and centered cards
 
 ## 🤝 Contributing
 

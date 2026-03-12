@@ -17,6 +17,7 @@ import Settings from './components/Settings'
 import AIChatAssistant from './components/AIChatAssistant'
 import Reports from './components/Reports'
 import DoctorConsultation from './components/DoctorConsultation'
+import HealthEducation from './components/HealthEducation'
 
 function App() {
   const [activeTab, setActiveTab] = useState('single')
@@ -26,7 +27,7 @@ function App() {
   const [authView, setAuthView] = useState('login') // 'login', 'signup', 'adminLogin', 'adminSignup'
   const [showLanding, setShowLanding] = useState(true) // Show landing page by default
   const [loggingOut, setLoggingOut] = useState(false)
-  const [currentView, setCurrentView] = useState('main') // 'main', 'profile', 'settings', 'reports', 'consultation'
+  const [currentView, setCurrentView] = useState('main') // 'main', 'profile', 'settings', 'reports', 'consultation', 'education'
   const [showAIChat, setShowAIChat] = useState(false) // AI Chat Assistant state
 
   const handleLogin = (userData) => {
@@ -182,10 +183,16 @@ function App() {
           user={user}
           onBack={() => setCurrentView('main')}
         />
+      ) : currentView === 'education' ? (
+        <HealthEducation
+          user={user}
+          onBack={() => setCurrentView('main')}
+        />
       ) : (
         <>
           <Header 
             user={user} 
+            onNavigateToEducation={() => setCurrentView('education')}
             onLogout={handleLogout}
             onNavigateToProfile={() => setCurrentView('profile')}
             onNavigateToSettings={() => setCurrentView('settings')}

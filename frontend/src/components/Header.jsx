@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useTheme } from '../context/ThemeContext'
 import './Header.css'
 
-function Header({ user, onLogout, onNavigateToProfile, onNavigateToSettings, onNavigateToReports, onOpenAIChat, onNavigateToConsultation }) {
+function Header({ user, onLogout, onNavigateToProfile, onNavigateToSettings, onNavigateToReports, onOpenAIChat, onNavigateToConsultation, onNavigateToEducation }) {
   const [showDropdown, setShowDropdown] = useState(false)
   const [showMoreDropdown, setShowMoreDropdown] = useState(false)
   const { theme, toggleTheme } = useTheme()
@@ -133,6 +133,13 @@ function Header({ user, onLogout, onNavigateToProfile, onNavigateToSettings, onN
               </button>
               {showMoreDropdown && (
                 <div className="more-dropdown">
+                  <button className="dropdown-item" onClick={() => { onNavigateToEducation(); setShowMoreDropdown(false); }}>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                      <path d="M22 10v6M2 10l10-5 10 5-10 5z" strokeWidth="2"/>
+                      <path d="M6 12v5c3 3 9 3 12 0v-5" strokeWidth="2"/>
+                    </svg>
+                    Health Education
+                  </button>
                   <button className="dropdown-item" onClick={() => { onNavigateToConsultation(); setShowMoreDropdown(false); }}>
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                       <polygon points="23 7 16 12 23 17 23 7" strokeWidth="2"/>

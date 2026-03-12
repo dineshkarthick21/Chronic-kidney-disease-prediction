@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react'
 import { PieChart, Pie, Cell, LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
+import { jsPDF } from 'jspdf'
+import autoTable from 'jspdf-autotable'
 import './Reports.css'
 
 function Reports({ user, onBack }) {
@@ -104,6 +106,161 @@ function Reports({ user, onBack }) {
       range,
       count
     }))
+  }
+
+  const downloadPredictionPDF = (prediction) => {
+    try {
+      const doc = new jsPDF()
+      
+      // Header
+      doc.setFontSize(20)
+      doc.setTextColor(41, 128, 185)
+      doc.text('CKD Patient Prediction Report', 105, 20, { align: 'center' })
+      
+      // Date and patient info
+      doc.setFontSize(10)
+      doc.setTextColor(100)
+      doc.text(`Patient: ${prediction.patient_name || 'Anonymous'}`, 14, 35)
+      doc.text(`Generated: ${new Date(prediction.created_at).toLocaleString()}`, 14, 41)
+      
+      // Prediction result box
+      const boxY = 55
+      const result = prediction.result === 'CKD' || prediction.result === 'Positive' ? 'CKD' : 'No CKD'
+      const confidence = parseFloat(prediction.confidence)
+      
+      if (result === 'CKD') {
+        doc.setFillColor(231, 76, 60) // Red for CKD
+      } else {
+        doc.setFillColor(46, 204, 113) // Green for No CKD
+      }
+      
+      doc.rect(60, boxY, 90, 35, 'F')
+      doc.setTextColor(255, 255, 255)
+      doc.setFontSize(24)
+      doc.text(result, 105, boxY + 15, { align: 'center' })
+      doc.setFontSize(14)
+      doc.text(`Confidence: ${confidence.toFixed(1)}%`, 105, boxY + 28, { align: 'center' })
+      
+      // Patient Parameters Table
+      autoTable(doc, {
+        startY: 105,
+        head: [['Parameter', 'Value', 'Parameter', 'Value']],
+        body: [
+          ['Age', `${prediction.age || 'N/A'} years`, 'Blood Pressure', `${prediction.bp || 'N/A'} mm/Hg`],
+          ['Specific Gravity', prediction.sg || 'N/A', 'Albumin', prediction.al || 'N/A'],
+          ['Sugar', prediction.su || 'N/A', 'RBC', prediction.rbc || 'N/A'],
+          ['Pus Cell', prediction.pc || 'N/A', 'Pus Cell Clumps', prediction.pcc || 'N/A'],
+          ['Bacteria', prediction.ba || 'N/A', 'Blood Glucose', `${prediction.bgr || 'N/A'} mgs/dl`],
+          ['Blood Urea', `${prediction.bu || 'N/A'} mgs/dl`, 'Serum Creatinine', `${prediction.sc || 'N/A'} mgs/dl`],
+          ['Sodium', `${prediction.sod || 'N/A'} mEq/L`, 'Potassium', `${prediction.pot || 'N/A'} mEq/L`],
+          ['Hemoglobin', `${prediction.hemo || 'N/A'} gms`, 'PCV', prediction.pcv || 'N/A'],
+          ['WBC Count', `${prediction.wc || 'N/A'} cells/cumm`, 'RBC Count', `${prediction.rc || 'N/A'} millions/cmm`],
+          ['Hypertension', prediction.htn || 'N/A', 'Diabetes', prediction.dm || 'N/A'],
+          ['CAD', prediction.cad || 'N/A', 'Appetite', prediction.appet || 'N/A'],
+          ['Pedal Edema', prediction.pe || 'N/A', 'Anemia', prediction.ane || 'N/A'],
+        ],
+        theme: 'grid',
+        headStyles: { fillColor: [41, 128, 185], textColor: 255, fontSize: 10 },
+        styles: { fontSize: 9, cellPadding: 3 },
+        columnStyles: {
+          0: { fontStyle: 'bold', fillColor: [240, 240, 240] },
+          2: { fontStyle: 'bold', fillColor: [240, 240, 240] }
+        }
+      })
+      
+      let yPos = doc.lastAutoTable.finalY + 15
+      
+      // Interpretation Section
+      doc.setFontSize(14)
+      doc.setTextColor(41, 128, 185)
+      doc.text('Interpretation & Recommendations', 14, yPos)
+      yPos += 10
+      
+      doc.setFontSize(10)
+      doc.setTextColor(0)
+      
+      if (result === 'CKD') {
+        const recommendations = [
+          '⚠️ Chronic Kidney Disease Detected',
+          '',
+          'Immediate Actions Required:',
+          '• Schedule an appointment with a nephrologist',
+          '• Get comprehensive kidney function tests (eGFR, Creatinine)',
+          '• Discuss treatment options and lifestyle modifications',
+          '',
+          'Dietary Modifications:',
+          '• Reduce sodium intake (less than 2,300mg per day)',
+          '• Limit protein intake as advised by your doctor',
+          '• Control potassium and phosphorus levels',
+          '• Stay well-hydrated (unless otherwise advised)',
+          '',
+          'Lifestyle Changes:',
+          '• Maintain healthy blood pressure (below 130/80 mmHg)',
+          '• Control blood sugar if diabetic (HbA1c < 7%)',
+          '• Regular exercise (30 minutes, 5 days/week)',
+          '• Quit smoking and limit alcohol consumption',
+        ]
+        
+        recommendations.forEach(line => {
+          if (yPos > 270) {
+            doc.addPage()
+            yPos = 20
+          }
+          doc.text(line, 14, yPos, { maxWidth: 180 })
+          yPos += 5
+        })
+      } else {
+        const recommendations = [
+          '✅ No Chronic Kidney Disease Detected',
+          '',
+          'Preventive Measures:',
+          '• Maintain regular health check-ups',
+          '• Continue healthy lifestyle practices',
+          '• Monitor blood pressure and blood sugar levels',
+          '• Stay well-hydrated (8-10 glasses daily)',
+          '• Eat a balanced diet with fruits and vegetables',
+          '• Regular exercise (150 minutes/week)',
+          '• Limit processed foods and reduce salt intake',
+          '• Avoid smoking and excessive alcohol',
+          '• Manage stress through meditation or yoga',
+          '• Get adequate sleep (7-9 hours)',
+        ]
+        
+        recommendations.forEach(line => {
+          if (yPos > 270) {
+            doc.addPage()
+            yPos = 20
+          }
+          doc.text(line, 14, yPos, { maxWidth: 180 })
+          yPos += 5
+        })
+      }
+      
+      // Medical Disclaimer
+      if (yPos > 250) {
+        doc.addPage()
+        yPos = 20
+      }
+      
+      yPos += 10
+      doc.setFontSize(12)
+      doc.setTextColor(231, 76, 60)
+      doc.text('⚕️ Medical Disclaimer', 14, yPos)
+      yPos += 8
+      
+      doc.setFontSize(9)
+      doc.setTextColor(100)
+      const disclaimer = 'This prediction is for informational purposes only and should not replace professional medical advice, diagnosis, or treatment. Always consult qualified healthcare providers for medical decisions.'
+      doc.text(disclaimer, 14, yPos, { maxWidth: 180, align: 'justify' })
+      
+      // Save PDF
+      const patientName = prediction.patient_name || 'patient'
+      const fileName = `CKD_Report_${patientName.replace(/\s+/g, '_')}_${new Date(prediction.created_at).toISOString().split('T')[0]}.pdf`
+      doc.save(fileName)
+    } catch (error) {
+      console.error('Error generating PDF:', error)
+      alert('Failed to generate PDF. Please try again.')
+    }
   }
 
   const stats = getPredictionStats()
@@ -324,11 +481,11 @@ function Reports({ user, onBack }) {
                         <thead>
                           <tr>
                             <th>ID</th>
+                            <th>PATIENT NAME</th>
                             <th>DATE</th>
+                            <th>TYPE</th>
                             <th>RESULT</th>
                             <th>CONFIDENCE</th>
-                            <th>FILE</th>
-                            <th>FILE</th>
                             <th>ACTIONS</th>
                           </tr>
                         </thead>
@@ -336,7 +493,13 @@ function Reports({ user, onBack }) {
                           {predictions.slice(0, 8).map((prediction, index) => (
                             <tr key={index}>
                               <td>{1200 + index}</td>
+                              <td>{prediction.patient_name || 'Anonymous'}</td>
                               <td>{new Date(prediction.created_at).toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' })}</td>
+                              <td>
+                                <span className={`type-badge ${prediction.type}`}>
+                                  {prediction.type === 'batch' ? 'Batch' : 'Single'}
+                                </span>
+                              </td>
                               <td>
                                 <span className={`result-badge ${
                                   prediction.result === 'CKD' || prediction.result === 'Positive' 
@@ -351,10 +514,14 @@ function Reports({ user, onBack }) {
                                 </span>
                               </td>
                               <td>{prediction.confidence ? `${parseFloat(prediction.confidence).toFixed(0)}%` : 'N/A'}</td>
-                              <td>ckd_data_{index}.csv</td>
-                              <td>ckd_data_april.csv</td>
                               <td>
-                                <button className="action-btn view-btn">View Details</button>
+                                <button 
+                                  className="action-btn download-btn"
+                                  onClick={() => downloadPredictionPDF(prediction)}
+                                  title="Download PDF Report"
+                                >
+                                  📥 PDF
+                                </button>
                               </td>
                             </tr>
                           ))}
@@ -391,16 +558,19 @@ function Reports({ user, onBack }) {
                   <table>
                     <thead>
                       <tr>
+                        <th>Patient Name</th>
                         <th>Date</th>
                         <th>Type</th>
                         <th>Result</th>
                         <th>Confidence</th>
                         <th>Status</th>
+                        <th>Actions</th>
                       </tr>
                     </thead>
                     <tbody>
                       {predictions.map((pred, index) => (
                         <tr key={index}>
+                          <td>{pred.patient_name || 'Anonymous'}</td>
                           <td>{new Date(pred.created_at).toLocaleString()}</td>
                           <td>
                             <span className={`type-badge ${pred.type}`}>
@@ -415,6 +585,15 @@ function Reports({ user, onBack }) {
                           <td>{parseFloat(pred.confidence).toFixed(1)}%</td>
                           <td>
                             <span className="status-badge completed">Completed</span>
+                          </td>
+                          <td>
+                            <button 
+                              className="action-btn download-btn"
+                              onClick={() => downloadPredictionPDF(pred)}
+                              title="Download PDF Report"
+                            >
+                              📥 Download
+                            </button>
                           </td>
                         </tr>
                       ))}

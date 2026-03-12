@@ -569,6 +569,7 @@ def predict():
             'user_id': session['user_id'],
             'email': session['email'],
             'type': 'single',
+            'patient_name': data.get('patientName', 'Anonymous'),
             'result': result,
             'confidence': confidence * 100,
             'age': data.get('age'),
