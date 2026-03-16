@@ -13,7 +13,12 @@ A full-stack web application with machine learning capabilities to predict Chron
 - 📋 **Reports Dashboard** - View, manage, and download all prediction history with patient names
 - 🎓 **Health Education Center** - Access 36 categorized educational videos on CKD topics (basics, diet, treatment, prevention, lifestyle)
 - 🤖 **AI Chat Assistant** - Intelligent RAG chatbot powered by Google Gemini for CKD Q&A
-- 💡 **Pull-Chain Theme Toggle** - Bulb + pull-chain switch animation to change Light/Dark mode (except landing page)
+- 💡 **Pull-Chain Theme Toggle** - Animated bulb + pull-chain switch to change Light/Dark mode (except landing page)
+  - 💡 **Bulb Icon** - Yellow bulb with grey metal cap and visible filament
+  - 🔗 **Animated Chain** - Pull-down animation on click to smoothly toggle theme
+  - 🎨 **Smart Colors** - Auto-adjusts bulb/chain colors for light/dark mode compatibility
+  - ✨ **Smooth Animation** - 120ms chain pull transition effect on press
+  - 📍 **Everywhere** - Available in Header, Auth pages, and Admin Dashboard
 - 📈 **Results Visualization** - View prediction results with confidence scores
 - 👤 **User Profile** - Comprehensive profile management with:
   - 📸 **Photo Upload** - Upload and display profile pictures (5MB limit, base64 storage)
@@ -28,7 +33,10 @@ A full-stack web application with machine learning capabilities to predict Chron
 - 🩺 **Doctor Consultation** - Schedule and manage appointments with healthcare professionals using **Jitsi Meet video conferencing**
 
 ### Doctor Consultation & Video Conferencing 🆕
-- 📅 **Real-time Scheduling** - Book appointments with healthcare professionals
+- �‍⚕️ **Doctor Authentication** - Separate doctor login/signup with specialization field and dedicated dashboard
+- 📊 **Doctor Dashboard** - Complete interface for managing consultations and patient appointments
+- 👥 **Patient Management** - View, organize, and manage patient consultation history
+- �📅 **Real-time Scheduling** - Book appointments with healthcare professionals
 - 🎥 **Jitsi Meet Integration** - Secure, free video conferencing with no setup required
 - 🔒 **Unique Meeting Rooms** - Auto-generated unique room names for each consultation
 - 📲 **Instant Access** - No downloads needed, works directly in browser
@@ -75,7 +83,31 @@ A full-stack web application with machine learning capabilities to predict Chron
 - 🧠 **Google Gemini Integration** - Powered by Gemini Pro for intelligent responses
 - 📚 **FAISS Vector Database** - Semantic search across CKD knowledge base
 - 🔍 **Context-Aware Responses** - Retrieves relevant information before answering
-- 💬 **Natural Language Processing** - Understands and responds to medical queries
+- 💬� Recent Updates (Latest Release)
+
+### UI/UX Enhancements
+- ✨ **Pull-Chain Bulb Theme Toggle** - Replaced standard theme icons with elegant animated pull-chain light bulb interface
+  - Implemented across Header, all Auth pages (Login/SignUp/AdminLogin/AdminSignup/DoctorLogin/DoctorSignup), and Admin Dashboard
+  - SVG-based bulb illustration with smooth pull-down animation
+  - Responsive color schemes for light and dark themes
+  - Accessibility features: title attributes and aria-labels
+
+### New Components
+- 🆕 **DoctorDashboard.jsx** - Complete dashboard for healthcare professionals with appointment management
+- 🆕 **DoctorLogin.jsx** - Secure doctor authentication with email and password validation
+- 🆕 **DoctorSignup.jsx** - Doctor registration interface with specialization field
+- 🆕 **DoctorDashboard.css** - Responsive styling optimized for doctor workflow
+
+### Infrastructure Updates
+- Updated frontend dependencies for enhanced performance and security
+- Vite build system optimizations (requires Node.js 20.19+ or 22.12+)
+- npm packages upgraded for React 19 compatibility
+- Backend dependencies updated for stability
+
+**Latest Commit:** `2f30bd6` — Pull-chain theme toggle + Doctor Dashboard components  
+**Changes:** 23 files modified, 2086 insertions(+)
+
+## � **Natural Language Processing** - Understands and responds to medical queries
 - 📖 **Comprehensive Knowledge Base** - 17 chunks of CKD medical information
 
 ## 🚀 Tech Stack
