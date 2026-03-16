@@ -3,11 +3,14 @@ import { useTheme } from '../context/ThemeContext'
 import './Auth.css'
 import Loader from './Loader'
 
-const AdminLogin = ({ onAdminLogin, onSwitchToAdminSignup, onBackToUserLogin }) => {
+const DoctorSignup = ({ onDoctorSignup, onSwitchToDoctorLogin, onBackToUserLogin }) => {
   const { theme, toggleTheme } = useTheme()
   const [formData, setFormData] = useState({
+    name: '',
     email: '',
-    password: ''
+    specialization: '',
+    password: '',
+    confirmPassword: ''
   })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -15,10 +18,7 @@ const AdminLogin = ({ onAdminLogin, onSwitchToAdminSignup, onBackToUserLogin }) 
 
   const handleChange = (e) => {
     const { name, value } = e.target
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }))
+    setFormData(prev => ({ ...prev, [name]: value }))
     setError('')
   }
 
@@ -27,36 +27,52 @@ const AdminLogin = ({ onAdminLogin, onSwitchToAdminSignup, onBackToUserLogin }) 
     setLoading(true)
     setError('')
 
+    if (formData.password !== formData.confirmPassword) {
+      setError('Passwords do not match')
+      setLoading(false)
+      return
+    }
+
+    if (formData.password.length < 6) {
+      setError('Password must be at least 6 characters')
+      setLoading(false)
+      return
+    }
+
     try {
-      const response = await fetch('http://localhost:5000/api/admin/login', {
+      const response = await fetch('http://localhost:5000/api/doctor/signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          specialization: formData.specialization,
+          password: formData.password
+        })
       })
       const data = await response.json()
+
       if (response.ok) {
-        // Store admin token in localStorage
-        localStorage.setItem('adminToken', data.token)
-        localStorage.setItem('admin', JSON.stringify(data.admin))
-        // Show loader before navigating to dashboard
+        localStorage.setItem('doctorToken', data.token)
+        localStorage.setItem('doctor', JSON.stringify(data.doctor))
         setShowLoader(true)
       } else {
-        setError(data.message || 'Admin login failed')
+        setError(data.message || 'Doctor signup failed')
         setLoading(false)
       }
-    } catch (error) {
+    } catch (apiError) {
       setError('Connection error. Please try again.')
       setLoading(false)
     }
   }
 
   const handleLoaderComplete = () => {
-    const adminData = JSON.parse(localStorage.getItem('admin'))
-    onAdminLogin(adminData)
+    const doctorData = JSON.parse(localStorage.getItem('doctor'))
+    onDoctorSignup(doctorData)
   }
 
   if (showLoader) {
-    return <Loader message="Signing you in..." subMessage="Go to Admin Dashboard!" onComplete={handleLoaderComplete} />
+    return <Loader message="Creating doctor profile..." subMessage="Opening Doctor Dashboard" onComplete={handleLoaderComplete} />
   }
 
   return (
@@ -86,23 +102,39 @@ const AdminLogin = ({ onAdminLogin, onSwitchToAdminSignup, onBackToUserLogin }) 
             </g>
           </svg>
         </button>
-        
+
         <div className="auth-icon">
           <div className="icon-circle">
-            <span>🛡️</span>
+            <span>🩺</span>
           </div>
         </div>
-        
+
         <div className="auth-header">
-          <h1>Admin Portal</h1>
-          <p>Sign in to Admin Dashboard</p>
+          <h1>Doctor Signup</h1>
+          <p>Create your doctor account</p>
         </div>
 
         <form onSubmit={handleSubmit} className="auth-form">
           {error && <div className="error-message">{error}</div>}
-          
+
           <div className="form-group">
-            <label htmlFor="email">Admin Email</label>
+            <label htmlFor="name">Full Name</label>
+            <div className="input-with-icon">
+              <span className="input-icon">👤</span>
+              <input
+                type="text"
+                id="name"
+                name="name"
+                value={formData.name}
+                onChange={handleChange}
+                placeholder="Dr. Full Name"
+                required
+              />
+            </div>
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="email">Doctor Email</label>
             <div className="input-with-icon">
               <span className="input-icon">@</span>
               <input
@@ -111,7 +143,23 @@ const AdminLogin = ({ onAdminLogin, onSwitchToAdminSignup, onBackToUserLogin }) 
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
-                placeholder="admin@example.com"
+                placeholder="doctor@example.com"
+                required
+              />
+            </div>
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="specialization">Specialization</label>
+            <div className="input-with-icon">
+              <span className="input-icon">🧠</span>
+              <input
+                type="text"
+                id="specialization"
+                name="specialization"
+                value={formData.specialization}
+                onChange={handleChange}
+                placeholder="Nephrologist"
                 required
               />
             </div>
@@ -127,19 +175,35 @@ const AdminLogin = ({ onAdminLogin, onSwitchToAdminSignup, onBackToUserLogin }) 
                 name="password"
                 value={formData.password}
                 onChange={handleChange}
-                placeholder="Enter admin password"
+                placeholder="Create password"
+                required
+              />
+            </div>
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="confirmPassword">Confirm Password</label>
+            <div className="input-with-icon">
+              <span className="input-icon">🔒</span>
+              <input
+                type="password"
+                id="confirmPassword"
+                name="confirmPassword"
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                placeholder="Re-enter password"
                 required
               />
             </div>
           </div>
 
           <button type="submit" className="auth-btn" disabled={loading}>
-            {loading ? 'Signing in...' : 'Sign In as Admin'}
+            {loading ? 'Creating account...' : 'Create Doctor Account'}
           </button>
         </form>
 
         <div className="auth-footer">
-          <p>Don't have an admin account? <button onClick={onSwitchToAdminSignup} className="switch-btn">Sign up here</button></p>
+          <p>Already registered? <button onClick={onSwitchToDoctorLogin} className="switch-btn">Doctor sign in</button></p>
           <p style={{ marginTop: '0.5rem' }}><button onClick={onBackToUserLogin} className="switch-btn">← Back to User Login</button></p>
         </div>
       </div>
@@ -147,4 +211,4 @@ const AdminLogin = ({ onAdminLogin, onSwitchToAdminSignup, onBackToUserLogin }) 
   )
 }
 
-export default AdminLogin
+export default DoctorSignup

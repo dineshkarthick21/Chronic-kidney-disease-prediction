@@ -7,3 +7,4 @@ pymongo
 dnspython
 bcrypt
 python-dotenv
+flask-socketio

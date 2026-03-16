@@ -1,12 +1,18 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
+import { io } from 'socket.io-client'
 import { useTheme } from '../context/ThemeContext'
 import './DoctorConsultation.css'
 
+const API_BASE = 'http://localhost:5000'
+
 function DoctorConsultation({ user, onBack }) {
   const { theme } = useTheme()
-  const [activeTab, setActiveTab] = useState('schedule') // 'schedule', 'upcoming', 'history'
+  const [activeTab, setActiveTab] = useState('schedule') // 'schedule', 'upcoming', 'history', 'chat'
   const [doctors, setDoctors] = useState([])
   const [consultations, setConsultations] = useState([])
+  const [messages, setMessages] = useState([])
+  const [messageText, setMessageText] = useState('')
+  const [isSocketReady, setIsSocketReady] = useState(false)
   const [loading, setLoading] = useState(true)
   const [selectedDoctor, setSelectedDoctor] = useState(null)
   const [showBookingModal, setShowBookingModal] = useState(false)
@@ -17,15 +23,23 @@ function DoctorConsultation({ user, onBack }) {
     notes: ''
   })
   const [notification, setNotification] = useState(null)
+  const socketRef = useRef(null)
 
   useEffect(() => {
     fetchDoctors()
     fetchConsultations()
+    connectSocket()
+
+    return () => {
+      if (socketRef.current) {
+        socketRef.current.disconnect()
+      }
+    }
   }, [])
 
   const fetchDoctors = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/doctors')
+      const response = await fetch(`${API_BASE}/api/doctors`)
       if (response.ok) {
         const data = await response.json()
         setDoctors(data.doctors || [])
@@ -106,7 +120,7 @@ function DoctorConsultation({ user, onBack }) {
 
   const fetchConsultations = async () => {
     try {
-      const response = await fetch(`http://localhost:5000/api/consultations/${user.email}`)
+      const response = await fetch(`${API_BASE}/api/consultations/${user.email}`)
       if (response.ok) {
         const data = await response.json()
         console.log('Fetched consultations from backend:', data.consultations)
@@ -187,7 +201,7 @@ function DoctorConsultation({ user, onBack }) {
 
       // Send to backend
       try {
-        const response = await fetch('http://localhost:5000/api/consultations', {
+        const response = await fetch(`${API_BASE}/api/consultations`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -244,7 +258,7 @@ function DoctorConsultation({ user, onBack }) {
 
     try {
       // Call backend API
-      await fetch(`http://localhost:5000/api/consultations/${consultationId}`, {
+      await fetch(`${API_BASE}/api/consultations/${consultationId}`, {
         method: 'DELETE'
       })
 
@@ -259,6 +273,61 @@ function DoctorConsultation({ user, onBack }) {
   const showNotification = (type, message) => {
     setNotification({ type, message })
     setTimeout(() => setNotification(null), 3000)
+  }
+
+  const connectSocket = () => {
+    const token = localStorage.getItem('token')
+    if (!token) {
+      return
+    }
+
+    const socket = io(API_BASE, {
+      transports: ['websocket', 'polling'],
+      upgrade: true,
+      rememberUpgrade: true,
+      timeout: 20000
+    })
+
+    socket.on('connect', () => {
+      socket.emit('authenticate_socket', {
+        role: 'user',
+        token
+      })
+    })
+
+    socket.on('socket_authenticated', () => {
+      setIsSocketReady(true)
+    })
+
+    socket.on('chat_message', (message) => {
+      if (message.user_id === user.id) {
+        setMessages((prev) => {
+          // Check if message already exists to prevent duplicates
+          const messageExists = prev.some((msg) => msg.id === message.id)
+          if (messageExists) {
+            return prev
+          }
+          return [...prev, message]
+        })
+      }
+    })
+
+    socketRef.current = socket
+  }
+
+  const handleSendMessage = () => {
+    const text = messageText.trim()
+    if (!text || !socketRef.current || !isSocketReady) {
+      return
+    }
+
+    const token = localStorage.getItem('token')
+    socketRef.current.emit('send_chat_message', {
+      role: 'user',
+      token,
+      text
+    })
+    setMessageText('')
   }
 
   const formatDate = (dateString) => {
@@ -328,6 +397,15 @@ function DoctorConsultation({ user, onBack }) {
               <circle cx="12" cy="12" r="3" strokeWidth="2"/>
             </svg>
             History
+          </button>
+          <button
+            className={`tab-btn ${activeTab === 'chat' ? 'active' : ''}`}
+            onClick={() => setActiveTab('chat')}
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" strokeWidth="2"/>
+            </svg>
+            Chat with Doctor
           </button>
         </div>
 
@@ -586,6 +664,49 @@ function DoctorConsultation({ user, onBack }) {
                   </div>
                 ))
               )}
+            </div>
+          )}
+
+          {activeTab === 'chat' && (
+            <div className="consultation-chat">
+              <div className="chat-header">
+                <h3>Live Doctor Chat</h3>
+                <p>{isSocketReady ? 'Connected' : 'Connecting...'}</p>
+              </div>
+
+              <div className="chat-messages">
+                {messages.length === 0 ? (
+                  <div className="empty-state compact">
+                    <h3>No messages yet</h3>
+                    <p>Start by sending your symptoms or concerns to the doctor.</p>
+                  </div>
+                ) : (
+                  messages.map((message) => (
+                    <div
+                      key={message.id}
+                      className={`chat-bubble ${message.sender_type === 'user' ? 'user' : 'doctor'}`}
+                    >
+                      <p>{message.text}</p>
+                      <small>{message.sender_name || message.sender_type}</small>
+                    </div>
+                  ))
+                )}
+              </div>
+
+              <div className="chat-input-row">
+                <input
+                  type="text"
+                  value={messageText}
+                  onChange={(e) => setMessageText(e.target.value)}
+                  placeholder={isSocketReady ? 'Type your message to doctor...' : 'Waiting for socket connection...'}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      handleSendMessage()
+                    }
+                  }}
+                />
+                <button onClick={handleSendMessage} disabled={!isSocketReady}>Send</button>
+              </div>
             </div>
           )}
         </div>

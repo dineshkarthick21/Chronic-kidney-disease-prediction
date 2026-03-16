@@ -14,7 +14,7 @@ function HealthEducation({ user, onBack }) {
       category: 'basics',
       duration: '6:23',
       thumbnail: 'https://img.youtube.com/vi/l8vucN3cmes/0.jpg',
-      videoUrl: 'https://youtu.be/embed/TROFVicWrTE?si=HdSr9xNKb4LW87xE',
+      videoUrl: 'https://www.youtube.com/embed/l8vucN3cmes',
       description: 'Comprehensive overview of chronic kidney disease from Armando Hasudungan.',
       views: '1.2M',
       date: 'Feb 2024'
@@ -425,6 +425,26 @@ function HealthEducation({ user, onBack }) {
 
   const [selectedVideo, setSelectedVideo] = useState(null)
 
+  const getVideoId = (video) => {
+    const urlMatch = video.videoUrl?.match(/(?:embed\/|v=|youtu\.be\/)([A-Za-z0-9_-]{11})/)
+    if (urlMatch?.[1]) {
+      return urlMatch[1]
+    }
+
+    const thumbMatch = video.thumbnail?.match(/\/vi\/([A-Za-z0-9_-]{11})\//)
+    return thumbMatch?.[1] || ''
+  }
+
+  const getEmbedUrl = (video) => {
+    const videoId = getVideoId(video)
+    return videoId ? `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0` : ''
+  }
+
+  const getWatchUrl = (video) => {
+    const videoId = getVideoId(video)
+    return videoId ? `https://www.youtube.com/watch?v=${videoId}` : '#'
+  }
+
   const filteredVideos = videos.filter(video => {
     const matchesCategory = activeCategory === 'all' || video.category === activeCategory
     const matchesSearch = video.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -563,7 +583,7 @@ function HealthEducation({ user, onBack }) {
               <iframe
                 width="100%"
                 height="100%"
-                src={`${selectedVideo.videoUrl}?autoplay=1&rel=0`}
+                src={getEmbedUrl(selectedVideo)}
                 title={selectedVideo.title}
                 frameBorder="0"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
@@ -580,7 +600,7 @@ function HealthEducation({ user, onBack }) {
               </div>
               <p>{selectedVideo.description}</p>
               <a 
-                href={selectedVideo.videoUrl.replace('/embed/', '/watch?v=')} 
+                href={getWatchUrl(selectedVideo)}
                 target="_blank" 
                 rel="noopener noreferrer"
                 style={{

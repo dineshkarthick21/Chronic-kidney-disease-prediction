@@ -275,6 +275,58 @@
   box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
 }
 
+.theme-toggle.pullchain-toggle {
+  padding: 0.55rem;
+  border-radius: 999px;
+  gap: 0;
+}
+
+.theme-toggle.pullchain-toggle span {
+  display: none;
+}
+
+.theme-toggle.pullchain-toggle .pullchain-svg {
+  display: block;
+}
+
+.theme-toggle.pullchain-toggle .bulb-cap {
+  fill: rgba(255, 255, 255, 0.7);
+}
+
+.theme-toggle.pullchain-toggle .bulb-glass {
+  fill: #f7c948;
+  opacity: 0.95;
+}
+
+.theme-toggle.pullchain-toggle .bulb-highlight {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.85);
+  stroke-width: 3;
+  stroke-linecap: round;
+  opacity: 0.55;
+}
+
+.theme-toggle.pullchain-toggle .bulb-filament {
+  fill: none;
+  stroke: rgba(0, 0, 0, 0.55);
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+.theme-toggle.pullchain-toggle .chain-bead,
+.theme-toggle.pullchain-toggle .chain-weight {
+  fill: rgba(255, 255, 255, 0.75);
+}
+
+.theme-toggle.pullchain-toggle .chain-group {
+  transform-origin: 54px 10px;
+  transition: transform 0.12s ease;
+}
+
+.theme-toggle.pullchain-toggle:active .chain-group {
+  transform: translateY(6px);
+}
+
 /* Main Content */
 .admin-main {
   flex: 1;

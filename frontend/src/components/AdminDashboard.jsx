@@ -527,9 +527,29 @@ const AdminDashboard = ({ admin, onLogout }) => {
             </div>
             
             <div className="header-actions">
-              <button className="theme-toggle" onClick={toggleTheme}>
-                {theme === 'light' ? '🌙' : '☀️'}
-                <span>{theme === 'light' ? 'Dark' : 'Light'}</span>
+              <button
+                type="button"
+                className="theme-toggle pullchain-toggle"
+                onClick={toggleTheme}
+                title={`Pull to switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
+                aria-label={`Pull to switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
+              >
+                <svg className="pullchain-svg" width="34" height="34" viewBox="0 0 64 64" aria-hidden="true">
+                  <g className="bulb-group">
+                    <rect className="bulb-cap" x="22" y="4" width="20" height="16" rx="3" />
+                    <path className="bulb-glass" d="M32 20c-11 0-20 9-20 20 0 8 4.2 14.1 11 18.2V60h18v-1.8c6.8-4.1 11-10.2 11-18.2 0-11-9-20-20-20z" />
+                    <path className="bulb-highlight" d="M25 30c-5 3-7 8-6.5 13.5 0.2 2.3 1 4.3 2.2 6.1" />
+                    <path className="bulb-filament" d="M26 38c3 0 4-4 6-4s3 4 6 4 3-4 6-4" />
+                  </g>
+                  <g className="chain-group">
+                    <circle className="chain-bead" cx="54" cy="10" r="3" />
+                    <circle className="chain-bead" cx="54" cy="18" r="3" />
+                    <circle className="chain-bead" cx="54" cy="26" r="3" />
+                    <circle className="chain-bead" cx="54" cy="34" r="3" />
+                    <circle className="chain-bead" cx="54" cy="42" r="3" />
+                    <rect className="chain-weight" x="50" y="46" width="8" height="12" rx="2" />
+                  </g>
+                </svg>
               </button>
               <div className="admin-badge">
                 <span className="badge-icon">👤</span>

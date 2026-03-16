@@ -1,0 +1,265 @@
+.doctor-dashboard {
+  min-height: 100vh;
+  background: linear-gradient(150deg, #f8fafc 0%, #e0f2fe 50%, #ecfeff 100%);
+  padding: 1.5rem;
+}
+
+.doctor-topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 1rem 1.25rem;
+  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.08);
+}
+
+.doctor-topbar h1 {
+  margin: 0;
+  font-size: 1.6rem;
+}
+
+.doctor-topbar p {
+  margin: 0.25rem 0 0;
+  color: #475569;
+}
+
+.doctor-logout-btn {
+  border: none;
+  border-radius: 10px;
+  background: #ef4444;
+  color: white;
+  padding: 0.6rem 1rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.doctor-stats-grid {
+  margin-top: 1rem;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.doctor-stat-card {
+  background: white;
+  border-radius: 14px;
+  padding: 1rem;
+  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.08);
+}
+
+.doctor-stat-card h3 {
+  margin: 0;
+  font-size: 0.95rem;
+  color: #334155;
+}
+
+.doctor-stat-card strong {
+  display: block;
+  margin-top: 0.5rem;
+  font-size: 1.8rem;
+  color: #0f172a;
+}
+
+.doctor-main-grid {
+  margin-top: 1rem;
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 1rem;
+}
+
+.doctor-patient-panel,
+.doctor-content-panel {
+  background: white;
+  border-radius: 14px;
+  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.08);
+  padding: 1rem;
+}
+
+.doctor-patient-panel h2 {
+  margin: 0 0 1rem;
+}
+
+.doctor-patient-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  max-height: 68vh;
+  overflow: auto;
+}
+
+.doctor-patient-item {
+  text-align: left;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  background: #f8fafc;
+  padding: 0.75rem;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  gap: 0.8rem;
+}
+
+.doctor-patient-item.active {
+  border-color: #0284c7;
+  background: #e0f2fe;
+}
+
+.doctor-patient-item p {
+  margin: 0.2rem 0 0;
+  color: #475569;
+  font-size: 0.85rem;
+}
+
+.doctor-patient-item span {
+  font-size: 0.8rem;
+  color: #0369a1;
+  align-self: center;
+  white-space: nowrap;
+}
+
+.doctor-empty-state {
+  min-height: 50vh;
+  display: grid;
+  place-items: center;
+  color: #64748b;
+}
+
+.doctor-patient-header h2 {
+  margin: 0;
+}
+
+.doctor-patient-header p,
+.doctor-patient-header small {
+  margin: 0.25rem 0 0;
+  color: #475569;
+}
+
+.doctor-detail-grid {
+  margin-top: 1rem;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.doctor-predictions-panel,
+.doctor-chat-panel {
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 0.9rem;
+}
+
+.doctor-prediction-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  max-height: 52vh;
+  overflow: auto;
+}
+
+.doctor-prediction-card {
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 0.7rem;
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.doctor-prediction-card p {
+  margin: 0.2rem 0 0;
+  color: #64748b;
+  font-size: 0.85rem;
+}
+
+.doctor-prediction-card span {
+  color: #0f766e;
+  font-weight: 600;
+}
+
+.doctor-chat-messages {
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 0.7rem;
+  min-height: 340px;
+  max-height: 340px;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  background: #f8fafc;
+}
+
+.doctor-chat-bubble {
+  max-width: 80%;
+  border-radius: 10px;
+  padding: 0.6rem;
+}
+
+.doctor-chat-bubble.user {
+  align-self: flex-start;
+  background: #dbeafe;
+}
+
+.doctor-chat-bubble.doctor {
+  align-self: flex-end;
+  background: #dcfce7;
+}
+
+.doctor-chat-bubble p {
+  margin: 0;
+}
+
+.doctor-chat-bubble small {
+  color: #475569;
+  font-size: 0.75rem;
+}
+
+.doctor-chat-input-row {
+  margin-top: 0.6rem;
+  display: flex;
+  gap: 0.5rem;
+}
+
+.doctor-chat-input-row input {
+  flex: 1;
+  border: 1px solid #cbd5e1;
+  border-radius: 9px;
+  padding: 0.65rem;
+}
+
+.doctor-chat-input-row button {
+  border: none;
+  border-radius: 9px;
+  background: #0284c7;
+  color: white;
+  padding: 0.65rem 1rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.doctor-sub-empty {
+  color: #64748b;
+  font-size: 0.9rem;
+}
+
+.doctor-dashboard-loading {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  background: #f8fafc;
+}
+
+@media (max-width: 1100px) {
+  .doctor-main-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .doctor-detail-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .doctor-stats-grid {
+    grid-template-columns: 1fr;
+  }
+}

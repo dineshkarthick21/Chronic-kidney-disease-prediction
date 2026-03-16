@@ -1,5 +1,6 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
+from flask_socketio import SocketIO, emit, join_room
 from pymongo import MongoClient
 import bcrypt
 from datetime import datetime, timedelta
@@ -9,11 +10,13 @@ from dotenv import load_dotenv
 import pickle
 import numpy as np
 import pandas as pd
+from bson.objectid import ObjectId
 
 load_dotenv()
 
 app = Flask(__name__)
 CORS(app)
+socketio = SocketIO(app, cors_allowed_origins='*')
 
 # Load the trained model
 try:
@@ -47,6 +50,9 @@ sessions_collection = db['sessions']
 admins_collection = db['admins']
 admin_sessions_collection = db['admin_sessions']
 predictions_collection = db['predictions']  # Add predictions collection
+doctor_accounts_collection = db['doctor_accounts']
+doctor_sessions_collection = db['doctor_sessions']
+chat_messages_collection = db['chat_messages']
 
 # Admin secret code (change this in production!)
 ADMIN_SECRET_CODE = os.getenv('ADMIN_SECRET_CODE', 'CKD_ADMIN_2026')
@@ -58,6 +64,10 @@ sessions_collection.create_index('expires_at', expireAfterSeconds=0)
 admins_collection.create_index('email', unique=True)
 admin_sessions_collection.create_index('token', unique=True)
 admin_sessions_collection.create_index('expires_at', expireAfterSeconds=0)
+doctor_accounts_collection.create_index('email', unique=True)
+doctor_sessions_collection.create_index('token', unique=True)
+doctor_sessions_collection.create_index('expires_at', expireAfterSeconds=0)
+chat_messages_collection.create_index([('user_id', 1), ('created_at', -1)])
 
 # Collections for consultations
 doctors_collection = db['doctors']
@@ -96,6 +106,45 @@ def create_session(user_id, email):
     
     sessions_collection.insert_one(session)
     return token
+
+
+def create_doctor_session(doctor_id, email):
+    """Create a new session for a doctor"""
+    token = generate_token()
+    expires_at = datetime.utcnow() + timedelta(days=7)
+
+    session = {
+        'doctor_id': str(doctor_id),
+        'email': email,
+        'token': token,
+        'created_at': datetime.utcnow(),
+        'expires_at': expires_at
+    }
+
+    doctor_sessions_collection.insert_one(session)
+    return token
+
+
+def get_user_session(token):
+    """Validate and return user session"""
+    if not token:
+        return None
+
+    session = sessions_collection.find_one({'token': token})
+    if not session or session['expires_at'] < datetime.utcnow():
+        return None
+    return session
+
+
+def get_doctor_session(token):
+    """Validate and return doctor session"""
+    if not token:
+        return None
+
+    session = doctor_sessions_collection.find_one({'token': token})
+    if not session or session['expires_at'] < datetime.utcnow():
+        return None
+    return session
 
 
 @app.route('/api/signup', methods=['POST'])
@@ -381,6 +430,357 @@ def admin_login():
         
     except Exception as e:
         return jsonify({'message': f'Server error: {str(e)}'}), 500
+
+
+# ===================== DOCTOR AUTH ROUTES =====================
+
+@app.route('/api/doctor/signup', methods=['POST'])
+def doctor_signup():
+    """Register a new doctor account"""
+    try:
+        data = request.get_json()
+
+        name = data.get('name', '').strip()
+        email = data.get('email', '').strip().lower()
+        password = data.get('password', '')
+        specialization = data.get('specialization', 'General Physician').strip()
+
+        if not name or not email or not password:
+            return jsonify({'message': 'All fields are required'}), 400
+
+        if len(password) < 6:
+            return jsonify({'message': 'Password must be at least 6 characters'}), 400
+
+        if doctor_accounts_collection.find_one({'email': email}):
+            return jsonify({'message': 'Doctor email already registered'}), 409
+
+        hashed_password = hash_password(password)
+
+        doctor = {
+            'name': name,
+            'email': email,
+            'password': hashed_password,
+            'specialization': specialization,
+            'role': 'doctor',
+            'created_at': datetime.utcnow(),
+            'updated_at': datetime.utcnow()
+        }
+
+        result = doctor_accounts_collection.insert_one(doctor)
+        doctor_id = result.inserted_id
+        token = create_doctor_session(doctor_id, email)
+
+        return jsonify({
+            'message': 'Doctor registered successfully',
+            'doctor': {
+                'id': str(doctor_id),
+                'name': name,
+                'email': email,
+                'specialization': specialization,
+                'role': 'doctor'
+            },
+            'token': token
+        }), 201
+
+    except Exception as e:
+        return jsonify({'message': f'Server error: {str(e)}'}), 500
+
+
+@app.route('/api/doctor/login', methods=['POST'])
+def doctor_login():
+    """Authenticate a doctor"""
+    try:
+        data = request.get_json()
+
+        email = data.get('email', '').strip().lower()
+        password = data.get('password', '')
+
+        if not email or not password:
+            return jsonify({'message': 'Email and password are required'}), 400
+
+        doctor = doctor_accounts_collection.find_one({'email': email})
+        if not doctor or not verify_password(password, doctor['password']):
+            return jsonify({'message': 'Invalid email or password'}), 401
+
+        token = create_doctor_session(doctor['_id'], email)
+
+        return jsonify({
+            'message': 'Doctor login successful',
+            'doctor': {
+                'id': str(doctor['_id']),
+                'name': doctor['name'],
+                'email': doctor['email'],
+                'specialization': doctor.get('specialization', 'General Physician'),
+                'role': 'doctor'
+            },
+            'token': token
+        }), 200
+
+    except Exception as e:
+        return jsonify({'message': f'Server error: {str(e)}'}), 500
+
+
+@app.route('/api/doctor/stats', methods=['GET'])
+def doctor_stats():
+    """Get doctor dashboard stats"""
+    try:
+        token = request.headers.get('Authorization', '').replace('Bearer ', '')
+        session = get_doctor_session(token)
+
+        if not session:
+            return jsonify({'message': 'Invalid or expired token'}), 401
+
+        total_patients = users_collection.count_documents({})
+        total_predictions = predictions_collection.count_documents({})
+
+        latest = list(predictions_collection.find({}).sort('created_at', -1).limit(200))
+        high_risk = sum(1 for p in latest if str(p.get('result', '')).lower() == 'ckd')
+
+        return jsonify({
+            'totalPatients': total_patients,
+            'totalPredictions': total_predictions,
+            'highRiskCases': high_risk
+        }), 200
+
+    except Exception as e:
+        return jsonify({'message': f'Server error: {str(e)}'}), 500
+
+
+@app.route('/api/doctor/patients', methods=['GET'])
+def doctor_patients():
+    """Get all patients with latest prediction summary"""
+    try:
+        token = request.headers.get('Authorization', '').replace('Bearer ', '')
+        session = get_doctor_session(token)
+
+        if not session:
+            return jsonify({'message': 'Invalid or expired token'}), 401
+
+        patients = list(users_collection.find({}, {'password': 0}).sort('created_at', -1))
+        patient_list = []
+
+        for patient in patients:
+            uid = str(patient['_id'])
+            latest_prediction = predictions_collection.find_one(
+                {'user_id': uid},
+                sort=[('created_at', -1)]
+            )
+            prediction_count = predictions_collection.count_documents({'user_id': uid})
+
+            patient_list.append({
+                'id': uid,
+                'name': patient.get('name', ''),
+                'email': patient.get('email', ''),
+                'created_at': patient.get('created_at'),
+                'predictionCount': prediction_count,
+                'latestResult': latest_prediction.get('result') if latest_prediction else None,
+                'latestConfidence': latest_prediction.get('confidence') if latest_prediction else None,
+                'latestPredictionAt': latest_prediction.get('created_at') if latest_prediction else None
+            })
+
+        return jsonify({'patients': patient_list}), 200
+
+    except Exception as e:
+        return jsonify({'message': f'Server error: {str(e)}'}), 500
+
+
+@app.route('/api/doctor/patient-predictions/<user_id>', methods=['GET'])
+def doctor_patient_predictions(user_id):
+    """Get all predictions for a patient"""
+    try:
+        token = request.headers.get('Authorization', '').replace('Bearer ', '')
+        session = get_doctor_session(token)
+
+        if not session:
+            return jsonify({'message': 'Invalid or expired token'}), 401
+
+        predictions = list(predictions_collection.find({'user_id': user_id}).sort('created_at', -1))
+        for prediction in predictions:
+            prediction['_id'] = str(prediction['_id'])
+
+        return jsonify({
+            'predictions': predictions,
+            'count': len(predictions)
+        }), 200
+
+    except Exception as e:
+        return jsonify({'message': f'Server error: {str(e)}'}), 500
+
+
+# ===================== CHAT ROUTES =====================
+
+@app.route('/api/chat/user/messages', methods=['GET'])
+def get_user_chat_messages():
+    """Get chat messages for logged in user"""
+    try:
+        token = request.headers.get('Authorization', '').replace('Bearer ', '')
+        session = get_user_session(token)
+
+        if not session:
+            return jsonify({'message': 'Invalid or expired token'}), 401
+
+        messages = list(chat_messages_collection.find(
+            {'user_id': session['user_id']}
+        ).sort('created_at', 1))
+
+        for message in messages:
+            message['_id'] = str(message['_id'])
+
+        return jsonify({'messages': messages}), 200
+
+    except Exception as e:
+        return jsonify({'message': f'Server error: {str(e)}'}), 500
+
+
+@app.route('/api/chat/doctor/conversations', methods=['GET'])
+def get_doctor_conversations():
+    """Get all patients for doctor to initiate conversations (pure socket messaging)"""
+    try:
+        token = request.headers.get('Authorization', '').replace('Bearer ', '')
+        session = get_doctor_session(token)
+
+        if not session:
+            return jsonify({'message': 'Invalid or expired token'}), 401
+
+        # Get all patients since we can't aggregate chat history without database
+        patients = list(users_collection.find({}, {'password': 0}).sort('created_at', -1))
+        conversations = []
+
+        for patient in patients:
+            conversations.append({
+                'userId': str(patient['_id']),
+                'userName': patient.get('name', 'Unknown User'),
+                'userEmail': patient.get('email', ''),
+                'lastMessage': '',  # No message history in pure socket mode
+                'lastSenderType': '',
+                'lastMessageAt': None
+            })
+
+        return jsonify({'conversations': conversations}), 200
+
+    except Exception as e:
+        return jsonify({'message': f'Server error: {str(e)}'}), 500
+
+
+@app.route('/api/chat/doctor/messages/<user_id>', methods=['GET'])
+def get_doctor_chat_messages(user_id):
+    """Get chat messages for selected patient conversation"""
+    try:
+        token = request.headers.get('Authorization', '').replace('Bearer ', '')
+        session = get_doctor_session(token)
+
+        if not session:
+            return jsonify({'message': 'Invalid or expired token'}), 401
+
+        messages = list(chat_messages_collection.find({'user_id': user_id}).sort('created_at', 1))
+
+        for message in messages:
+            message['_id'] = str(message['_id'])
+
+        return jsonify({'messages': messages}), 200
+
+    except Exception as e:
+        return jsonify({'message': f'Server error: {str(e)}'}), 500
+
+
+@socketio.on('authenticate_socket')
+def authenticate_socket(payload):
+    """Authenticate socket connection and join role rooms"""
+    role = payload.get('role')
+    token = payload.get('token')
+
+    if role == 'user':
+        session = get_user_session(token)
+        if not session:
+            emit('socket_error', {'message': 'User authentication failed'})
+            return
+
+        join_room('doctors_online')
+        join_room(f"user_{session['user_id']}")
+        emit('socket_authenticated', {
+            'role': 'user',
+            'userId': session['user_id']
+        })
+        return
+
+    if role == 'doctor':
+        session = get_doctor_session(token)
+        if not session:
+            emit('socket_error', {'message': 'Doctor authentication failed'})
+            return
+
+        join_room('doctors_online')
+        join_room(f"doctor_{session['doctor_id']}")
+        emit('socket_authenticated', {
+            'role': 'doctor',
+            'doctorId': session['doctor_id']
+        })
+        return
+
+    emit('socket_error', {'message': 'Invalid socket role'})
+
+
+@socketio.on('send_chat_message')
+def send_chat_message(payload):
+    """Send chat messages between users and doctors via socket only"""
+    role = payload.get('role')
+    token = payload.get('token')
+    text = (payload.get('text') or '').strip()
+
+    if not text:
+        emit('socket_error', {'message': 'Message text is required'})
+        return
+
+    created_at = datetime.utcnow()
+
+    if role == 'user':
+        session = get_user_session(token)
+        if not session:
+            emit('socket_error', {'message': 'Invalid user token'})
+            return
+
+        user_doc = users_collection.find_one({'_id': ObjectId(session['user_id'])})
+        message = {
+            'id': f"{created_at.isoformat()}-{secrets.token_hex(4)}",
+            'user_id': session['user_id'],
+            'doctor_id': None,
+            'sender_type': 'user',
+            'sender_name': user_doc.get('name', 'User') if user_doc else 'User',
+            'text': text,
+            'created_at': created_at.isoformat()
+        }
+
+        emit('chat_message', message, room=f"user_{session['user_id']}")
+        emit('chat_message', message, room='doctors_online')
+        return
+
+    if role == 'doctor':
+        session = get_doctor_session(token)
+        if not session:
+            emit('socket_error', {'message': 'Invalid doctor token'})
+            return
+
+        target_user_id = payload.get('targetUserId', '')
+        if not target_user_id:
+            emit('socket_error', {'message': 'targetUserId is required for doctor message'})
+            return
+
+        doctor_doc = doctor_accounts_collection.find_one({'_id': ObjectId(session['doctor_id'])})
+        message = {
+            'id': f"{created_at.isoformat()}-{secrets.token_hex(4)}",
+            'user_id': target_user_id,
+            'doctor_id': session['doctor_id'],
+            'sender_type': 'doctor',
+            'sender_name': doctor_doc.get('name', 'Doctor') if doctor_doc else 'Doctor',
+            'text': text,
+            'created_at': created_at.isoformat()
+        }
+
+        emit('chat_message', message, room=f'user_{target_user_id}')
+        emit('chat_message', message, room='doctors_online')
+        return
+
+    emit('socket_error', {'message': 'Invalid role in message payload'})
 
 
 @app.route('/api/admin/stats', methods=['GET'])
@@ -891,6 +1291,14 @@ def get_doctors():
         for doctor in doctors:
             doctor['_id'] = str(doctor['_id'])
         
+        # Remove duplicates based on 'id'
+        unique_doctors = {}
+        for doctor in doctors:
+            doc_id = doctor.get('id')
+            if doc_id not in unique_doctors:
+                unique_doctors[doc_id] = doctor
+        doctors = list(unique_doctors.values())
+        
         return jsonify({'doctors': doctors}), 200
         
     except Exception as e:
@@ -952,6 +1360,38 @@ def seed_doctors():
             'message': 'Doctors seeded successfully',
             'count': len(result.inserted_ids)
         }), 201
+        
+    except Exception as e:
+        return jsonify({'message': f'Server error: {str(e)}'}), 500
+
+
+@app.route('/api/doctors/cleanup', methods=['POST'])
+def cleanup_doctors():
+    """Remove duplicate doctors from database"""
+    try:
+        # Find all doctors
+        all_doctors = list(doctors_collection.find())
+        
+        # Group by 'id'
+        seen = set()
+        duplicates = []
+        
+        for doctor in all_doctors:
+            doc_id = doctor.get('id')
+            if doc_id in seen:
+                duplicates.append(doctor['_id'])
+            else:
+                seen.add(doc_id)
+        
+        # Remove duplicates
+        if duplicates:
+            result = doctors_collection.delete_many({'_id': {'$in': duplicates}})
+            return jsonify({
+                'message': f'Removed {len(duplicates)} duplicate doctors',
+                'deleted_count': result.deleted_count
+            }), 200
+        else:
+            return jsonify({'message': 'No duplicates found'}), 200
         
     except Exception as e:
         return jsonify({'message': f'Server error: {str(e)}'}), 500
@@ -1337,4 +1777,4 @@ if __name__ == '__main__':
         print(f"⚠️  Error seeding doctors: {e}")
     
     print("🚀 Starting Flask server...")
-    app.run(debug=True, port=5000)
+    socketio.run(app, debug=True, port=5000)

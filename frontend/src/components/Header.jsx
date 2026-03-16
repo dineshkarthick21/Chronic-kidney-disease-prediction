@@ -43,25 +43,33 @@ function Header({ user, onLogout, onNavigateToProfile, onNavigateToSettings, onN
         {/* Navigation Section */}
         <div className="nav-section">
           {/* Theme Toggle */}
-          <button className="theme-toggle" onClick={toggleTheme} title={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}>
-            {theme === 'light' ? (
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-            ) : (
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                <circle cx="12" cy="12" r="5" strokeWidth="2"/>
-                <line x1="12" y1="1" x2="12" y2="3" strokeWidth="2"/>
-                <line x1="12" y1="21" x2="12" y2="23" strokeWidth="2"/>
-                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" strokeWidth="2"/>
-                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" strokeWidth="2"/>
-                <line x1="1" y1="12" x2="3" y2="12" strokeWidth="2"/>
-                <line x1="21" y1="12" x2="23" y2="12" strokeWidth="2"/>
-                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" strokeWidth="2"/>
-                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" strokeWidth="2"/>
-              </svg>
-            )}
-            <span>{theme === 'light' ? 'Dark' : 'Light'}</span>
+          <button
+            type="button"
+            className="theme-toggle pullchain-toggle"
+            onClick={toggleTheme}
+            title={`Pull to switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
+            aria-label={`Pull to switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
+          >
+            <svg className="pullchain-svg" width="34" height="34" viewBox="0 0 64 64" aria-hidden="true">
+              <g className="bulb-group">
+                <rect className="bulb-cap" x="22" y="4" width="20" height="16" rx="3" />
+                <path
+                  className="bulb-glass"
+                  d="M32 20c-11 0-20 9-20 20 0 8 4.2 14.1 11 18.2V60h18v-1.8c6.8-4.1 11-10.2 11-18.2 0-11-9-20-20-20z"
+                />
+                <path className="bulb-highlight" d="M25 30c-5 3-7 8-6.5 13.5 0.2 2.3 1 4.3 2.2 6.1" />
+                <path className="bulb-filament" d="M26 38c3 0 4-4 6-4s3 4 6 4 3-4 6-4" />
+              </g>
+
+              <g className="chain-group">
+                <circle className="chain-bead" cx="54" cy="10" r="3" />
+                <circle className="chain-bead" cx="54" cy="18" r="3" />
+                <circle className="chain-bead" cx="54" cy="26" r="3" />
+                <circle className="chain-bead" cx="54" cy="34" r="3" />
+                <circle className="chain-bead" cx="54" cy="42" r="3" />
+                <rect className="chain-weight" x="50" y="46" width="8" height="12" rx="2" />
+              </g>
+            </svg>
           </button>
 
           {user && (

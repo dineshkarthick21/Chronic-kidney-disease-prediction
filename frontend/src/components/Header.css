@@ -136,6 +136,64 @@
   transform: rotate(20deg);
 }
 
+/* Pull-chain bulb theme toggle */
+.pullchain-toggle {
+  padding: 0.45rem;
+  border-radius: 999px;
+  gap: 0;
+}
+
+.pullchain-toggle span {
+  display: none;
+}
+
+.pullchain-toggle:hover svg {
+  transform: none;
+}
+
+.pullchain-svg {
+  display: block;
+}
+
+.pullchain-svg .bulb-cap {
+  fill: var(--text-secondary);
+}
+
+.pullchain-svg .bulb-glass {
+  fill: #f7c948;
+  opacity: 0.95;
+}
+
+.pullchain-svg .bulb-highlight {
+  fill: none;
+  stroke: #fff;
+  stroke-width: 3;
+  stroke-linecap: round;
+  opacity: 0.35;
+}
+
+.pullchain-svg .bulb-filament {
+  fill: none;
+  stroke: rgba(0, 0, 0, 0.65);
+  stroke-width: 2;
+  stroke-linecap: round;
+  opacity: 0.9;
+}
+
+.pullchain-svg .chain-bead,
+.pullchain-svg .chain-weight {
+  fill: var(--text-secondary);
+}
+
+.pullchain-svg .chain-group {
+  transform-origin: 54px 10px;
+  transition: transform 0.12s ease;
+}
+
+.pullchain-toggle:active .pullchain-svg .chain-group {
+  transform: translateY(6px);
+}
+
 .nav-item {
   display: flex;
   align-items: center;

@@ -10,6 +10,9 @@ import SignUp from './components/SignUp'
 import AdminLogin from './components/AdminLogin'
 import AdminSignup from './components/AdminSignup'
 import AdminDashboard from './components/AdminDashboard'
+import DoctorLogin from './components/DoctorLogin'
+import DoctorSignup from './components/DoctorSignup'
+import DoctorDashboard from './components/DoctorDashboard'
 import Loader from './components/Loader'
 import LandingPage from './components/LandingPage'
 import Profile from './components/Profile'
@@ -24,7 +27,8 @@ function App() {
   const [results, setResults] = useState(null)
   const [user, setUser] = useState(null)
   const [admin, setAdmin] = useState(null)
-  const [authView, setAuthView] = useState('login') // 'login', 'signup', 'adminLogin', 'adminSignup'
+  const [doctor, setDoctor] = useState(null)
+  const [authView, setAuthView] = useState('login') // 'login', 'signup', 'adminLogin', 'adminSignup', 'doctorLogin', 'doctorSignup'
   const [showLanding, setShowLanding] = useState(true) // Show landing page by default
   const [loggingOut, setLoggingOut] = useState(false)
   const [currentView, setCurrentView] = useState('main') // 'main', 'profile', 'settings', 'reports', 'consultation', 'education'
@@ -79,14 +83,40 @@ function App() {
     }, 1500)
   }
 
+  const handleDoctorLogin = (doctorData) => {
+    setDoctor(doctorData)
+    localStorage.setItem('doctor', JSON.stringify(doctorData))
+  }
+
+  const handleDoctorSignup = (doctorData) => {
+    setDoctor(doctorData)
+    localStorage.setItem('doctor', JSON.stringify(doctorData))
+  }
+
+  const handleDoctorLogout = () => {
+    setLoggingOut(true)
+    setTimeout(() => {
+      setDoctor(null)
+      localStorage.removeItem('doctor')
+      localStorage.removeItem('doctorToken')
+      setLoggingOut(false)
+      setAuthView('login')
+      setShowLanding(true)
+    }, 1500)
+  }
+
   // Check for existing session on mount
   useEffect(() => {
     const savedUser = localStorage.getItem('user')
     const savedAdmin = localStorage.getItem('admin')
+    const savedDoctor = localStorage.getItem('doctor')
     
     if (savedAdmin) {
       setAdmin(JSON.parse(savedAdmin))
       setShowLanding(false) // Don't show landing if user is already logged in
+    } else if (savedDoctor) {
+      setDoctor(JSON.parse(savedDoctor))
+      setShowLanding(false)
     } else if (savedUser) {
       setUser(JSON.parse(savedUser))
       setShowLanding(false) // Don't show landing if user is already logged in
@@ -101,6 +131,10 @@ function App() {
   // If admin is authenticated, show admin dashboard
   if (admin) {
     return <AdminDashboard admin={admin} onLogout={handleAdminLogout} />
+  }
+
+  if (doctor) {
+    return <DoctorDashboard doctor={doctor} onLogout={handleDoctorLogout} />
   }
 
   // If not authenticated, show landing page or auth views
@@ -128,6 +162,7 @@ function App() {
           onLogin={handleLogin} 
           onSwitchToSignup={() => setAuthView('signup')}
           onSwitchToAdmin={() => setAuthView('adminLogin')}
+          onSwitchToDoctor={() => setAuthView('doctorLogin')}
         />
       )
     } else if (authView === 'signup') {
@@ -136,6 +171,7 @@ function App() {
           onSignUp={handleSignUp} 
           onSwitchToLogin={() => setAuthView('login')} 
           onSwitchToAdminSignup={() => setAuthView('adminSignup')}
+          onSwitchToDoctorSignup={() => setAuthView('doctorSignup')}
         />
       )
     } else if (authView === 'adminLogin') {
@@ -151,6 +187,22 @@ function App() {
         <AdminSignup
           onAdminSignup={handleAdminSignup}
           onSwitchToAdminLogin={() => setAuthView('adminLogin')}
+          onBackToUserLogin={() => setAuthView('login')}
+        />
+      )
+    } else if (authView === 'doctorLogin') {
+      return (
+        <DoctorLogin
+          onDoctorLogin={handleDoctorLogin}
+          onSwitchToDoctorSignup={() => setAuthView('doctorSignup')}
+          onBackToUserLogin={() => setAuthView('login')}
+        />
+      )
+    } else if (authView === 'doctorSignup') {
+      return (
+        <DoctorSignup
+          onDoctorSignup={handleDoctorSignup}
+          onSwitchToDoctorLogin={() => setAuthView('doctorLogin')}
           onBackToUserLogin={() => setAuthView('login')}
         />
       )
