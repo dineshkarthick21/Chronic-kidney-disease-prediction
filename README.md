@@ -13,7 +13,7 @@ A full-stack web application with machine learning capabilities to predict Chron
 - 📋 **Reports Dashboard** - View, manage, and download all prediction history with patient names
 - 🎓 **Health Education Center** - Access 36 categorized educational videos on CKD topics (basics, diet, treatment, prevention, lifestyle)
 - 🤖 **AI Chat Assistant** - Intelligent RAG chatbot powered by Google Gemini for CKD Q&A
-- 🌓 **Dark/Light Mode** - Seamless theme switching throughout the application (except landing page)
+- 💡 **Pull-Chain Theme Toggle** - Bulb + pull-chain switch animation to change Light/Dark mode (except landing page)
 - 📈 **Results Visualization** - View prediction results with confidence scores
 - 👤 **User Profile** - Comprehensive profile management with:
   - 📸 **Photo Upload** - Upload and display profile pictures (5MB limit, base64 storage)
@@ -112,7 +112,7 @@ A full-stack web application with machine learning capabilities to predict Chron
 ## 📋 Prerequisites
 
 - Python 3.8+
-- Node.js 16+
+- Node.js 20.19+ or 22.12+ (required by Vite)
 - MongoDB Atlas account
 - Git
 
