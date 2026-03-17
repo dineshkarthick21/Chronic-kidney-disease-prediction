@@ -231,6 +231,26 @@
   box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
 }
 
+.chat-btn {
+  width: 100%;
+  padding: 1rem;
+  background: #ffffff;
+  color: #4f46e5;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  margin-top: 0.75rem;
+}
+
+.chat-btn:hover {
+  transform: scale(1.05);
+  border-color: #667eea;
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.25);
+}
+
 /* Consultations List */
 .consultations-list {
   display: flex;

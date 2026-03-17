@@ -74,6 +74,55 @@ doctors_collection = db['doctors']
 consultations_collection = db['consultations']
 
 
+DEFAULT_DOCTOR_ACCOUNTS = [
+    {
+        'name': 'Dr. Dineshkarthick',
+        'email': 'dineshkarthick@ckd.local',
+        'specialization': 'Nephrologist'
+    },
+    {
+        'name': 'Dr. Dharanish',
+        'email': 'dharanish@ckd.local',
+        'specialization': 'Kidney Specialist'
+    },
+    {
+        'name': 'Dr. Hari Saravana',
+        'email': 'hari.saravana@ckd.local',
+        'specialization': 'Renal Medicine Expert'
+    }
+]
+
+
+def seed_default_doctor_accounts_if_missing(default_password: str):
+    """Ensure the three default doctor accounts exist (idempotent)."""
+    if not default_password or len(default_password) < 6:
+        return
+
+    for item in DEFAULT_DOCTOR_ACCOUNTS:
+        email = item['email'].strip().lower()
+        existing = doctor_accounts_collection.find_one({'email': email})
+        if existing:
+            continue
+
+        doctor_accounts_collection.insert_one({
+            'name': item['name'],
+            'email': email,
+            'password': hash_password(default_password),
+            'specialization': item['specialization'],
+            'role': 'doctor',
+            'created_at': datetime.utcnow(),
+            'updated_at': datetime.utcnow()
+        })
+
+
+# Auto-seed default doctor accounts for development/demo convenience.
+try:
+    seed_default_doctor_accounts_if_missing(os.getenv('DEFAULT_DOCTOR_PASSWORD', 'Doctor@123'))
+except Exception as _e:
+    # Avoid crashing app startup due to seed issues.
+    pass
+
+
 def hash_password(password):
     """Hash a password using bcrypt"""
     salt = bcrypt.gensalt()
@@ -602,6 +651,73 @@ def doctor_patient_predictions(user_id):
             'predictions': predictions,
             'count': len(predictions)
         }), 200
+
+    except Exception as e:
+        return jsonify({'message': f'Server error: {str(e)}'}), 500
+
+
+@app.route('/api/doctor/seed', methods=['POST'])
+def seed_doctor_accounts():
+    """Seed default doctor login accounts (development helper)."""
+    try:
+        data = request.get_json(silent=True) or {}
+        default_password = (data.get('password') or 'Doctor@123').strip()
+        force = bool(data.get('force', False))
+
+        if len(default_password) < 6:
+            return jsonify({'message': 'Password must be at least 6 characters'}), 400
+
+        defaults = DEFAULT_DOCTOR_ACCOUNTS
+
+        created = []
+        skipped = []
+        updated = []
+
+        for item in defaults:
+            email = item['email'].strip().lower()
+            existing = doctor_accounts_collection.find_one({'email': email})
+            if existing:
+                if force:
+                    doctor_accounts_collection.update_one(
+                        {'_id': existing['_id']},
+                        {'$set': {
+                            'name': item['name'],
+                            'specialization': item['specialization'],
+                            'password': hash_password(default_password),
+                            'updated_at': datetime.utcnow()
+                        }}
+                    )
+                    updated.append({'email': email})
+                else:
+                    skipped.append({'email': email})
+                continue
+
+            doctor = {
+                'name': item['name'],
+                'email': email,
+                'password': hash_password(default_password),
+                'specialization': item['specialization'],
+                'role': 'doctor',
+                'created_at': datetime.utcnow(),
+                'updated_at': datetime.utcnow()
+            }
+
+            result = doctor_accounts_collection.insert_one(doctor)
+            created.append({
+                'id': str(result.inserted_id),
+                'email': email,
+                'name': item['name'],
+                'specialization': item['specialization']
+            })
+
+        status_code = 201 if created else 200
+        return jsonify({
+            'message': 'Doctor accounts seed complete',
+            'created': created,
+            'updated': updated,
+            'skipped': skipped,
+            'password': default_password
+        }), status_code
 
     except Exception as e:
         return jsonify({'message': f'Server error: {str(e)}'}), 500

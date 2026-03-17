@@ -453,6 +453,10 @@ function DoctorConsultation({ user, onBack }) {
                     <button className="book-btn" onClick={() => handleBookConsultation(doctor)}>
                       Book Consultation
                     </button>
+
+                    <button className="chat-btn" onClick={() => setActiveTab('chat')}>
+                      Chat with Doctor
+                    </button>
                   </div>
                 ))
               )}

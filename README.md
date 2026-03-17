@@ -34,14 +34,24 @@ A full-stack web application with machine learning capabilities to predict Chron
 
 ### Doctor Consultation & Video Conferencing 🆕
 - �‍⚕️ **Doctor Authentication** - Separate doctor login/signup with specialization field and dedicated dashboard
+  - Pre-seeded accounts for 3 default doctors (auto-created at startup)
+  - Default credentials: `dineshkarthick@ckd.local`, `dharanish@ckd.local`, `hari.saravana@ckd.local`
+  - Password: `Doctor@123` (customizable via `/api/doctor/seed` endpoint)
 - 📊 **Doctor Dashboard** - Complete interface for managing consultations and patient appointments
+  - 📈 Real-time patient list with prediction counts
+  - 💬 Live chat messaging with individual patients
+  - 📄 View patient prediction history with confidence scores
+  - 📥 **PDF Download** - One-click download of individual patient predictions as formatted PDF reports
 - 👥 **Patient Management** - View, organize, and manage patient consultation history
-- �📅 **Real-time Scheduling** - Book appointments with healthcare professionals
+- 📅 **Real-time Scheduling** - Book appointments with healthcare professionals
 - 🎥 **Jitsi Meet Integration** - Secure, free video conferencing with no setup required
 - 🔒 **Unique Meeting Rooms** - Auto-generated unique room names for each consultation
 - 📲 **Instant Access** - No downloads needed, works directly in browser
 - 🌐 **Cross-Platform** - Works on desktop, mobile, and tablets
 - 🔗 **Easy Sharing** - Copy and share meeting links instantly
+- 💬 **Student Chat** - Students can chat with doctors directly from consultation scheduling page
+  - "Chat with Doctor" button on each doctor card
+  - Real-time messaging via WebSocket connection
 
 ### PDF Reports & Patient Tracking 🆕
 - 📄 **Comprehensive PDF Reports** - Generate detailed prediction reports with:
@@ -104,8 +114,8 @@ A full-stack web application with machine learning capabilities to predict Chron
 - npm packages upgraded for React 19 compatibility
 - Backend dependencies updated for stability
 
-**Latest Commit:** `2f30bd6` — Pull-chain theme toggle + Doctor Dashboard components  
-**Changes:** 23 files modified, 2086 insertions(+)
+**Latest Commit:** Multi-phase release — Doctor PDF downloads, chat with doctor, auto-seeded accounts  
+**Changes:** Doctor Dashboard PDF export, student chat integration, secure doctor account seeding
 
 ## � **Natural Language Processing** - Understands and responds to medical queries
 - 📖 **Comprehensive Knowledge Base** - 17 chunks of CKD medical information

@@ -177,6 +177,25 @@
   font-weight: 600;
 }
 
+.doctor-prediction-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.doctor-pdf-btn {
+  border: 1px solid #cbd5e1;
+  background: #f8fafc;
+  border-radius: 9px;
+  padding: 0.35rem 0.6rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.doctor-pdf-btn:hover {
+  border-color: #0284c7;
+}
+
 .doctor-chat-messages {
   border: 1px solid #e2e8f0;
   border-radius: 10px;
