@@ -11,7 +11,12 @@ A full-stack web application with machine learning capabilities to predict Chron
 - 📄 **PDF Download** - Generate and download comprehensive prediction reports with patient info, parameters, and recommendations
 - 📁 **CSV Upload** - Batch predictions with CSV file upload and downloadable results
 - 📋 **Reports Dashboard** - View, manage, and download all prediction history with patient names
-- 🎓 **Health Education Center** - Access 36 categorized educational videos on CKD topics (basics, diet, treatment, prevention, lifestyle)
+  - 🔍 **Interactive Session Filtering** - Search sessions by patient name/result, filter by prediction type (Single/Batch), sort by date or confidence
+  - 📊 **Dynamic Pagination** - Real-time result counts based on active filters with reset option
+- 🎓 **Health Education Center** - Access 36 categorized educational videos on CKD topics
+  - ⭐ **Favorites System** - Mark favorite videos with persistent localStorage storage
+  - 🎬 **Smart Sorting** - Sort videos by popularity, newest first, or duration
+  - 📚 **Search Integration** - Combined with favorites toggle and sorting for personalized discovery
 - 🤖 **AI Chat Assistant** - Intelligent RAG chatbot powered by Google Gemini for CKD Q&A
 - 💡 **Pull-Chain Theme Toggle** - Animated bulb + pull-chain switch to change Light/Dark mode (except landing page)
   - 💡 **Bulb Icon** - Yellow bulb with grey metal cap and visible filament
@@ -25,11 +30,16 @@ A full-stack web application with machine learning capabilities to predict Chron
   - ✏️ **Edit Profile** - Update name, email, phone, and bio with real-time backend sync
   - 🔒 **Password Change** - Secure password update with validation
   - 📊 **Account Statistics** - Real-time stats (predictions count, reports count, account age)
-  - 🖼️ **Avatar Display** - Profile photos shown across Header, Profile, and Reports pages
+  - � **Profile Completion Bar** - Visual progress indicator (0-100%) for profile completeness
+  - 💡 **Interactive Stats** - Click stat cards to view contextual insights about your account
+  - �🖼️ **Avatar Display** - Profile photos shown across Header, Profile, and Reports pages
 - ⚙️ **Settings Page** - Tab-based customization interface:
   - 🎨 **Appearance Tab** - Theme toggle, font size, compact mode, high contrast, language selection
   - ⚙️ **Preferences Tab** - Auto-save, default view, tutorials, sound effects, date/time formats
   - 🔒 **Security Tab** - Password change, session timeout, login alerts, device tracking
+  - 💾 **Change Tracking** - Visual badge shows "Unsaved changes" (yellow) or "All changes saved" (green)
+  - 🔄 **Reset Defaults** - One-click button to restore all settings to factory defaults with confirmation
+  - 📥 **Export Settings** - Download all current settings as JSON file for backup or transfer
 - 🩺 **Doctor Consultation** - Schedule and manage appointments with healthcare professionals using **Jitsi Meet video conferencing**
 
 ### Doctor Consultation & Video Conferencing 🆕
@@ -42,7 +52,8 @@ A full-stack web application with machine learning capabilities to predict Chron
   - 💬 Live chat messaging with individual patients
   - 📄 View patient prediction history with confidence scores
   - 📥 **PDF Download** - One-click download of individual patient predictions as formatted PDF reports
-- 👥 **Patient Management** - View, organize, and manage patient consultation history
+- � **Doctor Filtering** - Find doctors by name/specialization, spoken language, or minimum rating
+- �👥 **Patient Management** - View, organize, and manage patient consultation history
 - 📅 **Real-time Scheduling** - Book appointments with healthcare professionals
 - 🎥 **Jitsi Meet Integration** - Secure, free video conferencing with no setup required
 - 🔒 **Unique Meeting Rooms** - Auto-generated unique room names for each consultation
@@ -357,7 +368,16 @@ CKD-Prediction/
 
 ## 🌟 Recent Updates (March 2026)
 
-### 🆕 Just Added
+### 🆕 Latest Dashboard Interactivity Enhancements
+- ✅ **Reports Dashboard** - Real-time session filtering (search by patient/result, filter by type, sort by date/confidence)
+- ✅ **Doctor List Filtering** - Filter doctors by name/specialization, language, and minimum rating
+- ✅ **Health Education Favorites** - Mark favorite videos with persistent localStorage storage, filter and sort library
+- ✅ **Profile Completion Tracking** - Visual progress bar (0-100%) showing profile completeness
+- ✅ **Interactive Stat Cards** - Click stat cards to view contextual insights about your account activity
+- ✅ **Settings Enhancements** - Unsaved changes indicator, reset to defaults action, export settings as JSON
+- ✅ **Theme Refinement** - Purple color theme replaced with blue (#2563eb) for consistency; improved dark mode support
+
+### Just Added (Health Education & Settings)
 - ✅ **Health Education Center** - 36 categorized educational videos on CKD (basics, diet, treatment, prevention, lifestyle)
 - ✅ **PDF Report Generation** - Download comprehensive prediction reports with patient information and recommendations
 - ✅ **Patient Name Tracking** - All predictions include patient names for better record keeping
