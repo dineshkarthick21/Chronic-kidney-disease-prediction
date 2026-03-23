@@ -1,6 +1,6 @@
 .health-education-container {
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #ffffff;
   padding: 2rem;
 }
 
@@ -40,7 +40,7 @@
   gap: 0.75rem;
   font-size: 2rem;
   font-weight: 700;
-  color: white;
+  color: #0f172a;
   margin: 0;
 }
 
@@ -82,7 +82,7 @@
   flex-direction: column;
   align-items: center;
   padding: 1rem 2rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #0ea5e9 0%, #0369a1 100%);
   border-radius: 12px;
   color: white;
 }
@@ -110,6 +110,7 @@
   display: flex;
   align-items: center;
   gap: 1rem;
+  flex-wrap: wrap;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
@@ -123,6 +124,31 @@
 
 .search-bar input::placeholder {
   color: #94a3b8;
+}
+
+.sort-select {
+  padding: 0.65rem 0.85rem;
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  color: #1f2937;
+  background: #ffffff;
+  font-size: 0.9rem;
+}
+
+.favorites-toggle {
+  padding: 0.65rem 0.95rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  background: #f8fafc;
+  color: #1e293b;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.favorites-toggle.active {
+  background: #0ea5e9;
+  border-color: #0ea5e9;
+  color: #ffffff;
 }
 
 .search-bar svg {
@@ -210,6 +236,25 @@
   padding-top: 56.25%; /* 16:9 aspect ratio */
   background: #f1f5f9;
   overflow: hidden;
+}
+
+.favorite-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 3;
+  width: 34px;
+  height: 34px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.95);
+  color: #64748b;
+  font-size: 1.2rem;
+  cursor: pointer;
+}
+
+.favorite-btn.active {
+  color: #f59e0b;
 }
 
 .video-thumbnail img {
@@ -474,6 +519,88 @@
   margin: 0;
   line-height: 1.5;
   font-size: 0.95rem;
+}
+
+/* Dark Theme */
+[data-theme='dark'] .health-education-container {
+  background: #0b1220;
+}
+
+[data-theme='dark'] .education-title,
+[data-theme='dark'] .hero-content h2,
+[data-theme='dark'] .video-title,
+[data-theme='dark'] .no-results h3,
+[data-theme='dark'] .modal-info h2,
+[data-theme='dark'] .education-tips h2,
+[data-theme='dark'] .tip-card h3 {
+  color: #f8fafc;
+}
+
+[data-theme='dark'] .education-hero,
+[data-theme='dark'] .search-bar,
+[data-theme='dark'] .category-tab,
+[data-theme='dark'] .video-card,
+[data-theme='dark'] .no-results,
+[data-theme='dark'] .modal-content,
+[data-theme='dark'] .education-tips,
+[data-theme='dark'] .tip-card {
+  background: #111827;
+  border: 1px solid #334155;
+}
+
+[data-theme='dark'] .hero-content p,
+[data-theme='dark'] .video-description,
+[data-theme='dark'] .video-meta,
+[data-theme='dark'] .no-results p,
+[data-theme='dark'] .modal-meta,
+[data-theme='dark'] .modal-info p,
+[data-theme='dark'] .tip-card p,
+[data-theme='dark'] .search-bar svg,
+[data-theme='dark'] .category-tab {
+  color: #cbd5e1;
+}
+
+[data-theme='dark'] .back-button {
+  background: #111827;
+  color: #c7d2fe;
+  border: 1px solid #334155;
+}
+
+[data-theme='dark'] .back-button:hover {
+  background: #1f2937;
+}
+
+[data-theme='dark'] .search-bar input {
+  background: transparent;
+  color: #f8fafc;
+}
+
+[data-theme='dark'] .search-bar input::placeholder {
+  color: #94a3b8;
+}
+
+[data-theme='dark'] .category-tab.active {
+  border-color: #38bdf8;
+  color: #7dd3fc;
+  box-shadow: 0 4px 12px rgba(56, 189, 248, 0.3);
+}
+
+[data-theme='dark'] .category-count {
+  background: #1e293b;
+  color: #cbd5e1;
+}
+
+[data-theme='dark'] .category-tab.active .category-count {
+  background: #0369a1;
+  color: #f8fafc;
+}
+
+[data-theme='dark'] .modal-meta {
+  border-bottom-color: #334155;
+}
+
+[data-theme='dark'] .tip-card {
+  background: #0f172a;
 }
 
 /* Responsive Design */

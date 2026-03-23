@@ -196,6 +196,17 @@ def get_doctor_session(token):
     return session
 
 
+def get_admin_session(token):
+    """Validate and return admin session"""
+    if not token:
+        return None
+
+    session = admin_sessions_collection.find_one({'token': token})
+    if not session or session['expires_at'] < datetime.utcnow():
+        return None
+    return session
+
+
 @app.route('/api/signup', methods=['POST'])
 def signup():
     """Register a new user"""
@@ -992,6 +1003,183 @@ def get_user_predictions(user_id):
             'count': len(predictions)
         }), 200
         
+    except Exception as e:
+        return jsonify({'message': f'Server error: {str(e)}'}), 500
+
+
+@app.route('/api/admin/predictions', methods=['GET'])
+def admin_all_predictions():
+    """Get recent predictions across all users for admin dashboard"""
+    try:
+        token = request.headers.get('Authorization', '').replace('Bearer ', '')
+        session = get_admin_session(token)
+
+        if not session:
+            return jsonify({'message': 'Invalid or expired token'}), 401
+
+        limit = request.args.get('limit', default=250, type=int)
+        limit = max(1, min(limit, 1000))
+
+        predictions = list(predictions_collection.find({}).sort('created_at', -1).limit(limit))
+
+        # Map user_id to user name for display in admin UI
+        user_map = {}
+        for user in users_collection.find({}, {'name': 1}):
+            user_map[str(user['_id'])] = user.get('name', 'Unknown User')
+
+        for prediction in predictions:
+            prediction['_id'] = str(prediction['_id'])
+            prediction['user_name'] = user_map.get(str(prediction.get('user_id')), 'Unknown User')
+
+        return jsonify({'predictions': predictions, 'count': len(predictions)}), 200
+
+    except Exception as e:
+        return jsonify({'message': f'Server error: {str(e)}'}), 500
+
+
+@app.route('/api/admin/sessions', methods=['GET'])
+def admin_all_sessions():
+    """Get user sessions for admin dashboard"""
+    try:
+        token = request.headers.get('Authorization', '').replace('Bearer ', '')
+        session = get_admin_session(token)
+
+        if not session:
+            return jsonify({'message': 'Invalid or expired token'}), 401
+
+        limit = request.args.get('limit', default=300, type=int)
+        limit = max(1, min(limit, 1000))
+
+        sessions = list(sessions_collection.find({}).sort('created_at', -1).limit(limit))
+        now = datetime.utcnow()
+
+        for s in sessions:
+            s['_id'] = str(s['_id'])
+            s['status'] = 'active' if s.get('expires_at') and s['expires_at'] > now else 'expired'
+
+        active_count = sum(1 for s in sessions if s.get('status') == 'active')
+
+        return jsonify({
+            'sessions': sessions,
+            'count': len(sessions),
+            'active': active_count,
+            'expired': len(sessions) - active_count
+        }), 200
+
+    except Exception as e:
+        return jsonify({'message': f'Server error: {str(e)}'}), 500
+
+
+@app.route('/api/admin/sessions/<session_id>', methods=['DELETE'])
+def admin_revoke_session(session_id):
+    """Revoke a user session by session document id"""
+    try:
+        token = request.headers.get('Authorization', '').replace('Bearer ', '')
+        session = get_admin_session(token)
+
+        if not session:
+            return jsonify({'message': 'Invalid or expired token'}), 401
+
+        try:
+            object_id = ObjectId(session_id)
+        except Exception:
+            return jsonify({'message': 'Invalid session id'}), 400
+
+        result = sessions_collection.delete_one({'_id': object_id})
+        if result.deleted_count == 0:
+            return jsonify({'message': 'Session not found'}), 404
+
+        return jsonify({'message': 'Session revoked successfully'}), 200
+
+    except Exception as e:
+        return jsonify({'message': f'Server error: {str(e)}'}), 500
+
+
+@app.route('/api/admin/doctors', methods=['GET'])
+def admin_all_doctors():
+    """Get doctor directory details for admin dashboard"""
+    try:
+        token = request.headers.get('Authorization', '').replace('Bearer ', '')
+        session = get_admin_session(token)
+
+        if not session:
+            return jsonify({'message': 'Invalid or expired token'}), 401
+
+        doctor_profiles = list(doctors_collection.find({}))
+        profile_by_name = {d.get('name', '').strip().lower(): d for d in doctor_profiles}
+
+        doctor_accounts = list(doctor_accounts_collection.find({}, {'password': 0}))
+        doctors = []
+
+        for account in doctor_accounts:
+            account['_id'] = str(account['_id'])
+            profile = profile_by_name.get(account.get('name', '').strip().lower(), {})
+
+            doctors.append({
+                'id': account['_id'],
+                'name': account.get('name', 'Doctor'),
+                'email': account.get('email', ''),
+                'specialization': account.get('specialization', profile.get('specialization', 'General Physician')),
+                'experience': profile.get('experience', 'N/A'),
+                'rating': profile.get('rating', 'N/A'),
+                'availability': profile.get('availability', 'N/A'),
+                'languages': profile.get('languages', []),
+                'created_at': account.get('created_at')
+            })
+
+        return jsonify({'doctors': doctors, 'count': len(doctors)}), 200
+
+    except Exception as e:
+        return jsonify({'message': f'Server error: {str(e)}'}), 500
+
+
+@app.route('/api/admin/reports', methods=['GET'])
+def admin_reports_summary():
+    """Get aggregated report metrics for admin dashboard"""
+    try:
+        token = request.headers.get('Authorization', '').replace('Bearer ', '')
+        session = get_admin_session(token)
+
+        if not session:
+            return jsonify({'message': 'Invalid or expired token'}), 401
+
+        predictions = list(predictions_collection.find({}))
+
+        summary = {
+            'total': len(predictions),
+            'ckd': 0,
+            'noCkd': 0,
+            'single': 0,
+            'batch': 0
+        }
+
+        monthly = {}
+
+        for p in predictions:
+            result = str(p.get('result', '')).strip().lower()
+            if result == 'ckd' or result == 'positive':
+                summary['ckd'] += 1
+            elif result in ('no ckd', 'negative', 'notckd'):
+                summary['noCkd'] += 1
+
+            ptype = str(p.get('type', 'single')).strip().lower()
+            if ptype == 'batch':
+                summary['batch'] += 1
+            else:
+                summary['single'] += 1
+
+            created = p.get('created_at')
+            if isinstance(created, datetime):
+                key = created.strftime('%Y-%m')
+                monthly[key] = monthly.get(key, 0) + 1
+
+        monthly_data = [
+            {'month': key, 'count': monthly[key]}
+            for key in sorted(monthly.keys())[-12:]
+        ]
+
+        return jsonify({'summary': summary, 'monthly': monthly_data}), 200
+
     except Exception as e:
         return jsonify({'message': f'Server error: {str(e)}'}), 500
 

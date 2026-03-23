@@ -8,6 +8,9 @@ function Reports({ user, onBack }) {
   const [activeTab, setActiveTab] = useState('overview')
   const [predictions, setPredictions] = useState([])
   const [loading, setLoading] = useState(true)
+  const [sessionsQuery, setSessionsQuery] = useState('')
+  const [sessionsTypeFilter, setSessionsTypeFilter] = useState('all')
+  const [sessionsSort, setSessionsSort] = useState('newest')
 
   useEffect(() => {
     fetchPredictions()
@@ -61,7 +64,7 @@ function Reports({ user, onBack }) {
     return [
       { name: 'Negative', value: stats.negative, color: '#ef4444' },
       { name: 'Positive', value: stats.positive, color: '#10b981' },
-      { name: 'Pending', value: stats.pending, color: '#8b5cf6' }
+      { name: 'Pending', value: stats.pending, color: '#f59e0b' }
     ].filter(item => item.value > 0)
   }
 
@@ -264,6 +267,32 @@ function Reports({ user, onBack }) {
   }
 
   const stats = getPredictionStats()
+  const filteredSessions = [...predictions]
+    .filter((prediction) => {
+      const patientName = (prediction.patient_name || 'Anonymous').toLowerCase()
+      const result = (prediction.result || '').toLowerCase()
+      const query = sessionsQuery.toLowerCase()
+      const matchesQuery =
+        patientName.includes(query) ||
+        result.includes(query) ||
+        new Date(prediction.created_at).toLocaleDateString().includes(query)
+
+      const normalizedType = (prediction.type || 'single').toLowerCase()
+      const matchesType = sessionsTypeFilter === 'all' || normalizedType === sessionsTypeFilter
+
+      return matchesQuery && matchesType
+    })
+    .sort((a, b) => {
+      if (sessionsSort === 'oldest') {
+        return new Date(a.created_at) - new Date(b.created_at)
+      }
+
+      if (sessionsSort === 'confidence') {
+        return (parseFloat(b.confidence) || 0) - (parseFloat(a.confidence) || 0)
+      }
+
+      return new Date(b.created_at) - new Date(a.created_at)
+    })
 
   return (
     <div className="reports-container">
@@ -293,7 +322,8 @@ function Reports({ user, onBack }) {
               user?.name?.charAt(0).toUpperCase() || 'U'
             )}
           </div>
-          <div className="profile-details">\n            <h2 className="profile-name">{user?.name || 'User'}</h2>
+          <div className="profile-details">
+            <h2 className="profile-name">{user?.name || 'User'}</h2>
             <span className="profile-status">ACTIVE</span>
           </div>
         </div>
@@ -392,7 +422,7 @@ function Reports({ user, onBack }) {
                             labelLine={false}
                             label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
                             outerRadius={80}
-                            fill="#8884d8"
+                            fill="#2563eb"
                             dataKey="value"
                           >
                             {getPieChartData().map((entry, index) => (
@@ -426,7 +456,7 @@ function Reports({ user, onBack }) {
                           <XAxis dataKey="month" />
                           <YAxis />
                           <Tooltip />
-                          <Line type="monotone" dataKey="predictions" stroke="#8b5cf6" strokeWidth={2} dot={{ fill: '#8b5cf6', r: 4 }} />
+                          <Line type="monotone" dataKey="predictions" stroke="#2563eb" strokeWidth={2} dot={{ fill: '#2563eb', r: 4 }} />
                         </LineChart>
                       </ResponsiveContainer>
                     ) : (
@@ -469,12 +499,41 @@ function Reports({ user, onBack }) {
                       type="text" 
                       placeholder="Search records..." 
                       className="search-input"
+                      value={sessionsQuery}
+                      onChange={(e) => setSessionsQuery(e.target.value)}
                     />
-                    <button className="filter-btn">Filter</button>
+                    <select
+                      className="session-select"
+                      value={sessionsTypeFilter}
+                      onChange={(e) => setSessionsTypeFilter(e.target.value)}
+                    >
+                      <option value="all">All Types</option>
+                      <option value="single">Single</option>
+                      <option value="batch">Batch</option>
+                    </select>
+                    <select
+                      className="session-select"
+                      value={sessionsSort}
+                      onChange={(e) => setSessionsSort(e.target.value)}
+                    >
+                      <option value="newest">Newest</option>
+                      <option value="oldest">Oldest</option>
+                      <option value="confidence">Highest Confidence</option>
+                    </select>
+                    <button
+                      className="filter-btn"
+                      onClick={() => {
+                        setSessionsQuery('')
+                        setSessionsTypeFilter('all')
+                        setSessionsSort('newest')
+                      }}
+                    >
+                      Reset
+                    </button>
                   </div>
                 </div>
                 
-                {predictions.length > 0 ? (
+                {filteredSessions.length > 0 ? (
                   <>
                     <div className="sessions-table-container">
                       <table className="sessions-table">
@@ -490,7 +549,7 @@ function Reports({ user, onBack }) {
                           </tr>
                         </thead>
                         <tbody>
-                          {predictions.slice(0, 8).map((prediction, index) => (
+                          {filteredSessions.slice(0, 8).map((prediction, index) => (
                             <tr key={index}>
                               <td>{1200 + index}</td>
                               <td>{prediction.patient_name || 'Anonymous'}</td>
@@ -529,7 +588,7 @@ function Reports({ user, onBack }) {
                       </table>
                     </div>
                     <div className="table-pagination">
-                      <span className="pagination-info">Showing 1 to {Math.min(8, predictions.length)} of {predictions.length} entries</span>
+                      <span className="pagination-info">Showing 1 to {Math.min(8, filteredSessions.length)} of {filteredSessions.length} entries</span>
                       <div className="pagination-controls">
                         <button className="pagination-btn">Previous</button>
                         <button className="pagination-btn active">1</button>
@@ -542,8 +601,8 @@ function Reports({ user, onBack }) {
                     <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                       <path d="M9 2v4m6-4v4M3 8h18M5 4h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V6a2 2 0 012-2z" strokeWidth="2"/>
                     </svg>
-                    <h3>No Prediction Sessions Yet</h3>
-                    <p>Start making predictions to see your sessions here</p>
+                    <h3>{predictions.length > 0 ? 'No Matching Records' : 'No Prediction Sessions Yet'}</h3>
+                    <p>{predictions.length > 0 ? 'Try changing search or filters' : 'Start making predictions to see your sessions here'}</p>
                   </div>
                 )}
               </div>

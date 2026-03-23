@@ -152,7 +152,6 @@ const SignUp = ({ onSignUp, onSwitchToLogin, onSwitchToAdminSignup, onSwitchToDo
           <div className="form-group">
             <label htmlFor="name">Full Name</label>
             <div className="input-with-icon">
-              <span className="input-icon">👤</span>
               <input
                 type="text"
                 id="name"
@@ -168,7 +167,6 @@ const SignUp = ({ onSignUp, onSwitchToLogin, onSwitchToAdminSignup, onSwitchToDo
           <div className="form-group">
             <label htmlFor="email">Email Address</label>
             <div className="input-with-icon">
-              <span className="input-icon">@</span>
               <input
                 type="email"
                 id="email"
@@ -184,7 +182,6 @@ const SignUp = ({ onSignUp, onSwitchToLogin, onSwitchToAdminSignup, onSwitchToDo
           <div className="form-group">
             <label htmlFor="password">Password</label>
             <div className="input-with-icon">
-              <span className="input-icon">🔒</span>
               <input
                 type="password"
                 id="password"
@@ -200,7 +197,6 @@ const SignUp = ({ onSignUp, onSwitchToLogin, onSwitchToAdminSignup, onSwitchToDo
           <div className="form-group">
             <label htmlFor="confirmPassword">Confirm Password</label>
             <div className="input-with-icon">
-              <span className="input-icon">🔒</span>
               <input
                 type="password"
                 id="confirmPassword"

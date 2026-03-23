@@ -7,6 +7,7 @@ function Settings({ user, onBack }) {
   const [notification, setNotification] = useState(null)
   const [activeTab, setActiveTab] = useState('appearance')
   const [isLoading, setIsLoading] = useState(false)
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
   
   // Appearance settings
   const [appearanceSettings, setAppearanceSettings] = useState({
@@ -67,18 +68,22 @@ function Settings({ user, onBack }) {
     toggleTheme()
     const newTheme = theme === 'light' ? 'dark' : 'light'
     setAppearanceSettings(prev => ({ ...prev, theme: newTheme }))
+    setHasUnsavedChanges(true)
   }
 
   const handleAppearanceChange = (setting, value) => {
     setAppearanceSettings(prev => ({ ...prev, [setting]: value }))
+    setHasUnsavedChanges(true)
   }
 
   const handlePreferencesChange = (setting, value) => {
     setPreferencesSettings(prev => ({ ...prev, [setting]: value }))
+    setHasUnsavedChanges(true)
   }
 
   const handleSecurityChange = (setting, value) => {
     setSecuritySettings(prev => ({ ...prev, [setting]: value }))
+    setHasUnsavedChanges(true)
   }
 
   const handlePasswordChangeInput = (e) => {
@@ -96,8 +101,53 @@ function Settings({ user, onBack }) {
 
     setTimeout(() => {
       setIsLoading(false)
+      setHasUnsavedChanges(false)
       showNotification('success', 'Settings saved successfully!')
     }, 500)
+  }
+
+  const handleResetDefaults = () => {
+    setAppearanceSettings({
+      theme,
+      fontSize: 'medium',
+      compactMode: false,
+      highContrast: false,
+      language: 'en'
+    })
+    setPreferencesSettings({
+      autoSave: true,
+      defaultView: 'single',
+      showTutorials: true,
+      soundEffects: false,
+      dateFormat: 'MM/DD/YYYY',
+      timeFormat: '12h',
+      resultsPerPage: 10
+    })
+    setSecuritySettings({
+      sessionTimeout: '30',
+      requirePasswordChange: false,
+      loginAlerts: true,
+      deviceTracking: true
+    })
+    setHasUnsavedChanges(true)
+    showNotification('success', 'Default settings loaded. Click save to apply.')
+  }
+
+  const handleExportSettings = () => {
+    const payload = {
+      exportedAt: new Date().toISOString(),
+      appearance: appearanceSettings,
+      preferences: preferencesSettings,
+      security: securitySettings
+    }
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const anchor = document.createElement('a')
+    anchor.href = url
+    anchor.download = 'user-dashboard-settings.json'
+    anchor.click()
+    URL.revokeObjectURL(url)
+    showNotification('success', 'Settings exported successfully!')
   }
 
   const handleChangePassword = async () => {
@@ -530,6 +580,19 @@ function Settings({ user, onBack }) {
 
           {/* Save Button */}
           <div className="settings-actions">
+            <div className="settings-status">
+              <span className={`status-pill ${hasUnsavedChanges ? 'pending' : 'saved'}`}>
+                {hasUnsavedChanges ? 'Unsaved changes' : 'All changes saved'}
+              </span>
+            </div>
+            <div className="settings-secondary-actions">
+              <button className="secondary-settings-btn" onClick={handleResetDefaults}>
+                Reset Defaults
+              </button>
+              <button className="secondary-settings-btn" onClick={handleExportSettings}>
+                Export Settings
+              </button>
+            </div>
             <button 
               className="save-settings-btn" 
               onClick={handleSaveSettings}

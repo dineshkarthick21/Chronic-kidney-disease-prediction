@@ -1,7 +1,7 @@
 /* Settings Page Container */
 .settings-page {
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #ffffff;
   padding: 2rem;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   position: relative;
@@ -57,11 +57,10 @@
   align-items: center;
   gap: 1.5rem;
   margin-bottom: 2.5rem;
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
+  background: #ffffff;
   padding: 1.5rem 2rem;
   border-radius: 20px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
   animation: fadeInDown 0.5s ease-out;
 }
 
@@ -97,10 +96,9 @@
 
 .settings-header h1 {
   font-size: 2.2rem;
-  color: white;
+  color: #0f172a;
   margin: 0;
   font-weight: 700;
-  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
 /* Settings Content Card */
@@ -278,7 +276,7 @@
 }
 
 .toggle-btn.active {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #0ea5e9 0%, #0369a1 100%);
   box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
 }
 
@@ -403,6 +401,50 @@
   padding: 0 2.5rem 2.5rem 2.5rem;
 }
 
+.settings-status {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 0.75rem;
+}
+
+.status-pill {
+  border-radius: 999px;
+  padding: 0.3rem 0.8rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.status-pill.saved {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.status-pill.pending {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.settings-secondary-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 0.85rem;
+}
+
+.secondary-settings-btn {
+  flex: 1;
+  border: 1px solid #cbd5e1;
+  border-radius: 12px;
+  padding: 0.85rem 1rem;
+  background: #f8fafc;
+  color: #1e293b;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.secondary-settings-btn:hover {
+  background: #e2e8f0;
+}
+
 .save-settings-btn {
   width: 100%;
   background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
@@ -490,4 +532,52 @@
   .save-settings-btn {
     padding: 1rem 1.5rem;
   }
+}
+
+/* Dark Theme */
+[data-theme='dark'] .settings-page {
+  background: #0b1220;
+}
+
+[data-theme='dark'] .settings-header,
+[data-theme='dark'] .settings-content,
+[data-theme='dark'] .setting-card,
+[data-theme='dark'] .security-card,
+[data-theme='dark'] .tab-button.active,
+[data-theme='dark'] .theme-option.active {
+  background: #111827;
+  border-color: #334155;
+}
+
+[data-theme='dark'] .settings-header h1,
+[data-theme='dark'] .setting-info h3,
+[data-theme='dark'] .security-card h3,
+[data-theme='dark'] .password-input label,
+[data-theme='dark'] .theme-option,
+[data-theme='dark'] .tab-button.active {
+  color: #f8fafc;
+}
+
+[data-theme='dark'] .tab-button,
+[data-theme='dark'] .setting-info p,
+[data-theme='dark'] .back-btn,
+[data-theme='dark'] .setting-select,
+[data-theme='dark'] .password-input input,
+[data-theme='dark'] .settings-tabs {
+  color: #cbd5e1;
+}
+
+[data-theme='dark'] .back-btn,
+[data-theme='dark'] .setting-select,
+[data-theme='dark'] .password-input input,
+[data-theme='dark'] .theme-toggle-btn,
+[data-theme='dark'] .settings-tabs,
+[data-theme='dark'] .setting-card {
+  background: #0f172a;
+  border-color: #334155;
+}
+
+[data-theme='dark'] .tab-button:hover {
+  background: rgba(56, 189, 248, 0.12);
+  color: #7dd3fc;
 }

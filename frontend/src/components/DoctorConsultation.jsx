@@ -23,6 +23,9 @@ function DoctorConsultation({ user, onBack }) {
     notes: ''
   })
   const [notification, setNotification] = useState(null)
+  const [doctorSearch, setDoctorSearch] = useState('')
+  const [languageFilter, setLanguageFilter] = useState('all')
+  const [minimumRating, setMinimumRating] = useState('0')
   const socketRef = useRef(null)
 
   useEffect(() => {
@@ -341,6 +344,20 @@ function DoctorConsultation({ user, onBack }) {
 
   const upcomingConsultations = consultations.filter(c => isUpcoming(c.date) && c.status === 'scheduled')
   const pastConsultations = consultations.filter(c => !isUpcoming(c.date) || c.status === 'completed' || c.status === 'cancelled')
+  const availableLanguages = [...new Set(doctors.flatMap((doctor) => doctor.languages || []))]
+  const filteredDoctors = doctors.filter((doctor) => {
+    const query = doctorSearch.toLowerCase()
+    const matchesQuery =
+      doctor.name.toLowerCase().includes(query) ||
+      doctor.specialization.toLowerCase().includes(query)
+
+    const matchesLanguage =
+      languageFilter === 'all' ||
+      (doctor.languages || []).some((language) => language.toLowerCase() === languageFilter.toLowerCase())
+
+    const matchesRating = (parseFloat(doctor.rating) || 0) >= parseFloat(minimumRating)
+    return matchesQuery && matchesLanguage && matchesRating
+  })
 
   return (
     <div className="consultation-page">
@@ -412,11 +429,56 @@ function DoctorConsultation({ user, onBack }) {
         {/* Content */}
         <div className="consultation-content">
           {activeTab === 'schedule' && (
+            <>
+            <div className="doctor-filters">
+              <input
+                className="doctor-filter-input"
+                type="text"
+                placeholder="Search by doctor or specialization"
+                value={doctorSearch}
+                onChange={(e) => setDoctorSearch(e.target.value)}
+              />
+              <select
+                className="doctor-filter-select"
+                value={languageFilter}
+                onChange={(e) => setLanguageFilter(e.target.value)}
+              >
+                <option value="all">All Languages</option>
+                {availableLanguages.map((language) => (
+                  <option key={language} value={language}>{language}</option>
+                ))}
+              </select>
+              <select
+                className="doctor-filter-select"
+                value={minimumRating}
+                onChange={(e) => setMinimumRating(e.target.value)}
+              >
+                <option value="0">Any Rating</option>
+                <option value="4">4.0+</option>
+                <option value="4.5">4.5+</option>
+                <option value="4.8">4.8+</option>
+              </select>
+              <button
+                className="doctor-filter-clear"
+                onClick={() => {
+                  setDoctorSearch('')
+                  setLanguageFilter('all')
+                  setMinimumRating('0')
+                }}
+              >
+                Reset
+              </button>
+            </div>
             <div className="doctors-grid">
               {loading ? (
                 <div className="loading-state">Loading doctors...</div>
+              ) : filteredDoctors.length === 0 ? (
+                <div className="empty-state">
+                  <h3>No doctors match your filters</h3>
+                  <p>Try a different search or reset filters.</p>
+                </div>
               ) : (
-                doctors.map(doctor => (
+                filteredDoctors.map(doctor => (
                   <div key={doctor.id} className="doctor-card">
                     <div className="doctor-avatar-large">{doctor.avatar}</div>
                     <h3>{doctor.name}</h3>
@@ -461,6 +523,7 @@ function DoctorConsultation({ user, onBack }) {
                 ))
               )}
             </div>
+            </>
           )}
 
           {activeTab === 'upcoming' && (

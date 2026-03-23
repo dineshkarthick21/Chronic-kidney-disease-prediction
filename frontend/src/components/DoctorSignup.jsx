@@ -120,7 +120,6 @@ const DoctorSignup = ({ onDoctorSignup, onSwitchToDoctorLogin, onBackToUserLogin
           <div className="form-group">
             <label htmlFor="name">Full Name</label>
             <div className="input-with-icon">
-              <span className="input-icon">👤</span>
               <input
                 type="text"
                 id="name"
@@ -136,7 +135,6 @@ const DoctorSignup = ({ onDoctorSignup, onSwitchToDoctorLogin, onBackToUserLogin
           <div className="form-group">
             <label htmlFor="email">Doctor Email</label>
             <div className="input-with-icon">
-              <span className="input-icon">@</span>
               <input
                 type="email"
                 id="email"
@@ -152,7 +150,6 @@ const DoctorSignup = ({ onDoctorSignup, onSwitchToDoctorLogin, onBackToUserLogin
           <div className="form-group">
             <label htmlFor="specialization">Specialization</label>
             <div className="input-with-icon">
-              <span className="input-icon">🧠</span>
               <input
                 type="text"
                 id="specialization"
@@ -168,7 +165,6 @@ const DoctorSignup = ({ onDoctorSignup, onSwitchToDoctorLogin, onBackToUserLogin
           <div className="form-group">
             <label htmlFor="password">Password</label>
             <div className="input-with-icon">
-              <span className="input-icon">🔒</span>
               <input
                 type="password"
                 id="password"
@@ -184,7 +180,6 @@ const DoctorSignup = ({ onDoctorSignup, onSwitchToDoctorLogin, onBackToUserLogin
           <div className="form-group">
             <label htmlFor="confirmPassword">Confirm Password</label>
             <div className="input-with-icon">
-              <span className="input-icon">🔒</span>
               <input
                 type="password"
                 id="confirmPassword"

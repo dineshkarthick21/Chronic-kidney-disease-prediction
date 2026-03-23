@@ -4,6 +4,15 @@ import './HealthEducation.css'
 function HealthEducation({ user, onBack }) {
   const [activeCategory, setActiveCategory] = useState('all')
   const [searchQuery, setSearchQuery] = useState('')
+  const [sortBy, setSortBy] = useState('popular')
+  const [showFavoritesOnly, setShowFavoritesOnly] = useState(false)
+  const [favoriteVideoIds, setFavoriteVideoIds] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem('favoriteEducationVideos') || '[]')
+    } catch {
+      return []
+    }
+  })
 
   // Educational video database - Verified working embeddable YouTube videos
   const videos = [
@@ -445,12 +454,48 @@ function HealthEducation({ user, onBack }) {
     return videoId ? `https://www.youtube.com/watch?v=${videoId}` : '#'
   }
 
-  const filteredVideos = videos.filter(video => {
-    const matchesCategory = activeCategory === 'all' || video.category === activeCategory
-    const matchesSearch = video.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         video.description.toLowerCase().includes(searchQuery.toLowerCase())
-    return matchesCategory && matchesSearch
-  })
+  const parseViews = (viewsValue) => {
+    const normalized = (viewsValue || '0').toString().toUpperCase().trim()
+    if (normalized.endsWith('M')) {
+      return parseFloat(normalized) * 1000000
+    }
+    if (normalized.endsWith('K')) {
+      return parseFloat(normalized) * 1000
+    }
+    return parseFloat(normalized) || 0
+  }
+
+  const persistFavorites = (ids) => {
+    setFavoriteVideoIds(ids)
+    localStorage.setItem('favoriteEducationVideos', JSON.stringify(ids))
+  }
+
+  const toggleFavorite = (videoId) => {
+    const alreadyFavorite = favoriteVideoIds.includes(videoId)
+    if (alreadyFavorite) {
+      persistFavorites(favoriteVideoIds.filter((id) => id !== videoId))
+      return
+    }
+    persistFavorites([...favoriteVideoIds, videoId])
+  }
+
+  const filteredVideos = videos
+    .filter(video => {
+      const matchesCategory = activeCategory === 'all' || video.category === activeCategory
+      const matchesSearch = video.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                           video.description.toLowerCase().includes(searchQuery.toLowerCase())
+      const matchesFavorites = !showFavoritesOnly || favoriteVideoIds.includes(video.id)
+      return matchesCategory && matchesSearch && matchesFavorites
+    })
+    .sort((a, b) => {
+      if (sortBy === 'newest') {
+        return new Date(b.date) - new Date(a.date)
+      }
+      if (sortBy === 'duration') {
+        return parseInt(b.duration, 10) - parseInt(a.duration, 10)
+      }
+      return parseViews(b.views) - parseViews(a.views)
+    })
 
   const openVideoModal = (video) => {
     setSelectedVideo(video)
@@ -511,6 +556,21 @@ function HealthEducation({ user, onBack }) {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
+          <select
+            className="sort-select"
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value)}
+          >
+            <option value="popular">Most Popular</option>
+            <option value="newest">Newest First</option>
+            <option value="duration">Longest Duration</option>
+          </select>
+          <button
+            className={`favorites-toggle ${showFavoritesOnly ? 'active' : ''}`}
+            onClick={() => setShowFavoritesOnly((prev) => !prev)}
+          >
+            {showFavoritesOnly ? 'Show All' : `Favorites (${favoriteVideoIds.length})`}
+          </button>
         </div>
       </div>
 
@@ -539,6 +599,16 @@ function HealthEducation({ user, onBack }) {
           filteredVideos.map(video => (
             <div key={video.id} className="video-card" onClick={() => openVideoModal(video)}>
               <div className="video-thumbnail">
+                <button
+                  className={`favorite-btn ${favoriteVideoIds.includes(video.id) ? 'active' : ''}`}
+                  onClick={(event) => {
+                    event.stopPropagation()
+                    toggleFavorite(video.id)
+                  }}
+                  title="Save to favorites"
+                >
+                  {favoriteVideoIds.includes(video.id) ? '★' : '☆'}
+                </button>
                 <img src={video.thumbnail} alt={video.title} />
                 <div className="video-duration">{video.duration}</div>
                 <div className="play-overlay">

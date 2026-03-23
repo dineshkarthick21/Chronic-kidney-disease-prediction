@@ -1,6 +1,6 @@
 .consultation-page {
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #ffffff;
   padding: 2rem;
   overflow-y: auto;
 }
@@ -80,10 +80,6 @@
   font-size: 2.5rem;
   color: #1f2937;
   margin: 0.5rem 0;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
 }
 
 .subtitle {
@@ -122,7 +118,7 @@
 }
 
 .tab-btn.active {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #0ea5e9 0%, #0369a1 100%);
   color: white;
   border-color: transparent;
 }
@@ -140,6 +136,49 @@
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
   min-height: 400px;
   overflow: visible;
+}
+
+.doctor-filters {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+}
+
+.doctor-filter-input,
+.doctor-filter-select {
+  padding: 0.75rem 1rem;
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  color: #111827;
+  background: #ffffff;
+}
+
+.doctor-filter-input {
+  flex: 1;
+  min-width: 240px;
+}
+
+.doctor-filter-input:focus,
+.doctor-filter-select:focus {
+  outline: none;
+  border-color: #0ea5e9;
+  box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.15);
+}
+
+.doctor-filter-clear {
+  padding: 0.75rem 1rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  background: #f8fafc;
+  color: #334155;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.doctor-filter-clear:hover {
+  background: #e2e8f0;
 }
 
 /* Doctors Grid */
@@ -161,8 +200,8 @@
 
 .doctor-card:hover {
   transform: translateY(-10px);
-  box-shadow: 0 15px 40px rgba(102, 126, 234, 0.3);
-  border-color: #667eea;
+  box-shadow: 0 15px 40px rgba(14, 165, 233, 0.3);
+  border-color: #0284c7;
 }
 
 .doctor-avatar-large {
@@ -170,7 +209,7 @@
   height: 100px;
   font-size: 3rem;
   margin: 0 auto 1rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #0ea5e9 0%, #0369a1 100%);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -185,7 +224,7 @@
 }
 
 .doctor-specialization {
-  color: #667eea;
+  color: #0369a1;
   font-weight: 600;
   font-size: 1rem;
   margin: 0.5rem 0;
@@ -208,14 +247,14 @@
 }
 
 .detail-item svg {
-  color: #667eea;
+  color: #0284c7;
   flex-shrink: 0;
 }
 
 .book-btn {
   width: 100%;
   padding: 1rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #0ea5e9 0%, #0369a1 100%);
   color: white;
   border: none;
   border-radius: 12px;
@@ -304,7 +343,7 @@
   width: 60px;
   height: 60px;
   font-size: 2rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #0ea5e9 0%, #0369a1 100%);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -513,7 +552,7 @@
 
 .primary-btn {
   padding: 1rem 2rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #0ea5e9 0%, #0369a1 100%);
   color: white;
   border: none;
   border-radius: 12px;
@@ -794,6 +833,10 @@
 }
 
 /* Dark Theme Support */
+[data-theme='dark'] .consultation-page {
+  background: #0b1220;
+}
+
 [data-theme='dark'] .consultation-header,
 [data-theme='dark'] .consultation-content,
 [data-theme='dark'] .consultation-card,
@@ -816,6 +859,17 @@
 [data-theme='dark'] .detail-row,
 [data-theme='dark'] .detail-item {
   color: #9ca3af;
+}
+
+[data-theme='dark'] .tab-btn {
+  background: #1f2937;
+  color: #cbd5e1;
+  border-color: #374151;
+}
+
+[data-theme='dark'] .tab-btn.active {
+  background: linear-gradient(135deg, #0ea5e9 0%, #0369a1 100%);
+  color: #ffffff;
 }
 
 [data-theme='dark'] .form-group input,

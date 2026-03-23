@@ -27,6 +27,7 @@ function Profile({ user, onBack, onUpdateUser }) {
     confirmPassword: ''
   })
   const [uploadingPhoto, setUploadingPhoto] = useState(false)
+  const [activeInsight, setActiveInsight] = useState('predictions')
 
   // Fetch user profile and statistics from backend
   useEffect(() => {
@@ -256,6 +257,21 @@ function Profile({ user, onBack, onUpdateUser }) {
     }
   }
 
+  const completionFields = [formData.name, formData.email, formData.phone, formData.bio, formData.profilePhoto]
+  const completionPercent = Math.round((completionFields.filter(Boolean).length / completionFields.length) * 100)
+
+  const getInsightText = () => {
+    if (activeInsight === 'predictions') {
+      return `You have completed ${statistics.predictions_count} predictions. Keep tracking regularly for better trend visibility.`
+    }
+
+    if (activeInsight === 'reports') {
+      return `You generated ${statistics.reports_count} reports. Download and share them with your doctor when needed.`
+    }
+
+    return `Your account is ${statistics.account_age} ${statistics.account_age === 1 ? 'day' : 'days'} old. Update your profile details to improve personalization.`
+  }
+
   return (
     <div className="profile-page">
       <div className="profile-container">
@@ -324,6 +340,21 @@ function Profile({ user, onBack, onUpdateUser }) {
                     {isLoading ? 'Saving...' : 'Save Changes'}
                   </button>
                 </div>
+              )}
+            </div>
+
+            <div className="profile-completion">
+              <div className="completion-header">
+                <span>Profile Completion</span>
+                <strong>{completionPercent}%</strong>
+              </div>
+              <div className="completion-track">
+                <div className="completion-fill" style={{ width: `${completionPercent}%` }}></div>
+              </div>
+              {completionPercent < 100 && !isEditing && (
+                <button className="complete-profile-btn" onClick={() => setIsEditing(true)}>
+                  Complete Profile
+                </button>
               )}
             </div>
 
@@ -457,21 +488,24 @@ function Profile({ user, onBack, onUpdateUser }) {
           <div className="profile-stats-section">
             <h2>Account Statistics</h2>
             <div className="stats-grid">
-              <div className="stat-card">
+              <div className={`stat-card ${activeInsight === 'predictions' ? 'active' : ''}`} onClick={() => setActiveInsight('predictions')}>
                 <div className="stat-icon">📊</div>
                 <div className="stat-value">{statistics.predictions_count}</div>
                 <div className="stat-label">Predictions Made</div>
               </div>
-              <div className="stat-card">
+              <div className={`stat-card ${activeInsight === 'reports' ? 'active' : ''}`} onClick={() => setActiveInsight('reports')}>
                 <div className="stat-icon">📁</div>
                 <div className="stat-value">{statistics.reports_count}</div>
                 <div className="stat-label">Reports Generated</div>
               </div>
-              <div className="stat-card">
+              <div className={`stat-card ${activeInsight === 'account' ? 'active' : ''}`} onClick={() => setActiveInsight('account')}>
                 <div className="stat-icon">🕒</div>
                 <div className="stat-value">{statistics.account_age} {statistics.account_age === 1 ? 'day' : 'days'}</div>
                 <div className="stat-label">Account Age</div>
               </div>
+            </div>
+            <div className="stats-insight">
+              <p>{getInsightText()}</p>
             </div>
           </div>
         </div>

@@ -104,7 +104,6 @@ const AdminLogin = ({ onAdminLogin, onSwitchToAdminSignup, onBackToUserLogin }) 
           <div className="form-group">
             <label htmlFor="email">Admin Email</label>
             <div className="input-with-icon">
-              <span className="input-icon">@</span>
               <input
                 type="email"
                 id="email"
@@ -120,7 +119,6 @@ const AdminLogin = ({ onAdminLogin, onSwitchToAdminSignup, onBackToUserLogin }) 
           <div className="form-group">
             <label htmlFor="password">Password</label>
             <div className="input-with-icon">
-              <span className="input-icon">🔒</span>
               <input
                 type="password"
                 id="password"

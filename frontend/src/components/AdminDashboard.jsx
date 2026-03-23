@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useTheme } from '../context/ThemeContext'
 import { PieChart, Pie, Cell, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts'
 import { jsPDF } from 'jspdf'
@@ -16,40 +16,101 @@ const AdminDashboard = ({ admin, onLogout }) => {
   const [loading, setLoading] = useState(true)
   const [showUsers, setShowUsers] = useState(false)
   const [activeMenu, setActiveMenu] = useState('dashboard')
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [selectedUser, setSelectedUser] = useState(null)
   const [userPredictions, setUserPredictions] = useState([])
   const [loadingPredictions, setLoadingPredictions] = useState(false)
   const [showUserModal, setShowUserModal] = useState(false)
   const [activeTab, setActiveTab] = useState('overview')
   const [breadcrumb, setBreadcrumb] = useState(['Dashboard'])
+  const [userSearch, setUserSearch] = useState('')
+  const [userSort, setUserSort] = useState('newest')
+  const [userFilter, setUserFilter] = useState('all')
+  const [refreshing, setRefreshing] = useState(false)
+  const [allPredictions, setAllPredictions] = useState([])
+  const [allSessions, setAllSessions] = useState([])
+  const [doctors, setDoctors] = useState([])
+  const [reportsData, setReportsData] = useState({
+    summary: { total: 0, ckd: 0, noCkd: 0, single: 0, batch: 0 },
+    monthly: []
+  })
+  const [predictionSearch, setPredictionSearch] = useState('')
+  const [predictionResultFilter, setPredictionResultFilter] = useState('all')
+  const [sessionSearch, setSessionSearch] = useState('')
+  const [sessionStatusFilter, setSessionStatusFilter] = useState('all')
+  const [doctorSearch, setDoctorSearch] = useState('')
+  const [selectedPrediction, setSelectedPrediction] = useState(null)
+  const [toast, setToast] = useState(null)
+  const [sidebarQuery, setSidebarQuery] = useState('')
+  const [pinnedMenus, setPinnedMenus] = useState(() => {
+    try {
+      const saved = localStorage.getItem('adminPinnedMenus')
+      return saved ? JSON.parse(saved) : ['dashboard', 'users', 'predictions']
+    } catch {
+      return ['dashboard', 'users', 'predictions']
+    }
+  })
 
   useEffect(() => {
     fetchDashboardData()
   }, [])
 
+  useEffect(() => {
+    localStorage.setItem('adminPinnedMenus', JSON.stringify(pinnedMenus))
+  }, [pinnedMenus])
+
   const fetchDashboardData = async () => {
     try {
       const token = localStorage.getItem('adminToken')
-      
-      // Fetch dashboard stats
-      const statsResponse = await fetch('http://localhost:5000/api/admin/stats', {
-        headers: { 'Authorization': `Bearer ${token}` }
-      })
-      
+
+      const headers = { 'Authorization': `Bearer ${token}` }
+      const [
+        statsResponse,
+        usersResponse,
+        predictionsResponse,
+        sessionsResponse,
+        doctorsResponse,
+        reportsResponse
+      ] = await Promise.all([
+        fetch('http://localhost:5000/api/admin/stats', { headers }),
+        fetch('http://localhost:5000/api/admin/users', { headers }),
+        fetch('http://localhost:5000/api/admin/predictions?limit=500', { headers }),
+        fetch('http://localhost:5000/api/admin/sessions?limit=500', { headers }),
+        fetch('http://localhost:5000/api/admin/doctors', { headers }),
+        fetch('http://localhost:5000/api/admin/reports', { headers })
+      ])
+
       if (statsResponse.ok) {
-        const statsData = await statsResponse.json()
-        setStats(statsData)
+        setStats(await statsResponse.json())
       }
 
-      // Fetch users list
-      const usersResponse = await fetch('http://localhost:5000/api/admin/users', {
-        headers: { 'Authorization': `Bearer ${token}` }
-      })
-      
       if (usersResponse.ok) {
         const usersData = await usersResponse.json()
-        setUsers(usersData.users)
+        setUsers(usersData.users || [])
+      }
+
+      if (predictionsResponse.ok) {
+        const predictionsData = await predictionsResponse.json()
+        setAllPredictions(predictionsData.predictions || [])
+      } else {
+        setAllPredictions([])
+      }
+
+      if (sessionsResponse.ok) {
+        const sessionsData = await sessionsResponse.json()
+        setAllSessions(sessionsData.sessions || [])
+      } else {
+        setAllSessions([])
+      }
+
+      if (doctorsResponse.ok) {
+        const doctorsData = await doctorsResponse.json()
+        setDoctors(doctorsData.doctors || [])
+      } else {
+        setDoctors([])
+      }
+
+      if (reportsResponse.ok) {
+        setReportsData(await reportsResponse.json())
       }
       
       setLoading(false)
@@ -57,6 +118,18 @@ const AdminDashboard = ({ admin, onLogout }) => {
       console.error('Error fetching dashboard data:', error)
       setLoading(false)
     }
+  }
+
+  const handleRefreshData = async () => {
+    setRefreshing(true)
+    await fetchDashboardData()
+    setRefreshing(false)
+    setToast({ type: 'success', message: 'Dashboard data refreshed' })
+  }
+
+  const showToast = (type, message) => {
+    setToast({ type, message })
+    setTimeout(() => setToast(null), 2500)
   }
 
   const handleLogout = () => {
@@ -443,49 +516,269 @@ const AdminDashboard = ({ admin, onLogout }) => {
     { id: 'admin', label: 'Admin', icon: '👤' }
   ]
 
+  const goBackFromSection = () => {
+    if (activeMenu === 'user-details') {
+      handleBackToUsers()
+      return
+    }
+
+    setActiveMenu('dashboard')
+    setShowUsers(false)
+    setSelectedUser(null)
+    setBreadcrumb(['Dashboard'])
+  }
+
+  const getMenuBadge = (menuId) => {
+    if (menuId === 'users') return users.length
+    if (menuId === 'predictions') return allPredictions.length
+    if (menuId === 'sessions') return allSessions.filter((s) => s.status === 'active').length
+    if (menuId === 'reports') return reportsData.summary?.total || 0
+    if (menuId === 'doctors') return doctors.length
+    return null
+  }
+
+  const togglePinnedMenu = (menuId) => {
+    setPinnedMenus((prev) => {
+      if (prev.includes(menuId)) {
+        return prev.filter((id) => id !== menuId)
+      }
+      return [...prev, menuId]
+    })
+  }
+
+  const filteredMenuItems = useMemo(() => {
+    const query = sidebarQuery.trim().toLowerCase()
+    if (!query) return menuItems
+    return menuItems.filter((item) => item.label.toLowerCase().includes(query))
+  }, [menuItems, sidebarQuery])
+
+  const quickAccessMenus = useMemo(() => {
+    return menuItems.filter((item) => pinnedMenus.includes(item.id))
+  }, [menuItems, pinnedMenus])
+
+  const filteredUsers = useMemo(() => {
+    const searchValue = userSearch.trim().toLowerCase()
+
+    const filtered = users.filter((user) => {
+      const name = (user.name || '').toLowerCase()
+      const email = (user.email || '').toLowerCase()
+      const joinedDate = user.created_at ? new Date(user.created_at) : null
+      const joinedInLast30Days =
+        joinedDate && Number.isFinite(joinedDate.getTime())
+          ? (Date.now() - joinedDate.getTime()) / (1000 * 60 * 60 * 24) <= 30
+          : false
+
+      const matchesSearch =
+        !searchValue || name.includes(searchValue) || email.includes(searchValue)
+
+      const matchesFilter =
+        userFilter === 'all' || (userFilter === 'recent' && joinedInLast30Days)
+
+      return matchesSearch && matchesFilter
+    })
+
+    const sorted = [...filtered].sort((a, b) => {
+      if (userSort === 'name-asc') {
+        return (a.name || '').localeCompare(b.name || '')
+      }
+      if (userSort === 'name-desc') {
+        return (b.name || '').localeCompare(a.name || '')
+      }
+
+      const dateA = a.created_at ? new Date(a.created_at).getTime() : 0
+      const dateB = b.created_at ? new Date(b.created_at).getTime() : 0
+
+      if (userSort === 'oldest') {
+        return dateA - dateB
+      }
+
+      return dateB - dateA
+    })
+
+    return sorted
+  }, [users, userSearch, userSort, userFilter])
+
+  const recentUserCount = useMemo(() => {
+    return users.filter((user) => {
+      if (!user.created_at) return false
+      const joined = new Date(user.created_at)
+      if (!Number.isFinite(joined.getTime())) return false
+      return (Date.now() - joined.getTime()) / (1000 * 60 * 60 * 24) <= 30
+    }).length
+  }, [users])
+
+  const visiblePredictions = useMemo(() => {
+    const searchValue = predictionSearch.trim().toLowerCase()
+    return allPredictions.filter((prediction) => {
+      const userName = (prediction.user_name || '').toLowerCase()
+      const email = (prediction.email || '').toLowerCase()
+      const result = (prediction.result || '').toLowerCase()
+      const matchesSearch = !searchValue || userName.includes(searchValue) || email.includes(searchValue) || result.includes(searchValue)
+      const matchesResult =
+        predictionResultFilter === 'all' ||
+        (predictionResultFilter === 'ckd' && result === 'ckd') ||
+        (predictionResultFilter === 'no-ckd' && (result === 'no ckd' || result === 'negative' || result === 'notckd'))
+      return matchesSearch && matchesResult
+    })
+  }, [allPredictions, predictionSearch, predictionResultFilter])
+
+  const visibleSessions = useMemo(() => {
+    const searchValue = sessionSearch.trim().toLowerCase()
+    return allSessions.filter((session) => {
+      const email = (session.email || '').toLowerCase()
+      const status = (session.status || '').toLowerCase()
+      const matchesSearch = !searchValue || email.includes(searchValue) || status.includes(searchValue)
+      const matchesStatus = sessionStatusFilter === 'all' || status === sessionStatusFilter
+      return matchesSearch && matchesStatus
+    })
+  }, [allSessions, sessionSearch, sessionStatusFilter])
+
+  const visibleDoctors = useMemo(() => {
+    const searchValue = doctorSearch.trim().toLowerCase()
+    return doctors.filter((doctor) => {
+      const name = (doctor.name || '').toLowerCase()
+      const email = (doctor.email || '').toLowerCase()
+      const specialization = (doctor.specialization || '').toLowerCase()
+      return !searchValue || name.includes(searchValue) || email.includes(searchValue) || specialization.includes(searchValue)
+    })
+  }, [doctors, doctorSearch])
+
+  const handleRevokeSession = async (sessionId) => {
+    try {
+      const token = localStorage.getItem('adminToken')
+      const response = await fetch(`http://localhost:5000/api/admin/sessions/${sessionId}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to revoke session')
+      }
+
+      setAllSessions((prev) => prev.filter((item) => item._id !== sessionId))
+      showToast('success', 'Session revoked successfully')
+    } catch (error) {
+      console.error('Session revoke failed', error)
+      showToast('error', 'Unable to revoke session')
+    }
+  }
+
+  const handleCopyDoctorEmail = async (email) => {
+    try {
+      await navigator.clipboard.writeText(email)
+      showToast('success', 'Doctor email copied')
+    } catch (error) {
+      console.error('Copy failed', error)
+      showToast('error', 'Copy failed')
+    }
+  }
+
   return (
     <div className="admin-dashboard">
+      {toast && <div className={`admin-toast ${toast.type}`}>{toast.message}</div>}
+
       {/* Sidebar Menu */}
-      <aside className={`admin-sidebar ${sidebarCollapsed ? 'collapsed' : ''}`}>
+      <aside className="admin-sidebar">
         <div className="sidebar-header">
           <div className="admin-logo">
             <span className="admin-logo-icon">🏥</span>
-            {!sidebarCollapsed && <span className="admin-logo-text">CKD Admin</span>}
+            <span className="admin-logo-text">CKD Admin</span>
           </div>
-          <button 
-            className="sidebar-toggle" 
-            onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-            title={sidebarCollapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
-          >
-            {sidebarCollapsed ? '▶' : '◀'}
-          </button>
+        </div>
+
+        <div className="sidebar-search-wrap">
+          <input
+            type="text"
+            className="sidebar-search-input"
+            placeholder="Search menu..."
+            value={sidebarQuery}
+            onChange={(e) => setSidebarQuery(e.target.value)}
+          />
         </div>
 
         <nav className="sidebar-nav">
-          {menuItems.map((item) => (
-            <button
-              key={item.id}
-              className={`sidebar-item ${activeMenu === item.id ? 'active' : ''}`}
-              onClick={() => {
-                setActiveMenu(item.id)
-                setSelectedUser(null)
-                if (item.id === 'users') {
-                  setShowUsers(true)
-                  setBreadcrumb(['Dashboard', 'Users'])
-                } else if (item.id === 'dashboard') {
-                  setShowUsers(false)
-                  setBreadcrumb(['Dashboard'])
-                } else {
-                  setShowUsers(false)
-                  setBreadcrumb(['Dashboard', item.label])
-                }
-              }}
-              title={sidebarCollapsed ? item.label : ''}
-            >
-              <span className="sidebar-item-icon">{item.icon}</span>
-              {!sidebarCollapsed && <span className="sidebar-item-label">{item.label}</span>}
-            </button>
-          ))}
+          {quickAccessMenus.length > 0 && (
+            <div className="sidebar-section">
+              <div className="sidebar-section-title">Quick Access</div>
+              {quickAccessMenus.map((item) => (
+                <button
+                  key={`quick-${item.id}`}
+                  className={`sidebar-item ${activeMenu === item.id ? 'active' : ''}`}
+                  onClick={() => {
+                    setActiveMenu(item.id)
+                    setSelectedUser(null)
+                    if (item.id === 'users') {
+                      setShowUsers(true)
+                      setBreadcrumb(['Dashboard', 'Users'])
+                    } else if (item.id === 'dashboard') {
+                      setShowUsers(false)
+                      setBreadcrumb(['Dashboard'])
+                    } else {
+                      setShowUsers(false)
+                      setBreadcrumb(['Dashboard', item.label])
+                    }
+                  }}
+                >
+                  <div className="sidebar-item-main">
+                    <span className="sidebar-item-icon">{item.icon}</span>
+                    <span className="sidebar-item-label">{item.label}</span>
+                  </div>
+                  {getMenuBadge(item.id) !== null && <span className="sidebar-item-badge">{getMenuBadge(item.id)}</span>}
+                </button>
+              ))}
+            </div>
+          )}
+
+          <div className="sidebar-section">
+            <div className="sidebar-section-title">All Menu</div>
+            {filteredMenuItems.map((item) => (
+              <button
+                key={item.id}
+                className={`sidebar-item ${activeMenu === item.id ? 'active' : ''}`}
+                onClick={() => {
+                  setActiveMenu(item.id)
+                  setSelectedUser(null)
+                  if (item.id === 'users') {
+                    setShowUsers(true)
+                    setBreadcrumb(['Dashboard', 'Users'])
+                  } else if (item.id === 'dashboard') {
+                    setShowUsers(false)
+                    setBreadcrumb(['Dashboard'])
+                  } else {
+                    setShowUsers(false)
+                    setBreadcrumb(['Dashboard', item.label])
+                  }
+                }}
+              >
+                <div className="sidebar-item-main">
+                  <span className="sidebar-item-icon">{item.icon}</span>
+                  <span className="sidebar-item-label">{item.label}</span>
+                </div>
+
+                <div className="sidebar-item-actions">
+                  {getMenuBadge(item.id) !== null && <span className="sidebar-item-badge">{getMenuBadge(item.id)}</span>}
+                  <span
+                    className={`sidebar-item-pin ${pinnedMenus.includes(item.id) ? 'pinned' : ''}`}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      togglePinnedMenu(item.id)
+                    }}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault()
+                        togglePinnedMenu(item.id)
+                      }
+                    }}
+                    title={pinnedMenus.includes(item.id) ? 'Remove from quick access' : 'Add to quick access'}
+                  >
+                    {pinnedMenus.includes(item.id) ? '★' : '☆'}
+                  </span>
+                </div>
+              </button>
+            ))}
+          </div>
         </nav>
 
         <div className="sidebar-footer">
@@ -493,16 +786,14 @@ const AdminDashboard = ({ admin, onLogout }) => {
             <div className="admin-avatar">
               {admin?.name?.charAt(0).toUpperCase() || 'A'}
             </div>
-            {!sidebarCollapsed && (
-              <div className="admin-info">
-                <span className="admin-name">{admin?.name || 'Admin'}</span>
-                <span className="admin-role">Administrator</span>
-              </div>
-            )}
+            <div className="admin-info">
+              <span className="admin-name">{admin?.name || 'Admin'}</span>
+              <span className="admin-role">Administrator</span>
+            </div>
           </div>
           
           <button className="logout-btn" onClick={handleLogout} title="Logout">
-            {sidebarCollapsed ? '🚪' : '🚪 Logout'}
+            🚪 Logout
           </button>
         </div>
       </aside>
@@ -565,6 +856,15 @@ const AdminDashboard = ({ admin, onLogout }) => {
         {/* Dashboard Content */}
         <main className="admin-main">
           <div className="admin-container">
+            {activeMenu !== 'dashboard' && (
+              <div className="section-nav-row">
+                <button className="section-back-btn" onClick={goBackFromSection}>
+                  ← Back
+                </button>
+                <span className="section-nav-title">{breadcrumb[breadcrumb.length - 1] || 'Section'}</span>
+              </div>
+            )}
+
             {/* Stats Cards - Dashboard View */}
             {activeMenu === 'dashboard' && (
               <div className="stats-grid">
@@ -602,6 +902,58 @@ const AdminDashboard = ({ admin, onLogout }) => {
             {activeMenu === 'users' && !selectedUser && (
             <div className="users-section">
               <h2 className="section-title">Registered Users</h2>
+
+              <div className="users-toolbar">
+                <div className="users-search-wrap">
+                  <input
+                    type="text"
+                    className="users-search-input"
+                    placeholder="Search by name or email..."
+                    value={userSearch}
+                    onChange={(e) => setUserSearch(e.target.value)}
+                  />
+                </div>
+
+                <div className="users-control-wrap">
+                  <select
+                    className="users-select"
+                    value={userFilter}
+                    onChange={(e) => setUserFilter(e.target.value)}
+                  >
+                    <option value="all">All Users</option>
+                    <option value="recent">Joined in 30 days</option>
+                  </select>
+
+                  <select
+                    className="users-select"
+                    value={userSort}
+                    onChange={(e) => setUserSort(e.target.value)}
+                  >
+                    <option value="newest">Newest First</option>
+                    <option value="oldest">Oldest First</option>
+                    <option value="name-asc">Name A-Z</option>
+                    <option value="name-desc">Name Z-A</option>
+                  </select>
+
+                  <button className="users-clear-btn" onClick={() => {
+                    setUserSearch('')
+                    setUserSort('newest')
+                    setUserFilter('all')
+                  }}>
+                    Clear
+                  </button>
+
+                  <button className="users-refresh-btn" onClick={handleRefreshData} disabled={refreshing || loading}>
+                    {refreshing ? 'Refreshing...' : 'Refresh'}
+                  </button>
+                </div>
+              </div>
+
+              <div className="users-meta-row">
+                <span className="users-meta-pill">Visible: {filteredUsers.length}</span>
+                <span className="users-meta-pill">Total: {users.length}</span>
+                <span className="users-meta-pill">New (30d): {recentUserCount}</span>
+              </div>
             
             {loading ? (
               <div className="loading">Loading users...</div>
@@ -618,9 +970,9 @@ const AdminDashboard = ({ admin, onLogout }) => {
                     </tr>
                   </thead>
                   <tbody>
-                    {users.length > 0 ? (
-                      users.map((user, index) => (
-                        <tr key={index}>
+                    {filteredUsers.length > 0 ? (
+                      filteredUsers.map((user, index) => (
+                        <tr key={index} onDoubleClick={() => handleViewDetails(user)}>
                           <td>{user.name}</td>
                           <td>{user.email}</td>
                           <td>{new Date(user.created_at).toLocaleDateString()}</td>
@@ -641,7 +993,7 @@ const AdminDashboard = ({ admin, onLogout }) => {
                       ))
                     ) : (
                       <tr>
-                        <td colSpan="5" style={{ textAlign: 'center' }}>No users found</td>
+                        <td colSpan="5" style={{ textAlign: 'center' }}>No users found for current filters</td>
                       </tr>
                     )}
                   </tbody>
@@ -1096,10 +1448,64 @@ const AdminDashboard = ({ admin, onLogout }) => {
           {/* Predictions Section */}
           {activeMenu === 'predictions' && (
             <div className="content-section">
-              <div className="empty-state">
-                <div className="empty-state-icon">🔮</div>
-                <h3>Predictions Management</h3>
-                <p>View and manage all prediction records here.</p>
+              <div className="working-panel">
+                <div className="working-header">
+                  <h3>Predictions Management</h3>
+                  <input
+                    type="text"
+                    className="search-input"
+                    placeholder="Search by user, email or result..."
+                    value={predictionSearch}
+                    onChange={(e) => setPredictionSearch(e.target.value)}
+                  />
+                  <select
+                    className="filter-select"
+                    value={predictionResultFilter}
+                    onChange={(e) => setPredictionResultFilter(e.target.value)}
+                  >
+                    <option value="all">All Results</option>
+                    <option value="ckd">CKD</option>
+                    <option value="no-ckd">No CKD</option>
+                  </select>
+                </div>
+                <div className="sessions-table-container">
+                  <table className="sessions-table">
+                    <thead>
+                      <tr>
+                        <th>User</th>
+                        <th>Email</th>
+                        <th>Result</th>
+                        <th>Confidence</th>
+                        <th>Type</th>
+                        <th>Date</th>
+                        <th>Action</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {visiblePredictions.length > 0 ? (
+                        visiblePredictions.slice(0, 120).map((prediction) => (
+                          <tr key={prediction._id}>
+                            <td>{prediction.user_name || 'Unknown User'}</td>
+                            <td>{prediction.email || 'N/A'}</td>
+                            <td>{prediction.result || 'N/A'}</td>
+                            <td>{prediction.confidence ? `${Number(prediction.confidence).toFixed(1)}%` : 'N/A'}</td>
+                            <td>{prediction.type || 'single'}</td>
+                            <td>{prediction.created_at ? new Date(prediction.created_at).toLocaleString() : 'N/A'}</td>
+                            <td>
+                              <button className="action-btn" onClick={() => setSelectedPrediction(prediction)}>
+                                View
+                              </button>
+                            </td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td colSpan="7" style={{ textAlign: 'center' }}>No predictions found</td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </div>
           )}
@@ -1107,20 +1513,133 @@ const AdminDashboard = ({ admin, onLogout }) => {
           {/* Other sections remain the same */}
           {activeMenu === 'sessions' && (
             <div className="content-section">
-              <div className="empty-state">
-                <div className="empty-state-icon">🔗</div>
-                <h3>Sessions Management</h3>
-                <p>View and manage user sessions here.</p>
+              <div className="working-panel">
+                <div className="working-header">
+                  <h3>Sessions Management</h3>
+                  <input
+                    type="text"
+                    className="search-input"
+                    placeholder="Search by email or status..."
+                    value={sessionSearch}
+                    onChange={(e) => setSessionSearch(e.target.value)}
+                  />
+                  <select
+                    className="filter-select"
+                    value={sessionStatusFilter}
+                    onChange={(e) => setSessionStatusFilter(e.target.value)}
+                  >
+                    <option value="all">All Sessions</option>
+                    <option value="active">Active</option>
+                    <option value="expired">Expired</option>
+                  </select>
+                </div>
+
+                <div className="summary-cards quick-summary">
+                  <div className="summary-card positive">
+                    <div className="summary-value">{allSessions.filter((s) => s.status === 'active').length}</div>
+                    <div className="summary-label">Active</div>
+                  </div>
+                  <div className="summary-card negative">
+                    <div className="summary-value">{allSessions.filter((s) => s.status === 'expired').length}</div>
+                    <div className="summary-label">Expired</div>
+                  </div>
+                  <div className="summary-card pending">
+                    <div className="summary-value">{allSessions.length}</div>
+                    <div className="summary-label">Total</div>
+                  </div>
+                </div>
+
+                <div className="sessions-table-container">
+                  <table className="sessions-table">
+                    <thead>
+                      <tr>
+                        <th>Email</th>
+                        <th>Created</th>
+                        <th>Expires</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {visibleSessions.length > 0 ? (
+                        visibleSessions.slice(0, 120).map((session) => (
+                          <tr key={session._id}>
+                            <td>{session.email || 'N/A'}</td>
+                            <td>{session.created_at ? new Date(session.created_at).toLocaleString() : 'N/A'}</td>
+                            <td>{session.expires_at ? new Date(session.expires_at).toLocaleString() : 'N/A'}</td>
+                            <td>
+                              <span className={`status-badge ${session.status === 'active' ? 'active' : 'expired'}`}>
+                                {session.status || 'unknown'}
+                              </span>
+                            </td>
+                            <td>
+                              <button className="action-btn revoke" onClick={() => handleRevokeSession(session._id)}>
+                                Revoke
+                              </button>
+                            </td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td colSpan="5" style={{ textAlign: 'center' }}>No sessions found</td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </div>
           )}
 
           {activeMenu === 'reports' && (
             <div className="content-section">
-              <div className="empty-state">
-                <div className="empty-state-icon">📋</div>
-                <h3>Reports</h3>
-                <p>Generate and view reports here.</p>
+              <div className="working-panel">
+                <div className="working-header">
+                  <h3>Reports</h3>
+                  <button className="users-refresh-btn" onClick={handleRefreshData} disabled={refreshing || loading}>
+                    {refreshing ? 'Refreshing...' : 'Refresh Reports'}
+                  </button>
+                </div>
+
+                <div className="summary-cards quick-summary">
+                  <div className="summary-card pending">
+                    <div className="summary-value">{reportsData.summary?.total || 0}</div>
+                    <div className="summary-label">Total Predictions</div>
+                  </div>
+                  <div className="summary-card positive">
+                    <div className="summary-value">{reportsData.summary?.ckd || 0}</div>
+                    <div className="summary-label">CKD Cases</div>
+                  </div>
+                  <div className="summary-card negative">
+                    <div className="summary-value">{reportsData.summary?.noCkd || 0}</div>
+                    <div className="summary-label">No CKD Cases</div>
+                  </div>
+                </div>
+
+                <div className="sessions-table-container">
+                  <table className="sessions-table">
+                    <thead>
+                      <tr>
+                        <th>Month</th>
+                        <th>Predictions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {reportsData.monthly?.length > 0 ? (
+                        reportsData.monthly.map((item) => (
+                          <tr key={item.month}>
+                            <td>{item.month}</td>
+                            <td>{item.count}</td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td colSpan="2" style={{ textAlign: 'center' }}>No report data available</td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </div>
           )}
@@ -1128,10 +1647,24 @@ const AdminDashboard = ({ admin, onLogout }) => {
           {/* Analytics Section */}
           {activeMenu === 'analytics' && (
             <div className="content-section">
-              <div className="empty-state">
-                <div className="empty-state-icon">📈</div>
-                <h3>Analytics Dashboard</h3>
-                <p>Detailed analytics and insights coming soon.</p>
+              <div className="working-panel">
+                <div className="working-header">
+                  <h3>Analytics Dashboard</h3>
+                </div>
+                <div className="summary-cards quick-summary">
+                  <div className="summary-card pending">
+                    <div className="summary-value">{stats.totalUsers}</div>
+                    <div className="summary-label">Users</div>
+                  </div>
+                  <div className="summary-card positive">
+                    <div className="summary-value">{stats.totalPredictions}</div>
+                    <div className="summary-label">Predictions</div>
+                  </div>
+                  <div className="summary-card negative">
+                    <div className="summary-value">{stats.activeSessions}</div>
+                    <div className="summary-label">Sessions</div>
+                  </div>
+                </div>
               </div>
             </div>
           )}
@@ -1139,10 +1672,79 @@ const AdminDashboard = ({ admin, onLogout }) => {
           {/* Doctors Section */}
           {activeMenu === 'doctors' && (
             <div className="content-section">
-              <div className="empty-state">
-                <div className="empty-state-icon">👨‍⚕️</div>
-                <h3>Doctors Management</h3>
-                <p>Manage doctors and medical professionals here.</p>
+              <div className="working-panel">
+                <div className="working-header">
+                  <h3>Doctors Management</h3>
+                  <input
+                    type="text"
+                    className="search-input"
+                    placeholder="Search by name, email, specialization..."
+                    value={doctorSearch}
+                    onChange={(e) => setDoctorSearch(e.target.value)}
+                  />
+                  <button
+                    className="users-refresh-btn"
+                    onClick={async () => {
+                      try {
+                        const token = localStorage.getItem('adminToken')
+                        await fetch('http://localhost:5000/api/doctors/seed', { method: 'POST' })
+                        await fetch('http://localhost:5000/api/doctor/seed', {
+                          method: 'POST',
+                          headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                          },
+                          body: JSON.stringify({ force: false })
+                        })
+                        await handleRefreshData()
+                      } catch (error) {
+                        console.error('Doctor seed failed', error)
+                      }
+                    }}
+                  >
+                    Seed Doctors
+                  </button>
+                </div>
+                <div className="sessions-table-container">
+                  <table className="sessions-table">
+                    <thead>
+                      <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Specialization</th>
+                        <th>Experience</th>
+                        <th>Availability</th>
+                        <th>Action</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {visibleDoctors.length > 0 ? (
+                        visibleDoctors.map((doctor) => (
+                          <tr key={doctor.id}>
+                            <td>{doctor.name}</td>
+                            <td>{doctor.email || 'N/A'}</td>
+                            <td>{doctor.specialization || 'N/A'}</td>
+                            <td>{doctor.experience || 'N/A'}</td>
+                            <td>{doctor.availability || 'N/A'}</td>
+                            <td>
+                              <button
+                                className="action-btn"
+                                onClick={() => handleCopyDoctorEmail(doctor.email || '')}
+                                disabled={!doctor.email}
+                              >
+                                Copy Email
+                              </button>
+                            </td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td colSpan="6" style={{ textAlign: 'center' }}>No doctors found</td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </div>
           )}
@@ -1150,10 +1752,34 @@ const AdminDashboard = ({ admin, onLogout }) => {
           {/* Alerts Section */}
           {activeMenu === 'alerts' && (
             <div className="content-section">
-              <div className="empty-state">
-                <div className="empty-state-icon">🔔</div>
-                <h3>Alerts & Notifications</h3>
-                <p>Manage system alerts and notifications here.</p>
+              <div className="working-panel">
+                <div className="working-header">
+                  <h3>Alerts & Notifications</h3>
+                </div>
+                <div className="sessions-table-container">
+                  <table className="sessions-table">
+                    <thead>
+                      <tr>
+                        <th>Priority</th>
+                        <th>Message</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td><span className="status-badge expired">High</span></td>
+                        <td>{reportsData.summary?.ckd || 0} CKD-positive predictions require follow-up.</td>
+                      </tr>
+                      <tr>
+                        <td><span className="status-badge active">Info</span></td>
+                        <td>{doctors.length} doctors are currently available in directory.</td>
+                      </tr>
+                      <tr>
+                        <td><span className="status-badge pending">Notice</span></td>
+                        <td>{allSessions.filter((s) => s.status === 'expired').length} sessions are expired.</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </div>
           )}
@@ -1161,10 +1787,14 @@ const AdminDashboard = ({ admin, onLogout }) => {
           {/* Settings Section */}
           {activeMenu === 'settings' && (
             <div className="content-section">
-              <div className="empty-state">
-                <div className="empty-state-icon">⚙️</div>
-                <h3>System Settings</h3>
-                <p>Configure system settings and preferences here.</p>
+              <div className="working-panel">
+                <div className="working-header">
+                  <h3>System Settings</h3>
+                </div>
+                <div className="working-actions">
+                  <button className="users-refresh-btn" onClick={toggleTheme}>Toggle Theme</button>
+                  <button className="users-refresh-btn" onClick={handleRefreshData}>Reload Dashboard Data</button>
+                </div>
               </div>
             </div>
           )}
@@ -1172,10 +1802,34 @@ const AdminDashboard = ({ admin, onLogout }) => {
           {/* Audit Logs Section */}
           {activeMenu === 'audit' && (
             <div className="content-section">
-              <div className="empty-state">
-                <div className="empty-state-icon">📄</div>
-                <h3>Audit Logs</h3>
-                <p>View system audit logs and activity history here.</p>
+              <div className="working-panel">
+                <div className="working-header">
+                  <h3>Audit Logs</h3>
+                </div>
+                <div className="sessions-table-container">
+                  <table className="sessions-table">
+                    <thead>
+                      <tr>
+                        <th>Time</th>
+                        <th>Action</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>{new Date().toLocaleString()}</td>
+                        <td>Admin dashboard data refresh</td>
+                      </tr>
+                      <tr>
+                        <td>{new Date().toLocaleString()}</td>
+                        <td>Viewed {allPredictions.length} prediction records</td>
+                      </tr>
+                      <tr>
+                        <td>{new Date().toLocaleString()}</td>
+                        <td>Viewed {allSessions.length} session records</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </div>
           )}
@@ -1183,10 +1837,32 @@ const AdminDashboard = ({ admin, onLogout }) => {
           {/* Admin Section */}
           {activeMenu === 'admin' && (
             <div className="content-section">
-              <div className="empty-state">
-                <div className="empty-state-icon">👤</div>
-                <h3>Admin Management</h3>
-                <p>Manage admin users and permissions here.</p>
+              <div className="working-panel">
+                <div className="working-header">
+                  <h3>Admin Profile</h3>
+                </div>
+                <div className="sessions-table-container">
+                  <table className="sessions-table">
+                    <tbody>
+                      <tr>
+                        <th>Name</th>
+                        <td>{admin?.name || 'Admin'}</td>
+                      </tr>
+                      <tr>
+                        <th>Email</th>
+                        <td>{admin?.email || 'N/A'}</td>
+                      </tr>
+                      <tr>
+                        <th>Role</th>
+                        <td>Administrator</td>
+                      </tr>
+                      <tr>
+                        <th>Last Access</th>
+                        <td>{new Date().toLocaleString()}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </div>
           )}
@@ -1317,6 +1993,25 @@ const AdminDashboard = ({ admin, onLogout }) => {
                   <p className="no-predictions-text">No predictions found for this user</p>
                 </div>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {selectedPrediction && (
+        <div className="modal-overlay" onClick={() => setSelectedPrediction(null)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2 className="modal-title">Prediction Details</h2>
+              <button className="close-modal-btn" onClick={() => setSelectedPrediction(null)}>×</button>
+            </div>
+
+            <div className="user-details-info">
+              <div className="user-detail-item"><span className="detail-label">User:</span><span className="detail-value">{selectedPrediction.user_name || 'Unknown User'}</span></div>
+              <div className="user-detail-item"><span className="detail-label">Email:</span><span className="detail-value">{selectedPrediction.email || 'N/A'}</span></div>
+              <div className="user-detail-item"><span className="detail-label">Result:</span><span className="detail-value">{selectedPrediction.result || 'N/A'}</span></div>
+              <div className="user-detail-item"><span className="detail-label">Confidence:</span><span className="detail-value">{selectedPrediction.confidence ? `${Number(selectedPrediction.confidence).toFixed(1)}%` : 'N/A'}</span></div>
+              <div className="user-detail-item"><span className="detail-label">Date:</span><span className="detail-value">{selectedPrediction.created_at ? new Date(selectedPrediction.created_at).toLocaleString() : 'N/A'}</span></div>
             </div>
           </div>
         </div>
