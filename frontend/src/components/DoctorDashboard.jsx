@@ -98,6 +98,11 @@ function DoctorDashboard({ doctor, onLogout }) {
     })
 
     socket.on('chat_message', (message) => {
+      const currentDoctorId = doctor?.id ? String(doctor.id) : ''
+      if (currentDoctorId && String(message.doctor_id || '') !== currentDoctorId) {
+        return
+      }
+
       // Store message for the patient
       setPatientMessages((prev) => {
         const patientId = message.user_id
@@ -131,6 +136,10 @@ function DoctorDashboard({ doctor, onLogout }) {
 
         return [updated, ...prev.filter((item) => item.userId !== message.user_id)]
       })
+    })
+
+    socket.on('socket_error', (error) => {
+      console.error('Doctor socket error:', error)
     })
 
     socketRef.current = socket

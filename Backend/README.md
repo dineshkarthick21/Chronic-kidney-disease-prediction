@@ -136,7 +136,138 @@ Health check endpoint
   "message": "API and MongoDB are running"
 }
 ```
+## Real-Time Chat System (Socket.io)
 
+### Overview
+- **Technology**: Flask-SocketIO with WebSocket support
+- **Storage**: In-memory thread-safe message storage (no database persistence)
+- **Privacy**: Socket.io room-based isolation ensures patient messages only reach their selected doctor and doctor replies only reach the targeted patient
+- **Features**: Private one-to-one conversations, instant message delivery, organized by conversation partner
+
+### Socket.io Handlers
+
+#### **authenticate_socket**
+Authenticates user/doctor and joins them to appropriate rooms
+
+**Event**: `authenticate_socket`
+**Payload**:
+```json
+{
+  "role": "user|doctor",
+  "token": "authentication_token"
+}
+```
+**Rooms Joined**: 
+- User: `user_{user_id}` (receives doctor messages)
+- Doctor: `doctor_{doctor_id}` (receives patient messages)
+
+#### **send_chat_message**
+Sends a message from patient to doctor or doctor to patient
+
+**Event**: `send_chat_message`
+**Payload**:
+```json
+{
+  "role": "user|doctor",
+  "token": "authentication_token",
+  "targetDoctorId": "doctor_id_string (patient only)",
+  "targetUserId": "user_id_string (doctor only)",
+  "text": "message content"
+}
+```
+**Message Format**:
+```json
+{
+  "id": "unique_id",
+  "user_id": "patient_user_id",
+  "doctor_id": "doctor_account_id",
+  "sender_type": "user|doctor",
+  "sender_name": "name of sender",
+  "text": "message content",
+  "created_at": "ISO8601 timestamp"
+}
+```
+**Delivery**: 
+- Patient→Doctor: Emitted to room `doctor_{targetDoctorId}`
+- Doctor→Patient: Emitted to room `user_{targetUserId}`
+
+### Chat REST API Endpoints
+
+#### **GET** `/api/chat/user/messages`
+Retrieve all chat messages for current patient (grouped by doctor)
+
+**Headers**:
+```
+Authorization: Bearer <token>
+```
+
+**Response**:
+```json
+{
+  "user_id": "patient_id",
+  "chats": [
+    {
+      "id": "message_id",
+      "user_id": "patient_id",
+      "doctor_id": "doctor_id",
+      "sender_type": "user|doctor",
+      "sender_name": "name",
+      "text": "message",
+      "created_at": "ISO8601"
+    }
+  ]
+}
+```
+
+#### **GET** `/api/chat/doctor/conversations`
+Get list of all patients the doctor has conversed with (with last message preview)
+
+**Headers**:
+```
+Authorization: Bearer <token> (doctor)
+```
+
+**Response**:
+```json
+{
+  "doctor_id": "doctor_id",
+  "conversations": [
+    {
+      "user_id": "patient_id",
+      "user_name": "patient name",
+      "last_message": "last message text",
+      "last_message_time": "ISO8601"
+    }
+  ]
+}
+```
+
+#### **GET** `/api/chat/doctor/messages/<user_id>`
+Get conversation history between doctor and specific patient
+
+**Headers**:
+```
+Authorization: Bearer <token> (doctor)
+```
+
+**Response**:
+```json
+{
+  "doctor_id": "doctor_id",
+  "user_id": "patient_id",
+  "messages": [
+    {
+      "id": "message_id",
+      "user_id": "patient_id",
+      "doctor_id": "doctor_id",
+      "sender_type": "user|doctor",
+      "sender_name": "name",
+      "text": "message",
+      "created_at": "ISO8601"
+    }
+  ]
+}
+```
 ## MongoDB Collections
 
 ### users

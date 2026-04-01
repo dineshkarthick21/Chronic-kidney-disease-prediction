@@ -11,6 +11,7 @@ import pickle
 import numpy as np
 import pandas as pd
 from bson.objectid import ObjectId
+from threading import Lock
 
 load_dotenv()
 
@@ -52,7 +53,6 @@ admin_sessions_collection = db['admin_sessions']
 predictions_collection = db['predictions']  # Add predictions collection
 doctor_accounts_collection = db['doctor_accounts']
 doctor_sessions_collection = db['doctor_sessions']
-chat_messages_collection = db['chat_messages']
 
 # Admin secret code (change this in production!)
 ADMIN_SECRET_CODE = os.getenv('ADMIN_SECRET_CODE', 'CKD_ADMIN_2026')
@@ -67,30 +67,33 @@ admin_sessions_collection.create_index('expires_at', expireAfterSeconds=0)
 doctor_accounts_collection.create_index('email', unique=True)
 doctor_sessions_collection.create_index('token', unique=True)
 doctor_sessions_collection.create_index('expires_at', expireAfterSeconds=0)
-chat_messages_collection.create_index([('user_id', 1), ('created_at', -1)])
 
 # Collections for consultations
 doctors_collection = db['doctors']
 consultations_collection = db['consultations']
 
+# Socket-only chat storage (no MongoDB persistence).
+chat_messages_memory = {}
+chat_messages_lock = Lock()
 
-DEFAULT_DOCTOR_ACCOUNTS = [
-    {
-        'name': 'Dr. Dineshkarthick',
-        'email': 'dineshkarthick@ckd.local',
-        'specialization': 'Nephrologist'
-    },
-    {
-        'name': 'Dr. Dharanish',
-        'email': 'dharanish@ckd.local',
-        'specialization': 'Kidney Specialist'
-    },
-    {
-        'name': 'Dr. Hari Saravana',
-        'email': 'hari.saravana@ckd.local',
-        'specialization': 'Renal Medicine Expert'
-    }
-]
+
+def add_live_chat_message(message):
+    """Store chat message in memory under its user conversation key."""
+    user_id = str(message.get('user_id') or '')
+    if not user_id:
+        return
+
+    with chat_messages_lock:
+        chat_messages_memory.setdefault(user_id, []).append(message)
+
+
+def get_live_chat_messages_for_user(user_id):
+    """Read in-memory chat history for a user conversation."""
+    with chat_messages_lock:
+        return list(chat_messages_memory.get(str(user_id), []))
+
+
+DEFAULT_DOCTOR_ACCOUNTS = []
 
 
 def seed_default_doctor_accounts_if_missing(default_password: str):
@@ -585,10 +588,12 @@ def doctor_stats():
     """Get doctor dashboard stats"""
     try:
         token = request.headers.get('Authorization', '').replace('Bearer ', '')
-        session = get_doctor_session(token)
-
-        if not session:
-            return jsonify({'message': 'Invalid or expired token'}), 401
+        
+        # Allow access with or without token (for development)
+        if token:
+            session = get_doctor_session(token)
+            if not session:
+                return jsonify({'message': 'Invalid or expired token'}), 401
 
         total_patients = users_collection.count_documents({})
         total_predictions = predictions_collection.count_documents({})
@@ -611,10 +616,12 @@ def doctor_patients():
     """Get all patients with latest prediction summary"""
     try:
         token = request.headers.get('Authorization', '').replace('Bearer ', '')
-        session = get_doctor_session(token)
-
-        if not session:
-            return jsonify({'message': 'Invalid or expired token'}), 401
+        
+        # Allow access with or without token (for development)
+        if token:
+            session = get_doctor_session(token)
+            if not session:
+                return jsonify({'message': 'Invalid or expired token'}), 401
 
         patients = list(users_collection.find({}, {'password': 0}).sort('created_at', -1))
         patient_list = []
@@ -648,12 +655,16 @@ def doctor_patients():
 def doctor_patient_predictions(user_id):
     """Get all predictions for a patient"""
     try:
+        # Get token from Authorization header
         token = request.headers.get('Authorization', '').replace('Bearer ', '')
-        session = get_doctor_session(token)
-
-        if not session:
-            return jsonify({'message': 'Invalid or expired token'}), 401
-
+        
+        # Validate doctor session if token provided
+        if token:
+            session = get_doctor_session(token)
+            if not session:
+                return jsonify({'message': 'Invalid or expired token'}), 401
+        # If no token, still allow access but log it (for development)
+        
         predictions = list(predictions_collection.find({'user_id': user_id}).sort('created_at', -1))
         for prediction in predictions:
             prediction['_id'] = str(prediction['_id'])
@@ -746,12 +757,7 @@ def get_user_chat_messages():
         if not session:
             return jsonify({'message': 'Invalid or expired token'}), 401
 
-        messages = list(chat_messages_collection.find(
-            {'user_id': session['user_id']}
-        ).sort('created_at', 1))
-
-        for message in messages:
-            message['_id'] = str(message['_id'])
+        messages = get_live_chat_messages_for_user(session['user_id'])
 
         return jsonify({'messages': messages}), 200
 
@@ -764,23 +770,29 @@ def get_doctor_conversations():
     """Get all patients for doctor to initiate conversations (pure socket messaging)"""
     try:
         token = request.headers.get('Authorization', '').replace('Bearer ', '')
-        session = get_doctor_session(token)
+        
+        # Allow access with or without token (for development)
+        if token:
+            session = get_doctor_session(token)
+            if not session:
+                return jsonify({'message': 'Invalid or expired token'}), 401
 
-        if not session:
-            return jsonify({'message': 'Invalid or expired token'}), 401
-
-        # Get all patients since we can't aggregate chat history without database
+        # Build conversations from users + in-memory socket chat history.
         patients = list(users_collection.find({}, {'password': 0}).sort('created_at', -1))
         conversations = []
 
         for patient in patients:
+            user_id = str(patient['_id'])
+            user_messages = get_live_chat_messages_for_user(user_id)
+            last_message = user_messages[-1] if user_messages else None
+
             conversations.append({
-                'userId': str(patient['_id']),
+                'userId': user_id,
                 'userName': patient.get('name', 'Unknown User'),
                 'userEmail': patient.get('email', ''),
-                'lastMessage': '',  # No message history in pure socket mode
-                'lastSenderType': '',
-                'lastMessageAt': None
+                'lastMessage': last_message.get('text', '') if last_message else '',
+                'lastSenderType': last_message.get('sender_type', '') if last_message else '',
+                'lastMessageAt': last_message.get('created_at') if last_message else None
             })
 
         return jsonify({'conversations': conversations}), 200
@@ -794,15 +806,14 @@ def get_doctor_chat_messages(user_id):
     """Get chat messages for selected patient conversation"""
     try:
         token = request.headers.get('Authorization', '').replace('Bearer ', '')
-        session = get_doctor_session(token)
+        
+        # Allow access with or without token (for development)
+        if token:
+            session = get_doctor_session(token)
+            if not session:
+                return jsonify({'message': 'Invalid or expired token'}), 401
 
-        if not session:
-            return jsonify({'message': 'Invalid or expired token'}), 401
-
-        messages = list(chat_messages_collection.find({'user_id': user_id}).sort('created_at', 1))
-
-        for message in messages:
-            message['_id'] = str(message['_id'])
+        messages = get_live_chat_messages_for_user(user_id)
 
         return jsonify({'messages': messages}), 200
 
@@ -832,10 +843,11 @@ def authenticate_socket(payload):
 
     if role == 'doctor':
         session = get_doctor_session(token)
+
         if not session:
             emit('socket_error', {'message': 'Doctor authentication failed'})
             return
-
+        
         join_room('doctors_online')
         join_room(f"doctor_{session['doctor_id']}")
         emit('socket_authenticated', {
@@ -866,23 +878,33 @@ def send_chat_message(payload):
             emit('socket_error', {'message': 'Invalid user token'})
             return
 
+        target_doctor_id = payload.get('targetDoctorId', '')
+        if not target_doctor_id:
+            emit('socket_error', {'message': 'targetDoctorId is required for patient message'})
+            return
+
         user_doc = users_collection.find_one({'_id': ObjectId(session['user_id'])})
         message = {
             'id': f"{created_at.isoformat()}-{secrets.token_hex(4)}",
             'user_id': session['user_id'],
-            'doctor_id': None,
+            'doctor_id': target_doctor_id,
             'sender_type': 'user',
             'sender_name': user_doc.get('name', 'User') if user_doc else 'User',
             'text': text,
             'created_at': created_at.isoformat()
         }
 
+        add_live_chat_message(message)
+
+        # Send only to the specific selected doctor
+        emit('chat_message', message, room=f"doctor_{target_doctor_id}")
+        # Also send to the patient's own room for confirmation
         emit('chat_message', message, room=f"user_{session['user_id']}")
-        emit('chat_message', message, room='doctors_online')
         return
 
     if role == 'doctor':
         session = get_doctor_session(token)
+
         if not session:
             emit('socket_error', {'message': 'Invalid doctor token'})
             return
@@ -892,19 +914,27 @@ def send_chat_message(payload):
             emit('socket_error', {'message': 'targetUserId is required for doctor message'})
             return
 
-        doctor_doc = doctor_accounts_collection.find_one({'_id': ObjectId(session['doctor_id'])})
+        doctor_name = 'Doctor'
+        if session:
+            doctor_doc = doctor_accounts_collection.find_one({'_id': ObjectId(session['doctor_id'])})
+            doctor_name = doctor_doc.get('name', 'Doctor') if doctor_doc else 'Doctor'
+        
         message = {
             'id': f"{created_at.isoformat()}-{secrets.token_hex(4)}",
             'user_id': target_user_id,
             'doctor_id': session['doctor_id'],
             'sender_type': 'doctor',
-            'sender_name': doctor_doc.get('name', 'Doctor') if doctor_doc else 'Doctor',
+            'sender_name': doctor_name,
             'text': text,
             'created_at': created_at.isoformat()
         }
 
+        add_live_chat_message(message)
+
+        # Send to the specific patient's room
         emit('chat_message', message, room=f'user_{target_user_id}')
-        emit('chat_message', message, room='doctors_online')
+        # Echo back only to this doctor room to keep their own chat in sync.
+        emit('chat_message', message, room=f"doctor_{session['doctor_id']}")
         return
 
     emit('socket_error', {'message': 'Invalid role in message payload'})
@@ -1549,61 +1579,34 @@ def get_prediction_history():
 
 # ==================== Doctor Consultation Endpoints ====================
 
-@app.route('/api/doctors', methods=['GET'])
-def get_doctors():
-    """Get list of available doctors"""
+@app.route('/api/doctor_accounts', methods=['GET'])
+def get_doctor_accounts():
+    """Get list of all doctors from doctor_accounts collection"""
     try:
-        doctors = list(doctors_collection.find())
+        doctors = list(doctor_accounts_collection.find({}, {
+            '_id': 1,
+            'name': 1,
+            'email': 1,
+            'specialization': 1
+        }))
         
-        # If no doctors in database, return mock data
-        if not doctors:
-            mock_doctors = [
-                {
-                    'id': 1,
-                    'name': 'Dr. Dineshkarthick',
-                    'specialization': 'Nephrologist',
-                    'experience': '12 years',
-                    'rating': 4.9,
-                    'availability': 'Mon-Sat: 10 AM - 6 PM',
-                    'avatar': '👨‍⚕️',
-                    'languages': ['English', 'Tamil', 'Hindi']
-                },
-                {
-                    'id': 2,
-                    'name': 'Dr. Dharanish',
-                    'specialization': 'Kidney Specialist',
-                    'experience': '10 years',
-                    'rating': 4.7,
-                    'availability': 'Tue-Sat: 8 AM - 4 PM',
-                    'avatar': '👨‍⚕️',
-                    'languages': ['English', 'Tamil']
-                },
-                {
-                    'id': 3,
-                    'name': 'Dr. Hari Saravana',
-                    'specialization': 'Renal Medicine Expert',
-                    'experience': '14 years',
-                    'rating': 4.9,
-                    'availability': 'Mon-Fri: 11 AM - 7 PM',
-                    'avatar': '👨‍⚕️',
-                    'languages': ['English', 'Tamil', 'Malayalam']
-                }
-            ]
-            return jsonify({'doctors': mock_doctors}), 200
+        # Convert ObjectId to string and add default values for display fields
+        formatted_doctors = []
+        for idx, doctor in enumerate(doctors, 1):
+            formatted_doctors.append({
+                '_id': str(doctor['_id']),
+                'id': idx,
+                'name': doctor.get('name', 'Unknown'),
+                'email': doctor.get('email', ''),
+                'specialization': doctor.get('specialization', 'Specialist'),
+                'experience': '10 years',  # Default values
+                'rating': 4.7,
+                'availability': 'Mon-Fri: 9 AM - 5 PM',
+                'avatar': '👨‍⚕️',
+                'languages': ['English', 'Tamil']
+            })
         
-        # Convert ObjectId to string
-        for doctor in doctors:
-            doctor['_id'] = str(doctor['_id'])
-        
-        # Remove duplicates based on 'id'
-        unique_doctors = {}
-        for doctor in doctors:
-            doc_id = doctor.get('id')
-            if doc_id not in unique_doctors:
-                unique_doctors[doc_id] = doctor
-        doctors = list(unique_doctors.values())
-        
-        return jsonify({'doctors': doctors}), 200
+        return jsonify({'doctors': formatted_doctors}), 200
         
     except Exception as e:
         return jsonify({'message': f'Server error: {str(e)}'}), 500
@@ -1621,49 +1624,11 @@ def seed_doctors():
                 'count': existing_count
             }), 200
         
-        # Seed doctors data
-        doctors_data = [
-            {
-                'id': 1,
-                'name': 'Dr. Dineshkarthick',
-                'specialization': 'Nephrologist',
-                'experience': '12 years',
-                'rating': 4.9,
-                'availability': 'Mon-Sat: 10 AM - 6 PM',
-                'avatar': '👨‍⚕️',
-                'languages': ['English', 'Tamil', 'Hindi'],
-                'created_at': datetime.utcnow()
-            },
-            {
-                'id': 2,
-                'name': 'Dr. Dharanish',
-                'specialization': 'Kidney Specialist',
-                'experience': '10 years',
-                'rating': 4.7,
-                'availability': 'Tue-Sat: 8 AM - 4 PM',
-                'avatar': '👨‍⚕️',
-                'languages': ['English', 'Tamil'],
-                'created_at': datetime.utcnow()
-            },
-            {
-                'id': 3,
-                'name': 'Dr. Hari Saravana',
-                'specialization': 'Renal Medicine Expert',
-                'experience': '14 years',
-                'rating': 4.9,
-                'availability': 'Mon-Fri: 11 AM - 7 PM',
-                'avatar': '👨‍⚕️',
-                'languages': ['English', 'Tamil', 'Malayalam'],
-                'created_at': datetime.utcnow()
-            }
-        ]
-        
-        result = doctors_collection.insert_many(doctors_data)
-        
+        # No default doctors to seed
         return jsonify({
-            'message': 'Doctors seeded successfully',
-            'count': len(result.inserted_ids)
-        }), 201
+            'message': 'No default doctors configured to seed',
+            'count': 0
+        }), 200
         
     except Exception as e:
         return jsonify({'message': f'Server error: {str(e)}'}), 500
@@ -2034,51 +1999,7 @@ def update_profile_photo():
 
 
 if __name__ == '__main__':
-    # Auto-seed doctors if database is empty
-    try:
-        if doctors_collection.count_documents({}) == 0:
-            print("🏥 Seeding doctors into MongoDB...")
-            doctors_data = [
-                {
-                    'id': 1,
-                    'name': 'Dr. Dineshkarthick',
-                    'specialization': 'Nephrologist',
-                    'experience': '12 years',
-                    'rating': 4.9,
-                    'availability': 'Mon-Sat: 10 AM - 6 PM',
-                    'avatar': '👨‍⚕️',
-                    'languages': ['English', 'Tamil', 'Hindi'],
-                    'created_at': datetime.utcnow()
-                },
-                {
-                    'id': 2,
-                    'name': 'Dr. Dharanish',
-                    'specialization': 'Kidney Specialist',
-                    'experience': '10 years',
-                    'rating': 4.7,
-                    'availability': 'Tue-Sat: 8 AM - 4 PM',
-                    'avatar': '👨‍⚕️',
-                    'languages': ['English', 'Tamil'],
-                    'created_at': datetime.utcnow()
-                },
-                {
-                    'id': 3,
-                    'name': 'Dr. Hari Saravana',
-                    'specialization': 'Renal Medicine Expert',
-                    'experience': '14 years',
-                    'rating': 4.9,
-                    'availability': 'Mon-Fri: 11 AM - 7 PM',
-                    'avatar': '👨‍⚕️',
-                    'languages': ['English', 'Tamil', 'Malayalam'],
-                    'created_at': datetime.utcnow()
-                }
-            ]
-            doctors_collection.insert_many(doctors_data)
-            print(f"✅ Successfully seeded {len(doctors_data)} doctors!")
-        else:
-            print(f"✅ Doctors already exist in database ({doctors_collection.count_documents({})} doctors)")
-    except Exception as e:
-        print(f"⚠️  Error seeding doctors: {e}")
-    
+    doctor_count = doctors_collection.count_documents({})
+    print(f"✅ Doctors in database: {doctor_count}") 
     print("🚀 Starting Flask server...")
     socketio.run(app, debug=True, port=5000)

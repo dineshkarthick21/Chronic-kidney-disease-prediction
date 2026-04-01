@@ -63,6 +63,9 @@ A full-stack web application with machine learning capabilities to predict Chron
 - 💬 **Student Chat** - Students can chat with doctors directly from consultation scheduling page
   - "Chat with Doctor" button on each doctor card
   - Real-time messaging via WebSocket connection
+  - 🔐 **Private Conversations** - Socket.io based messaging with isolated delivery (patient only sees their selected doctor, doctor only sees their patients)
+  - 💾 **In-Memory Storage** - Thread-safe message storage with instant delivery, no database persistence
+  - ✨ **Live Message Groups** - Messages organized by doctor for patients, by patient for doctors
 
 ### PDF Reports & Patient Tracking 🆕
 - 📄 **Comprehensive PDF Reports** - Generate detailed prediction reports with:

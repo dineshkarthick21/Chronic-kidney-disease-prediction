@@ -11,6 +11,7 @@ function DoctorConsultation({ user, onBack }) {
   const [doctors, setDoctors] = useState([])
   const [consultations, setConsultations] = useState([])
   const [messages, setMessages] = useState([])
+  const [messagesByDoctor, setMessagesByDoctor] = useState({})
   const [messageText, setMessageText] = useState('')
   const [isSocketReady, setIsSocketReady] = useState(false)
   const [loading, setLoading] = useState(true)
@@ -40,82 +41,31 @@ function DoctorConsultation({ user, onBack }) {
     }
   }, [])
 
+  // Load the selected doctor's messages.
+  useEffect(() => {
+    const primaryDoctorKey = selectedDoctor ? String(selectedDoctor._id || '') : ''
+    const fallbackDoctorKey = selectedDoctor ? String(selectedDoctor.id || '') : ''
+
+    if (!primaryDoctorKey && !fallbackDoctorKey) {
+      setMessages([])
+      return
+    }
+
+    setMessages(messagesByDoctor[primaryDoctorKey] || messagesByDoctor[fallbackDoctorKey] || [])
+  }, [selectedDoctor, messagesByDoctor])
+
   const fetchDoctors = async () => {
     try {
-      const response = await fetch(`${API_BASE}/api/doctors`)
+      const response = await fetch(`${API_BASE}/api/doctor_accounts`)
       if (response.ok) {
         const data = await response.json()
-        setDoctors(data.doctors || [])
+        setDoctors(data.doctors || data || [])
       } else {
-        // Mock data for demonstration
-        setDoctors([
-          {
-            id: 1,
-            name: 'Dr. Dineshkarthick',
-            specialization: 'Nephrologist',
-            experience: '12 years',
-            rating: 4.9,
-            availability: 'Mon-Sat: 10 AM - 6 PM',
-            avatar: '👨‍⚕️',
-            languages: ['English', 'Tamil', 'Hindi']
-          },
-          {
-            id: 2,
-            name: 'Dr. Dharanish',
-            specialization: 'Kidney Specialist',
-            experience: '10 years',
-            rating: 4.7,
-            availability: 'Tue-Sat: 8 AM - 4 PM',
-            avatar: '👨‍⚕️',
-            languages: ['English', 'Tamil']
-          },
-          {
-            id: 3,
-            name: 'Dr. Hari Saravana',
-            specialization: 'Renal Medicine Expert',
-            experience: '14 years',
-            rating: 4.9,
-            availability: 'Mon-Fri: 11 AM - 7 PM',
-            avatar: '👨‍⚕️',
-            languages: ['English', 'Tamil', 'Malayalam']
-          }
-        ])
+        setDoctors([])
       }
     } catch (error) {
       console.error('Error fetching doctors:', error)
-      // Use mock data on error
-      setDoctors([
-        {
-          id: 1,
-          name: 'Dr. Dineshkarthick',
-          specialization: 'Nephrologist',
-          experience: '12 years',
-          rating: 4.9,
-          availability: 'Mon-Sat: 10 AM - 6 PM',
-          avatar: '👨‍⚕️',
-          languages: ['English', 'Tamil', 'Hindi']
-        },
-        {
-          id: 2,
-          name: 'Dr. Dharanish',
-          specialization: 'Kidney Specialist',
-          experience: '10 years',
-          rating: 4.7,
-          availability: 'Tue-Sat: 8 AM - 4 PM',
-          avatar: '👨‍⚕️',
-          languages: ['English', 'Tamil']
-        },
-        {
-          id: 3,
-          name: 'Dr. Hari Saravana',
-          specialization: 'Renal Medicine Expert',
-          experience: '14 years',
-          rating: 4.9,
-          availability: 'Mon-Fri: 11 AM - 7 PM',
-          avatar: '👨‍⚕️',
-          languages: ['English', 'Tamil', 'Malayalam']
-        }
-      ])
+      setDoctors([])
     } finally {
       setLoading(false)
     }
@@ -142,24 +92,8 @@ function DoctorConsultation({ user, onBack }) {
         setConsultations(processedConsultations)
         console.log('Processed consultations:', processedConsultations)
       } else {
-        console.log('Failed to fetch from backend, using mock data')
-        // Mock data for demonstration
-        const mockConsultations = [
-          {
-            id: 1,
-            doctor: {
-              name: 'Dr. Dineshkarthick',
-              specialization: 'Nephrologist',
-              avatar: '👨‍⚕️'
-            },
-            date: new Date(Date.now() + 86400000).toISOString(), // Tomorrow
-            time: '10:00 AM',
-            status: 'scheduled',
-            meetingLink: 'https://meet.jit.si/CKD-DrDineshkarthick-Demo-123456',
-            reason: 'Routine checkup'
-          }
-        ]
-        setConsultations(mockConsultations)
+        console.log('Failed to fetch from backend')
+        setConsultations([])
       }
     } catch (error) {
       console.error('Error fetching consultations:', error)
@@ -303,16 +237,27 @@ function DoctorConsultation({ user, onBack }) {
     })
 
     socket.on('chat_message', (message) => {
-      if (message.user_id === user.id) {
-        setMessages((prev) => {
-          // Check if message already exists to prevent duplicates
-          const messageExists = prev.some((msg) => msg.id === message.id)
-          if (messageExists) {
-            return prev
-          }
-          return [...prev, message]
-        })
+      const doctorKey = String(message.doctor_id || '')
+      if (!doctorKey) {
+        return
       }
+
+      setMessagesByDoctor((prev) => {
+        const currentMessages = prev[doctorKey] || []
+        const messageExists = currentMessages.some((msg) => msg.id === message.id)
+        if (messageExists) {
+          return prev
+        }
+
+        return {
+          ...prev,
+          [doctorKey]: [...currentMessages, message]
+        }
+      })
+    })
+
+    socket.on('socket_error', (error) => {
+      showNotification('error', error?.message || 'Socket error')
     })
 
     socketRef.current = socket
@@ -320,7 +265,24 @@ function DoctorConsultation({ user, onBack }) {
 
   const handleSendMessage = () => {
     const text = messageText.trim()
-    if (!text || !socketRef.current || !isSocketReady) {
+    
+    if (!text) {
+      return
+    }
+    
+    if (!socketRef.current || !isSocketReady) {
+      showNotification('error', 'Socket connection not ready')
+      return
+    }
+    
+    if (!selectedDoctor) {
+      showNotification('error', 'Please select a doctor first')
+      return
+    }
+
+    const targetDoctorId = selectedDoctor._id ? String(selectedDoctor._id) : ''
+    if (!targetDoctorId) {
+      showNotification('error', 'Selected doctor is invalid. Please choose again.')
       return
     }
 
@@ -328,6 +290,7 @@ function DoctorConsultation({ user, onBack }) {
     socketRef.current.emit('send_chat_message', {
       role: 'user',
       token,
+      targetDoctorId,
       text
     })
     setMessageText('')
@@ -509,14 +472,20 @@ function DoctorConsultation({ user, onBack }) {
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                           <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" strokeWidth="2"/>
                         </svg>
-                        <span>{doctor.languages.join(', ')}</span>
+                        <span>{(doctor.languages || []).join(', ')}</span>
                       </div>
                     </div>
                     <button className="book-btn" onClick={() => handleBookConsultation(doctor)}>
                       Book Consultation
                     </button>
 
-                    <button className="chat-btn" onClick={() => setActiveTab('chat')}>
+                    <button
+                      className="chat-btn"
+                      onClick={() => {
+                        setSelectedDoctor(doctor)
+                        setActiveTab('chat')
+                      }}
+                    >
                       Chat with Doctor
                     </button>
                   </div>
@@ -737,15 +706,20 @@ function DoctorConsultation({ user, onBack }) {
           {activeTab === 'chat' && (
             <div className="consultation-chat">
               <div className="chat-header">
-                <h3>Live Doctor Chat</h3>
+                <h3>Live Doctor Chat{selectedDoctor ? ` - ${selectedDoctor.name}` : ''}</h3>
                 <p>{isSocketReady ? 'Connected' : 'Connecting...'}</p>
               </div>
 
               <div className="chat-messages">
-                {messages.length === 0 ? (
+                {!selectedDoctor ? (
+                  <div className="empty-state compact">
+                    <h3>No Doctor Selected</h3>
+                    <p>Please select a doctor from the list above to start chatting.</p>
+                  </div>
+                ) : messages.length === 0 ? (
                   <div className="empty-state compact">
                     <h3>No messages yet</h3>
-                    <p>Start by sending your symptoms or concerns to the doctor.</p>
+                    <p>Start by sending your symptoms or concerns to {selectedDoctor.name}.</p>
                   </div>
                 ) : (
                   messages.map((message) => (
@@ -765,14 +739,15 @@ function DoctorConsultation({ user, onBack }) {
                   type="text"
                   value={messageText}
                   onChange={(e) => setMessageText(e.target.value)}
-                  placeholder={isSocketReady ? 'Type your message to doctor...' : 'Waiting for socket connection...'}
+                  placeholder={selectedDoctor ? `Message ${selectedDoctor.name}...` : 'Select a doctor first...'}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') {
                       handleSendMessage()
                     }
                   }}
+                  disabled={!selectedDoctor}
                 />
-                <button onClick={handleSendMessage} disabled={!isSocketReady}>Send</button>
+                <button onClick={handleSendMessage} disabled={!selectedDoctor || !isSocketReady}>Send</button>
               </div>
             </div>
           )}
