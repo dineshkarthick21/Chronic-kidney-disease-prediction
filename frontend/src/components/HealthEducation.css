@@ -396,6 +396,15 @@
   object-fit: cover;
 }
 
+.video-thumbnail video {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
 .video-duration {
   position: absolute;
   bottom: 10px;
@@ -577,6 +586,14 @@
 }
 
 .modal-video iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.modal-video video {
   position: absolute;
   top: 0;
   left: 0;

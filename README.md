@@ -15,11 +15,10 @@ A full-stack web application with machine learning to predict Chronic Kidney Dis
 - Settings (appearance, preferences, security, export/reset)
 
 ### Health Education Center
-- 36 curated CKD education videos across 5 categories
+- 9 local CKD education videos across 5 categories (Basics, Prevention, Diet, Treatment, Lifestyle)
 - Favorites, search, and sorting (popular/newest/duration)
-- Add your own YouTube videos by topic (stored in localStorage)
-- Full-screen modal player with YouTube fallback link
-- Note: some YouTube videos may be unavailable if embedding is disabled by the uploader
+- Full-screen modal video player (no YouTube embeds)
+- Videos are stored in `frontend/src/assets/Kidney videos/`
 
 ### Doctor Consultation
 - Dedicated doctor login/signup and dashboard
@@ -191,7 +190,7 @@ CKD-Prediction/
     │   │   ├── AIChatAssistant.jsx # RAG chatbot interface
     │   │   ├── DoctorConsultation.jsx # Doctor appointment with Jitsi Meet
     │   │   ├── Reports.jsx    # Medical reports with PDF download and patient tracking
-    │   │   ├── HealthEducation.jsx # Video library (36 CKD educational videos)
+    │   │   ├── HealthEducation.jsx # Video library (local CKD educational videos)
     │   │   └── Loader.jsx     # Loading component
     │   └── context/
     │       └── ThemeContext.jsx # Global theme management
@@ -249,7 +248,7 @@ CKD-Prediction/
 - Settings tabs for appearance, preferences, and security
 
 ## Recent Updates (April 2026)
-- Health Education custom video add flow (YouTube links + localStorage)
+- Health Education updated to use local video assets (YouTube removed)
 - Settings and Profile visual redesign
 - Doctor dashboard auth guard and socket recovery
 - RAG backend run instructions aligned to backend folder

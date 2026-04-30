@@ -1,21 +1,20 @@
 import { useState } from 'react'
 import './HealthEducation.css'
+import video1 from '../assets/Kidney videos/WhatsApp Video 2026-04-30 at 9.18.33 PM.mp4'
+import video2 from '../assets/Kidney videos/WhatsApp Video 2026-04-30 at 9.20.58 PM (1).mp4'
+import video3 from '../assets/Kidney videos/WhatsApp Video 2026-04-30 at 9.20.59 PM (2).mp4'
+import video4 from '../assets/Kidney videos/WhatsApp Video 2026-04-30 at 9.20.59 PM.mp4'
+import video5 from '../assets/Kidney videos/WhatsApp Video 2026-04-30 at 9.21.00 PM.mp4'
+import video6 from '../assets/Kidney videos/WhatsApp Video 2026-04-30 at 9.21.07 PM.mp4'
+import video7 from '../assets/Kidney videos/WhatsApp Video 2026-04-30 at 9.21.08 PM.mp4'
+import video8 from '../assets/Kidney videos/WhatsApp Video 2026-04-30 at 9.21.09 PM.mp4'
+import video9 from '../assets/Kidney videos/WhatsApp Video 2026-04-30 at 9.21.10 PM.mp4'
 
 function HealthEducation({ user, onBack }) {
   const [activeCategory, setActiveCategory] = useState('all')
   const [searchQuery, setSearchQuery] = useState('')
   const [sortBy, setSortBy] = useState('popular')
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false)
-  const [showAddVideo, setShowAddVideo] = useState(false)
-  const [formMessage, setFormMessage] = useState(null)
-  const [newVideo, setNewVideo] = useState({
-    title: '',
-    category: 'basics',
-    videoUrl: '',
-    description: '',
-    duration: '',
-    thumbnail: ''
-  })
   const [favoriteVideoIds, setFavoriteVideoIds] = useState(() => {
     try {
       return JSON.parse(localStorage.getItem('favoriteEducationVideos') || '[]')
@@ -23,424 +22,115 @@ function HealthEducation({ user, onBack }) {
       return []
     }
   })
-  const [customVideos, setCustomVideos] = useState(() => {
-    try {
-      return JSON.parse(localStorage.getItem('customEducationVideos') || '[]')
-    } catch {
-      return []
-    }
-  })
-
-  // Educational video database - Verified working embeddable YouTube videos
+  // Local education videos stored in the project assets
   const videos = [
-    // CKD BASICS (9 videos) - Using verified medical education channels
+    // CKD BASICS (3 videos)
     {
       id: 1,
-      title: 'Chronic Kidney Disease (CKD) Explained',
+      title: 'Chronic Kidney Disease Explained',
       category: 'basics',
-      duration: '6:23',
-      thumbnail: 'https://img.youtube.com/vi/l8vucN3cmes/0.jpg',
-      videoUrl: 'https://www.youtube.com/embed/l8vucN3cmes',
-      description: 'Comprehensive overview of chronic kidney disease from Armando Hasudungan.',
-      views: '1.2M',
-      date: 'Feb 2024'
+      duration: '—',
+      thumbnail: '',
+      videoUrl: video1,
+      description: 'Understanding chronic kidney disease basics.',
+      views: 'Local',
+      date: 'Apr 2026'
     },
     {
       id: 2,
-      title: 'How Your Kidneys Work - Nephron Function',
+      title: 'How Your Kidneys Work',
       category: 'basics',
-      duration: '5:14',
-      thumbnail: 'https://img.youtube.com/vi/l128tW1O8KA/0.jpg',
-      videoUrl: 'https://www.youtube.com/embed/l128tW1O8KA',
-      description: 'Understanding kidney anatomy and function explained simply.',
-      views: '2.5M',
-      date: 'Jan 2023'
+      duration: '—',
+      thumbnail: '',
+      videoUrl: video2,
+      description: 'Kidney anatomy and function explained.',
+      views: 'Local',
+      date: 'Apr 2026'
     },
     {
       id: 3,
       title: 'Renal Function Tests',
       category: 'basics',
-      duration: '7:42',
-      thumbnail: 'https://img.youtube.com/vi/6VTgBbtZBQg/0.jpg',
-      videoUrl: 'https://www.youtube.com/embed/6VTgBbtZBQg',
-      description: 'Understanding kidney function tests - GFR, creatinine, BUN.',
-      views: '850K',
-      date: 'Mar 2024'
+      duration: '—',
+      thumbnail: '',
+      videoUrl: video3,
+      description: 'Understanding kidney function tests and measurements.',
+      views: 'Local',
+      date: 'Apr 2026'
     },
+    // PREVENTION (2 videos)
     {
       id: 4,
-      title: 'Kidney Disease - Overview',
-      category: 'basics',
-      duration: '8:15',
-      thumbnail: 'https://img.youtube.com/vi/EQfQ9J0Hqg4/0.jpg',
-      videoUrl: 'https://www.youtube.com/embed/EQfQ9J0Hqg4',
-      description: 'Comprehensive look at kidney disease causes and symptoms.',
-      views: '680K',
-      date: 'Dec 2023'
+      title: 'Preventing Kidney Disease',
+      category: 'prevention',
+      duration: '—',
+      thumbnail: '',
+      videoUrl: video4,
+      description: 'Key strategies to prevent kidney disease.',
+      views: 'Local',
+      date: 'Apr 2026'
     },
     {
       id: 5,
-      title: 'Chronic Kidney Disease Stages',
-      category: 'basics',
-      duration: '9:30',
-      thumbnail: 'https://img.youtube.com/vi/FG9Oe0vI5zY/0.jpg',
-      videoUrl: 'https://www.youtube.com/embed/FG9Oe0vI5zY',
-      description: 'The 5 stages of CKD explained in detail.',
-      views: '1.5M',
-      date: 'Feb 2024'
+      title: 'Blood Pressure and Kidney Health',
+      category: 'prevention',
+      duration: '—',
+      thumbnail: '',
+      videoUrl: video5,
+      description: 'Managing hypertension for kidney protection.',
+      views: 'Local',
+      date: 'Apr 2026'
     },
+    // DIET & NUTRITION (2 videos)
     {
       id: 6,
-      title: 'Diabetic Nephropathy',
-      category: 'basics',
-      duration: '6:45',
-      thumbnail: 'https://img.youtube.com/vi/xJ8Q2KXw3dA/0.jpg',
-      videoUrl: 'https://www.youtube.com/embed/xJ8Q2KXw3dA',
-      description: 'How diabetes affects the kidneys.',
-      views: '920K',
-      date: 'Jan 2024'
+      title: 'Renal Diet - What to Eat',
+      category: 'diet',
+      duration: '—',
+      thumbnail: '',
+      videoUrl: video6,
+      description: 'Kidney-friendly nutrition guide.',
+      views: 'Local',
+      date: 'Apr 2026'
     },
     {
       id: 7,
-      title: 'Understanding Kidney Failure',
-      category: 'basics',
-      duration: '10:20',
-      thumbnail: 'https://img.youtube.com/vi/yEOtkCjVOJM/0.jpg',
-      videoUrl: 'https://www.youtube.com/embed/yEOtkCjVOJM',
-      description: 'What happens in end-stage renal disease.',
-      views: '750K',
-      date: 'Nov 2023'
+      title: 'Nutrition Management for CKD',
+      category: 'diet',
+      duration: '—',
+      thumbnail: '',
+      videoUrl: video7,
+      description: 'Managing nutrition with chronic kidney disease.',
+      views: 'Local',
+      date: 'Apr 2026'
     },
+    // TREATMENT (1 video)
     {
       id: 8,
-      title: 'Acute Kidney Injury',
-      category: 'basics',
-      duration: '7:50',
-      thumbnail: 'https://img.youtube.com/vi/eSvzeZaMIT0/0.jpg',
-      videoUrl: 'https://www.youtube.com/embed/eSvzeZaMIT0',
-      description: 'Causes and management of acute kidney injury.',
-      views: '540K',
-      date: 'Oct 2023'
+      title: 'CKD Treatment Options',
+      category: 'treatment',
+      duration: '—',
+      thumbnail: '',
+      videoUrl: video8,
+      description: 'Understanding treatment and management options.',
+      views: 'Local',
+      date: 'Apr 2026'
     },
+    // LIFESTYLE (1 video)
     {
       id: 9,
-      title: 'Hypertensive Nephropathy',
-      category: 'basics',
-      duration: '8:35',
-      thumbnail: 'https://img.youtube.com/vi/cCl5YPUd5S8/0.jpg',
-      videoUrl: 'https://www.youtube.com/embed/cCl5YPUd5S8',
-      description: 'How high blood pressure damages kidneys.',
-      views: '480K',
-      date: 'Sep 2023'
-    },
-
-    // DIET & NUTRITION (8 videos)
-    {
-      id: 10,
-      title: 'Renal Diet - What to Eat',
-      category: 'diet',
-      duration: '12:15',
-      thumbnail: 'https://img.youtube.com/vi/gqxK6CoQzUg/0.jpg',
-      videoUrl: 'https://www.youtube.com/embed/gqxK6CoQzUg',
-      description: 'Complete guide to kidney-friendly nutrition.',
-      views: '890K',
-      date: 'Mar 2024'
-    },
-    {
-      id: 11,
-      title: 'Low Sodium Diet Tips',
-      category: 'diet',
-      duration: '9:40',
-      thumbnail: 'https://img.youtube.com/vi/5cQT8xw3fQI/0.jpg',
-      videoUrl: 'https://www.youtube.com/embed/5cQT8xw3fQI',
-      description: 'Reducing sodium for kidney health.',
-      views: '620K',
-      date: 'Feb 2024'
-    },
-    {
-      id: 12,
-      title: 'Protein and Kidney Disease',
-      category: 'diet',
-      duration: '8:25',
-      thumbnail: 'https://img.youtube.com/vi/4T0xh13z5Nc/0.jpg',
-      videoUrl: 'https://www.youtube.com/embed/4T0xh13z5Nc',
-      description: 'Managing protein intake with CKD.',
-      views: '710K',
-      date: 'Jan 2024'
-    },
-    {
-      id: 13,
-      title: 'Potassium in Kidney Disease',
-      category: 'diet',
-      duration: '10:05',
-      thumbnail: 'https://img.youtube.com/vi/yHchCCaSgfI/0.jpg',
-      videoUrl: 'https://www.youtube.com/embed/yHchCCaSgfI',
-      description: 'Managing potassium levels through diet.',
-      views: '530K',
-      date: 'Dec 2023'
-    },
-    {
-      id: 14,
-      title: 'Phosphorus Control',
-      category: 'diet',
-      duration: '7:55',
-      thumbnail: 'https://img.youtube.com/vi/9sYQVLQLwWc/0.jpg',
-      videoUrl: 'https://www.youtube.com/embed/9sYQVLQLwWc',
-      description: 'Controlling phosphorus in renal diet.',
-      views: '440K',
-      date: 'Nov 2023'
-    },
-    {
-      id: 15,
-      title: 'Kidney-Friendly Meal Planning',
-      category: 'diet',
-      duration: '14:30',
-      thumbnail: 'https://img.youtube.com/vi/o8l4VmqYKUQ/0.jpg',
-      videoUrl: 'https://www.youtube.com/embed/o8l4VmqYKUQ',
-      description: 'Weekly meal prep for kidney patients.',
-      views: '780K',
-      date: 'Oct 2023'
-    },
-    {
-      id: 16,
-      title: 'Fluid Management CKD',
-      category: 'diet',
-      duration: '6:40',
-      thumbnail: 'https://img.youtube.com/vi/Y_pBL5WH-74/0.jpg',
-      videoUrl: 'https://www.youtube.com/embed/Y_pBL5WH-74',
-      description: 'Managing fluid intake in kidney disease.',
-      views: '390K',
-      date: 'Sep 2023'
-    },
-    {
-      id: 17,
-      title: 'Reading Labels - Renal Diet',
-      category: 'diet',
-      duration: '11:20',
-      thumbnail: 'https://img.youtube.com/vi/4XWYJ8llUIw/0.jpg',
-      videoUrl: 'https://www.youtube.com/embed/4XWYJ8llUIw',
-      description: 'How to read food labels for kidney health.',
-      views: '560K',
-      date: 'Aug 2023'
-    },
-
-    // TREATMENT (7 videos)
-    {
-      id: 18,
-      title: 'Dialysis Explained',
-      category: 'treatment',
-      duration: '11:45',
-      thumbnail: 'https://img.youtube.com/vi/a2OSB_MKQcU/0.jpg',
-      videoUrl: 'https://www.youtube.com/embed/a2OSB_MKQcU',
-      description: 'Overview of dialysis procedures.',
-      views: '1.8M',
-      date: 'Mar 2024'
-    },
-    {
-      id: 19,
-      title: 'Hemodialysis - How It Works',
-      category: 'treatment',
-      duration: '8:50',
-      thumbnail: 'https://img.youtube.com/vi/4dWjJcYMcAY/0.jpg',
-      videoUrl: 'https://www.youtube.com/embed/4dWjJcYMcAY',
-      description: 'Understanding hemodialysis treatment.',
-      views: '950K',
-      date: 'Feb 2024'
-    },
-    {
-      id: 20,
-      title: 'Peritoneal Dialysis',
-      category: 'treatment',
-      duration: '10:15',
-      thumbnail: 'https://img.youtube.com/vi/fZ8pMZx_Fts/0.jpg',
-      videoUrl: 'https://www.youtube.com/embed/fZ8pMZx_Fts',
-      description: 'Home peritoneal dialysis explained.',
-      views: '670K',
-      date: 'Jan 2024'
-    },
-    {
-      id: 21,
-      title: 'Kidney Transplant',
-      category: 'treatment',
-      duration: '15:30',
-      thumbnail: 'https://img.youtube.com/vi/kCiT3VEP9JE/0.jpg',
-      videoUrl: 'https://www.youtube.com/embed/kCiT3VEP9JE',
-      description: 'Complete transplant guide.',
-      views: '1.1M',
-      date: 'Dec 2023'
-    },
-    {
-      id: 22,
-      title: 'CKD Medications',
-      category: 'treatment',
-      duration: '9:25',
-      thumbnail: 'https://img.youtube.com/vi/Z-QnqRm3G-c/0.jpg',
-      videoUrl: 'https://www.youtube.com/embed/Z-QnqRm3G-c',
-      description: 'Understanding kidney disease medications.',
-      views: '580K',
-      date: 'Nov 2023'
-    },
-    {
-      id: 23,
-      title: 'Living Donor Transplant',
-      category: 'treatment',
-      duration: '12:40',
-      thumbnail: 'https://img.youtube.com/vi/WiBLUX4jfJ4/0.jpg',
-      videoUrl: 'https://www.youtube.com/embed/WiBLUX4jfJ4',
-      description: 'Living kidney donation process.',
-      views: '720K',
-      date: 'Oct 2023'
-    },
-    {
-      id: 24,
-      title: 'Starting Dialysis',
-      category: 'treatment',
-      duration: '8:55',
-      thumbnail: 'https://img.youtube.com/vi/RLb51k6h5aE/0.jpg',
-      videoUrl: 'https://www.youtube.com/embed/RLb51k6h5aE',
-      description: 'What to expect when starting dialysis.',
-      views: '490K',
-      date: 'Sep 2023'
-    },
-
-    // PREVENTION (5 videos)
-    {
-      id: 25,
-      title: 'Preventing Kidney Disease',
-      category: 'prevention',
-      duration: '11:20',
-      thumbnail: 'https://img.youtube.com/vi/K6eW8nSSyjU/0.jpg',
-      videoUrl: 'https://www.youtube.com/embed/K6eW8nSSyjU',
-      description: 'Top ways to prevent kidney disease.',
-      views: '1.4M',
-      date: 'Mar 2024'
-    },
-    {
-      id: 26,
-      title: 'Diabetes and Kidneys',
-      category: 'prevention',
-      duration: '9:35',
-      thumbnail: 'https://img.youtube.com/vi/g5MAwXoMzZo/0.jpg',
-      videoUrl: 'https://www.youtube.com/embed/g5MAwXoMzZo',
-      description: 'Protecting kidneys with diabetes.',
-      views: '830K',
-      date: 'Feb 2024'
-    },
-    {
-      id: 27,
-      title: 'Blood Pressure and Kidneys',
-      category: 'prevention',
-      duration: '7:45',
-      thumbnail: 'https://img.youtube.com/vi/J-FOwPZM1U4/0.jpg',
-      videoUrl: 'https://www.youtube.com/embed/J-FOwPZM1U4',
-      description: 'Managing hypertension for kidney health.',
-      views: '640K',
-      date: 'Jan 2024'
-    },
-    {
-      id: 28,
-      title: 'Kidney Stones Prevention',
-      category: 'prevention',
-      duration: '10:50',
-      thumbnail: 'https://img.youtube.com/vi/UkJn3cyPH6U/0.jpg',
-      videoUrl: 'https://www.youtube.com/embed/UkJn3cyPH6U',
-      description: 'How to prevent kidney stones.',
-      views: '1.2M',
-      date: 'Dec 2023'
-    },
-    {
-      id: 29,
-      title: 'Medications and Kidney Damage',
-      category: 'prevention',
-      duration: '8:30',
-      thumbnail: 'https://img.youtube.com/vi/4uCRJMj8RAo/0.jpg',
-      videoUrl: 'https://www.youtube.com/embed/4uCRJMj8RAo',
-      description: 'Medications that can harm kidneys.',
-      views: '710K',
-      date: 'Nov 2023'
-    },
-
-    // LIFESTYLE (7 videos)
-    {
-      id: 30,
-      title: 'Living With CKD',
+      title: 'Living with Kidney Disease',
       category: 'lifestyle',
-      duration: '13:25',
-      thumbnail: 'https://img.youtube.com/vi/0sV-KP6SrBc/0.jpg',
-      videoUrl: 'https://www.youtube.com/embed/0sV-KP6SrBc',
-      description: 'Maintaining quality of life with kidney disease.',
-      views: '920K',
-      date: 'Mar 2024'
-    },
-    {
-      id: 31,
-      title: 'Exercise and Kidney Health',
-      category: 'lifestyle',
-      duration: '10:40',
-      thumbnail: 'https://img.youtube.com/vi/RqKvzaHVCLg/0.jpg',
-      videoUrl: 'https://www.youtube.com/embed/RqKvzaHVCLg',
-      description: 'Safe exercises for kidney patients.',
-      views: '550K',
-      date: 'Feb 2024'
-    },
-    {
-      id: 32,
-      title: 'Mental Health and CKD',
-      category: 'lifestyle',
-      duration: '9:15',
-      thumbnail: 'https://img.youtube.com/vi/NJdMOXCWMV4/0.jpg',
-      videoUrl: 'https://www.youtube.com/embed/NJdMOXCWMV4',
-      description: 'Coping with chronic kidney disease emotionally.',
-      views: '680K',
-      date: 'Jan 2024'
-    },
-    {
-      id: 33,
-      title: 'Sleep and Kidney Disease',
-      category: 'lifestyle',
-      duration: '7:30',
-      thumbnail: 'https://img.youtube.com/vi/8T2c7S6oaO4/0.jpg',
-      videoUrl: 'https://www.youtube.com/embed/8T2c7S6oaO4',
-      description: 'Managing sleep problems in CKD.',
-      views: '430K',
-      date: 'Dec 2023'
-    },
-    {
-      id: 34,
-      title: 'Traveling with Kidney Disease',
-      category: 'lifestyle',
-      duration: '11:05',
-      thumbnail: 'https://img.youtube.com/vi/8XgbhDO_JxM/0.jpg',
-      videoUrl: 'https://www.youtube.com/embed/8XgbhDO_JxM',
-      description: 'Travel tips for kidney patients.',
-      views: '520K',
-      date: 'Nov 2023'
-    },
-    {
-      id: 35,
-      title: 'Work and CKD',
-      category: 'lifestyle',
-      duration: '8:50',
-      thumbnail: 'https://img.youtube.com/vi/H7WkYG3zYY8/0.jpg',
-      videoUrl: 'https://www.youtube.com/embed/H7WkYG3zYY8',
-      description: 'Balancing work with kidney disease.',
-      views: '380K',
-      date: 'Oct 2023'
-    },
-    {
-      id: 36,
-      title: 'Support for Kidney Patients',
-      category: 'lifestyle',
-      duration: '10:25',
-      thumbnail: 'https://img.youtube.com/vi/vj3QFo0GMWM/0.jpg',
-      videoUrl: 'https://www.youtube.com/embed/vj3QFo0GMWM',
-      description: 'Building support systems with CKD.',
-      views: '460K',
-      date: 'Sep 2023'
+      duration: '—',
+      thumbnail: '',
+      videoUrl: video9,
+      description: 'Tips for maintaining quality of life with CKD.',
+      views: 'Local',
+      date: 'Apr 2026'
     }
   ]
 
-  const allVideos = [...customVideos, ...videos]
+  const allVideos = [...videos]
 
   const categories = [
     { id: 'all', name: 'All Videos', icon: '🎥' },
@@ -453,100 +143,7 @@ function HealthEducation({ user, onBack }) {
 
   const [selectedVideo, setSelectedVideo] = useState(null)
 
-  const formatMonthYear = (date) => {
-    return date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
-  }
-
-  const getVideoIdFromUrl = (urlValue) => {
-    const trimmed = (urlValue || '').trim()
-    if (!trimmed) return ''
-
-    const directId = trimmed.match(/^[A-Za-z0-9_-]{11}$/)
-    if (directId) return trimmed
-
-    const urlMatch = trimmed.match(/(?:embed\/|v=|youtu\.be\/)([A-Za-z0-9_-]{11})/)
-    return urlMatch?.[1] || ''
-  }
-
-  const buildThumbnail = (videoId) => {
-    return videoId ? `https://img.youtube.com/vi/${videoId}/0.jpg` : ''
-  }
-
-  const persistCustomVideos = (items) => {
-    setCustomVideos(items)
-    localStorage.setItem('customEducationVideos', JSON.stringify(items))
-  }
-
-  const handleNewVideoChange = (field, value) => {
-    setNewVideo((prev) => ({ ...prev, [field]: value }))
-  }
-
-  const handleAddVideo = (event) => {
-    event.preventDefault()
-    setFormMessage(null)
-
-    if (!newVideo.title.trim() || !newVideo.videoUrl.trim()) {
-      setFormMessage({ type: 'error', text: 'Title and video URL are required.' })
-      return
-    }
-
-    const videoId = getVideoIdFromUrl(newVideo.videoUrl)
-    if (!videoId) {
-      setFormMessage({ type: 'error', text: 'Please enter a valid YouTube URL or video ID.' })
-      return
-    }
-
-    const embedUrl = `https://www.youtube.com/embed/${videoId}`
-    const thumbnailUrl = newVideo.thumbnail.trim() || buildThumbnail(videoId)
-
-    const videoPayload = {
-      id: Date.now(),
-      title: newVideo.title.trim(),
-      category: newVideo.category,
-      duration: newVideo.duration.trim() || '—',
-      thumbnail: thumbnailUrl,
-      videoUrl: embedUrl,
-      description: newVideo.description.trim() || 'Community added video.',
-      views: 'New',
-      date: formatMonthYear(new Date()),
-      source: 'custom'
-    }
-
-    persistCustomVideos([videoPayload, ...customVideos])
-    setNewVideo({
-      title: '',
-      category: 'basics',
-      videoUrl: '',
-      description: '',
-      duration: '',
-      thumbnail: ''
-    })
-    setFormMessage({ type: 'success', text: 'Video added successfully!' })
-  }
-
-  const handleRemoveCustomVideo = (videoId) => {
-    persistCustomVideos(customVideos.filter((video) => video.id !== videoId))
-  }
-
-  const getVideoId = (video) => {
-    const urlMatch = video.videoUrl?.match(/(?:embed\/|v=|youtu\.be\/)([A-Za-z0-9_-]{11})/)
-    if (urlMatch?.[1]) {
-      return urlMatch[1]
-    }
-
-    const thumbMatch = video.thumbnail?.match(/\/vi\/([A-Za-z0-9_-]{11})\//)
-    return thumbMatch?.[1] || ''
-  }
-
-  const getEmbedUrl = (video) => {
-    const videoId = getVideoId(video)
-    return videoId ? `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0` : ''
-  }
-
-  const getWatchUrl = (video) => {
-    const videoId = getVideoId(video)
-    return videoId ? `https://www.youtube.com/watch?v=${videoId}` : '#'
-  }
+  const getVideoSrc = (video) => video.videoUrl
 
   const parseViews = (viewsValue) => {
     const normalized = (viewsValue || '0').toString().toUpperCase().trim()
@@ -665,107 +262,7 @@ function HealthEducation({ user, onBack }) {
           >
             {showFavoritesOnly ? 'Show All' : `Favorites (${favoriteVideoIds.length})`}
           </button>
-          <button
-            className={`add-video-toggle ${showAddVideo ? 'active' : ''}`}
-            onClick={() => setShowAddVideo((prev) => !prev)}
-          >
-            {showAddVideo ? 'Close' : 'Add Video'}
-          </button>
         </div>
-        {showAddVideo && (
-          <div className="add-video-panel">
-            <div className="add-video-header">
-              <h3>Add a new education video</h3>
-              <p>Share helpful CKD videos by pasting a YouTube link.</p>
-            </div>
-            <form className="add-video-form" onSubmit={handleAddVideo}>
-              <div className="form-row">
-                <div className="form-field">
-                  <label>Video Title</label>
-                  <input
-                    type="text"
-                    value={newVideo.title}
-                    onChange={(e) => handleNewVideoChange('title', e.target.value)}
-                    placeholder="E.g., Understanding CKD in 10 minutes"
-                    required
-                  />
-                </div>
-                <div className="form-field">
-                  <label>Topic</label>
-                  <select
-                    value={newVideo.category}
-                    onChange={(e) => handleNewVideoChange('category', e.target.value)}
-                  >
-                    {categories.filter((cat) => cat.id !== 'all').map((cat) => (
-                      <option key={cat.id} value={cat.id}>{cat.name}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-              <div className="form-row">
-                <div className="form-field">
-                  <label>YouTube URL or ID</label>
-                  <input
-                    type="text"
-                    value={newVideo.videoUrl}
-                    onChange={(e) => handleNewVideoChange('videoUrl', e.target.value)}
-                    placeholder="https://www.youtube.com/watch?v=..."
-                    required
-                  />
-                </div>
-                <div className="form-field">
-                  <label>Duration (optional)</label>
-                  <input
-                    type="text"
-                    value={newVideo.duration}
-                    onChange={(e) => handleNewVideoChange('duration', e.target.value)}
-                    placeholder="12:30"
-                  />
-                </div>
-              </div>
-              <div className="form-row">
-                <div className="form-field full">
-                  <label>Description (optional)</label>
-                  <textarea
-                    rows="3"
-                    value={newVideo.description}
-                    onChange={(e) => handleNewVideoChange('description', e.target.value)}
-                    placeholder="Short summary of the video"
-                  />
-                </div>
-              </div>
-              <div className="form-row">
-                <div className="form-field full">
-                  <label>Custom Thumbnail URL (optional)</label>
-                  <input
-                    type="text"
-                    value={newVideo.thumbnail}
-                    onChange={(e) => handleNewVideoChange('thumbnail', e.target.value)}
-                    placeholder="Leave empty to use the YouTube thumbnail"
-                  />
-                </div>
-              </div>
-              {formMessage && (
-                <div className={`form-message ${formMessage.type}`}>
-                  {formMessage.text}
-                </div>
-              )}
-              <div className="form-actions">
-                <button type="submit" className="submit-video-btn">Save Video</button>
-                <button
-                  type="button"
-                  className="cancel-video-btn"
-                  onClick={() => {
-                    setShowAddVideo(false)
-                    setFormMessage(null)
-                  }}
-                >
-                  Cancel
-                </button>
-              </div>
-            </form>
-          </div>
-        )}
       </div>
 
       {/* Category Tabs */}
@@ -803,7 +300,16 @@ function HealthEducation({ user, onBack }) {
                 >
                   {favoriteVideoIds.includes(video.id) ? '★' : '☆'}
                 </button>
-                <img src={video.thumbnail} alt={video.title} />
+                {video.thumbnail ? (
+                  <img src={video.thumbnail} alt={video.title} />
+                ) : (
+                  <video
+                    className="video-preview"
+                    src={getVideoSrc(video)}
+                    muted
+                    preload="metadata"
+                  />
+                )}
                 <div className="video-duration">{video.duration}</div>
                 <div className="play-overlay">
                   <svg width="48" height="48" viewBox="0 0 24 24" fill="white">
@@ -818,17 +324,6 @@ function HealthEducation({ user, onBack }) {
                   <span className="video-views">👁️ {video.views} views</span>
                   <span className="video-date">📅 {video.date}</span>
                 </div>
-                {video.source === 'custom' && (
-                  <button
-                    className="remove-video-btn"
-                    onClick={(event) => {
-                      event.stopPropagation()
-                      handleRemoveCustomVideo(video.id)
-                    }}
-                  >
-                    Remove
-                  </button>
-                )}
               </div>
             </div>
           ))
@@ -855,16 +350,12 @@ function HealthEducation({ user, onBack }) {
               </svg>
             </button>
             <div className="modal-video">
-              <iframe
-                width="100%"
-                height="100%"
-                src={getEmbedUrl(selectedVideo)}
-                title={selectedVideo.title}
-                frameBorder="0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                allowFullScreen
-                referrerPolicy="no-referrer-when-downgrade"
-              ></iframe>
+              <video
+                src={getVideoSrc(selectedVideo)}
+                controls
+                autoPlay
+                playsInline
+              />
             </div>
             <div className="modal-info">
               <h2>{selectedVideo.title}</h2>
@@ -874,23 +365,6 @@ function HealthEducation({ user, onBack }) {
                 <span>⏱️ {selectedVideo.duration}</span>
               </div>
               <p>{selectedVideo.description}</p>
-              <a 
-                href={getWatchUrl(selectedVideo)}
-                target="_blank" 
-                rel="noopener noreferrer"
-                style={{
-                  display: 'inline-block',
-                  marginTop: '10px',
-                  padding: '8px 16px',
-                  backgroundColor: '#ff0000',
-                  color: 'white',
-                  textDecoration: 'none',
-                  borderRadius: '4px',
-                  fontSize: '14px'
-                }}
-              >
-                ▶️ Watch on YouTube
-              </a>
             </div>
           </div>
         </div>
