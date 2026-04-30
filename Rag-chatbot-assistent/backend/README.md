@@ -28,7 +28,7 @@ The backend RAG (Retrieval Augmented Generation) system for the CKD Prediction A
 
 4. **Run the API Server:**
    ```bash
-   uvicorn main:app --reload --port 8001
+   python -m uvicorn main:app --reload --port 8001
    ```
    
    The API will be available at `http://localhost:8001`
@@ -42,6 +42,16 @@ Health check endpoint
   "status": "ok",
   "message": "CKD Prediction RAG Assistant API is running 🚀",
   "version": "1.0.0"
+}
+```
+
+### GET `/health`
+Detailed health check
+```json
+{
+   "status": "healthy",
+   "vectorstore": "loaded",
+   "llm": "initialized"
 }
 ```
 
@@ -64,5 +74,5 @@ Ask a question about CKD or the prediction system
 - **FastAPI**: Modern Python web framework
 - **LangChain**: Framework for LLM applications
 - **FAISS**: Vector similarity search
-- **Google Gemini 2.0 Flash**: Large Language Model
+- **Google Gemini 2.5 Flash**: Large Language Model
 - **Python 3.13**: Programming language

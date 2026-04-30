@@ -6,9 +6,26 @@ function HealthEducation({ user, onBack }) {
   const [searchQuery, setSearchQuery] = useState('')
   const [sortBy, setSortBy] = useState('popular')
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false)
+  const [showAddVideo, setShowAddVideo] = useState(false)
+  const [formMessage, setFormMessage] = useState(null)
+  const [newVideo, setNewVideo] = useState({
+    title: '',
+    category: 'basics',
+    videoUrl: '',
+    description: '',
+    duration: '',
+    thumbnail: ''
+  })
   const [favoriteVideoIds, setFavoriteVideoIds] = useState(() => {
     try {
       return JSON.parse(localStorage.getItem('favoriteEducationVideos') || '[]')
+    } catch {
+      return []
+    }
+  })
+  const [customVideos, setCustomVideos] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem('customEducationVideos') || '[]')
     } catch {
       return []
     }
@@ -423,6 +440,8 @@ function HealthEducation({ user, onBack }) {
     }
   ]
 
+  const allVideos = [...customVideos, ...videos]
+
   const categories = [
     { id: 'all', name: 'All Videos', icon: '🎥' },
     { id: 'basics', name: 'CKD Basics', icon: '📚' },
@@ -433,6 +452,81 @@ function HealthEducation({ user, onBack }) {
   ]
 
   const [selectedVideo, setSelectedVideo] = useState(null)
+
+  const formatMonthYear = (date) => {
+    return date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
+  }
+
+  const getVideoIdFromUrl = (urlValue) => {
+    const trimmed = (urlValue || '').trim()
+    if (!trimmed) return ''
+
+    const directId = trimmed.match(/^[A-Za-z0-9_-]{11}$/)
+    if (directId) return trimmed
+
+    const urlMatch = trimmed.match(/(?:embed\/|v=|youtu\.be\/)([A-Za-z0-9_-]{11})/)
+    return urlMatch?.[1] || ''
+  }
+
+  const buildThumbnail = (videoId) => {
+    return videoId ? `https://img.youtube.com/vi/${videoId}/0.jpg` : ''
+  }
+
+  const persistCustomVideos = (items) => {
+    setCustomVideos(items)
+    localStorage.setItem('customEducationVideos', JSON.stringify(items))
+  }
+
+  const handleNewVideoChange = (field, value) => {
+    setNewVideo((prev) => ({ ...prev, [field]: value }))
+  }
+
+  const handleAddVideo = (event) => {
+    event.preventDefault()
+    setFormMessage(null)
+
+    if (!newVideo.title.trim() || !newVideo.videoUrl.trim()) {
+      setFormMessage({ type: 'error', text: 'Title and video URL are required.' })
+      return
+    }
+
+    const videoId = getVideoIdFromUrl(newVideo.videoUrl)
+    if (!videoId) {
+      setFormMessage({ type: 'error', text: 'Please enter a valid YouTube URL or video ID.' })
+      return
+    }
+
+    const embedUrl = `https://www.youtube.com/embed/${videoId}`
+    const thumbnailUrl = newVideo.thumbnail.trim() || buildThumbnail(videoId)
+
+    const videoPayload = {
+      id: Date.now(),
+      title: newVideo.title.trim(),
+      category: newVideo.category,
+      duration: newVideo.duration.trim() || '—',
+      thumbnail: thumbnailUrl,
+      videoUrl: embedUrl,
+      description: newVideo.description.trim() || 'Community added video.',
+      views: 'New',
+      date: formatMonthYear(new Date()),
+      source: 'custom'
+    }
+
+    persistCustomVideos([videoPayload, ...customVideos])
+    setNewVideo({
+      title: '',
+      category: 'basics',
+      videoUrl: '',
+      description: '',
+      duration: '',
+      thumbnail: ''
+    })
+    setFormMessage({ type: 'success', text: 'Video added successfully!' })
+  }
+
+  const handleRemoveCustomVideo = (videoId) => {
+    persistCustomVideos(customVideos.filter((video) => video.id !== videoId))
+  }
 
   const getVideoId = (video) => {
     const urlMatch = video.videoUrl?.match(/(?:embed\/|v=|youtu\.be\/)([A-Za-z0-9_-]{11})/)
@@ -479,7 +573,7 @@ function HealthEducation({ user, onBack }) {
     persistFavorites([...favoriteVideoIds, videoId])
   }
 
-  const filteredVideos = videos
+  const filteredVideos = allVideos
     .filter(video => {
       const matchesCategory = activeCategory === 'all' || video.category === activeCategory
       const matchesSearch = video.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -529,7 +623,7 @@ function HealthEducation({ user, onBack }) {
         </div>
         <div className="hero-stats">
           <div className="stat-item">
-            <span className="stat-value">{videos.length}</span>
+            <span className="stat-value">{allVideos.length}</span>
             <span className="stat-label">Videos</span>
           </div>
           <div className="stat-item">
@@ -571,7 +665,107 @@ function HealthEducation({ user, onBack }) {
           >
             {showFavoritesOnly ? 'Show All' : `Favorites (${favoriteVideoIds.length})`}
           </button>
+          <button
+            className={`add-video-toggle ${showAddVideo ? 'active' : ''}`}
+            onClick={() => setShowAddVideo((prev) => !prev)}
+          >
+            {showAddVideo ? 'Close' : 'Add Video'}
+          </button>
         </div>
+        {showAddVideo && (
+          <div className="add-video-panel">
+            <div className="add-video-header">
+              <h3>Add a new education video</h3>
+              <p>Share helpful CKD videos by pasting a YouTube link.</p>
+            </div>
+            <form className="add-video-form" onSubmit={handleAddVideo}>
+              <div className="form-row">
+                <div className="form-field">
+                  <label>Video Title</label>
+                  <input
+                    type="text"
+                    value={newVideo.title}
+                    onChange={(e) => handleNewVideoChange('title', e.target.value)}
+                    placeholder="E.g., Understanding CKD in 10 minutes"
+                    required
+                  />
+                </div>
+                <div className="form-field">
+                  <label>Topic</label>
+                  <select
+                    value={newVideo.category}
+                    onChange={(e) => handleNewVideoChange('category', e.target.value)}
+                  >
+                    {categories.filter((cat) => cat.id !== 'all').map((cat) => (
+                      <option key={cat.id} value={cat.id}>{cat.name}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              <div className="form-row">
+                <div className="form-field">
+                  <label>YouTube URL or ID</label>
+                  <input
+                    type="text"
+                    value={newVideo.videoUrl}
+                    onChange={(e) => handleNewVideoChange('videoUrl', e.target.value)}
+                    placeholder="https://www.youtube.com/watch?v=..."
+                    required
+                  />
+                </div>
+                <div className="form-field">
+                  <label>Duration (optional)</label>
+                  <input
+                    type="text"
+                    value={newVideo.duration}
+                    onChange={(e) => handleNewVideoChange('duration', e.target.value)}
+                    placeholder="12:30"
+                  />
+                </div>
+              </div>
+              <div className="form-row">
+                <div className="form-field full">
+                  <label>Description (optional)</label>
+                  <textarea
+                    rows="3"
+                    value={newVideo.description}
+                    onChange={(e) => handleNewVideoChange('description', e.target.value)}
+                    placeholder="Short summary of the video"
+                  />
+                </div>
+              </div>
+              <div className="form-row">
+                <div className="form-field full">
+                  <label>Custom Thumbnail URL (optional)</label>
+                  <input
+                    type="text"
+                    value={newVideo.thumbnail}
+                    onChange={(e) => handleNewVideoChange('thumbnail', e.target.value)}
+                    placeholder="Leave empty to use the YouTube thumbnail"
+                  />
+                </div>
+              </div>
+              {formMessage && (
+                <div className={`form-message ${formMessage.type}`}>
+                  {formMessage.text}
+                </div>
+              )}
+              <div className="form-actions">
+                <button type="submit" className="submit-video-btn">Save Video</button>
+                <button
+                  type="button"
+                  className="cancel-video-btn"
+                  onClick={() => {
+                    setShowAddVideo(false)
+                    setFormMessage(null)
+                  }}
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        )}
       </div>
 
       {/* Category Tabs */}
@@ -624,6 +818,17 @@ function HealthEducation({ user, onBack }) {
                   <span className="video-views">👁️ {video.views} views</span>
                   <span className="video-date">📅 {video.date}</span>
                 </div>
+                {video.source === 'custom' && (
+                  <button
+                    className="remove-video-btn"
+                    onClick={(event) => {
+                      event.stopPropagation()
+                      handleRemoveCustomVideo(video.id)
+                    }}
+                  >
+                    Remove
+                  </button>
+                )}
               </div>
             </div>
           ))

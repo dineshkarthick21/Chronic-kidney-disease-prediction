@@ -208,10 +208,18 @@ function Settings({ user, onBack }) {
         )}
         
         <div className="settings-header">
-          <button className="back-btn" onClick={onBack}>
-            ← Back
-          </button>
-          <h1>⚙️ Settings</h1>
+          <div className="settings-header-left">
+            <button className="back-btn" onClick={onBack}>
+              ← Back
+            </button>
+            <div className="settings-title-block">
+              <h1>Settings</h1>
+              <p>Manage appearance, preferences, and security in one place.</p>
+            </div>
+          </div>
+          <div className="settings-header-right">
+            <span>Customize the look and feel of your dashboard</span>
+          </div>
         </div>
 
         {/* Tab Navigation */}

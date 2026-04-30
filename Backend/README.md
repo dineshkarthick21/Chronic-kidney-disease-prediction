@@ -1,6 +1,6 @@
 # CKD Prediction Backend API
 
-Flask API for user authentication and CKD prediction system.
+Flask API for authentication, predictions, doctor workflows, and real-time chat.
 
 ## Setup Instructions
 
@@ -26,10 +26,9 @@ mongod --dbpath "path/to/your/data"
 
 ### 3. Configure Environment
 
-The `.env` file is already configured for local development:
-- MongoDB URI: `mongodb://localhost:27017/`
-- Database: `ckd_prediction`
-- Collections: `users`, `sessions`
+Create a `.env` file (or use system variables):
+- `MONGO_URI` (default: `mongodb://localhost:27017/`)
+- `ADMIN_SECRET_CODE` (default: `CKD_ADMIN_2026`)
 
 ### 4. Run the Flask API
 
@@ -136,6 +135,26 @@ Health check endpoint
   "message": "API and MongoDB are running"
 }
 ```
+
+## Doctor Authentication
+
+#### **POST** `/api/doctor/signup`
+Register a doctor account
+
+#### **POST** `/api/doctor/login`
+Authenticate a doctor
+
+#### **GET** `/api/doctor/stats`
+Doctor dashboard stats (requires doctor token)
+
+#### **GET** `/api/doctor/patients`
+Doctor patient list (requires doctor token)
+
+#### **GET** `/api/doctor/patient-predictions/<user_id>`
+Prediction history for a patient (requires doctor token)
+
+#### **POST** `/api/doctor/seed`
+Seed default doctor accounts (dev only)
 ## Real-Time Chat System (Socket.io)
 
 ### Overview

@@ -5,7 +5,7 @@ An intelligent RAG (Retrieval Augmented Generation) chatbot integrated into the 
 ## 🌟 Features
 
 - **Intelligent Document Search**: Uses FAISS vector database for efficient semantic search
-- **AI-Powered Responses**: Leverages Google Gemini 2.0 Flash for accurate, context-aware answers
+- **AI-Powered Responses**: Leverages Google Gemini 2.5 Flash for accurate, context-aware answers
 - **Beautiful Chat Interface**: Modern React UI with dark/light theme support
 - **Context-Aware Responses**: Retrieves relevant medical information before generating answers
 - **Integrated into Dashboard**: Accessible via "More" menu in student dashboard
@@ -19,11 +19,11 @@ An intelligent RAG (Retrieval Augmented Generation) chatbot integrated into the 
 - **FastAPI**: High-performance Python web framework
 - **LangChain**: Framework for building LLM applications
 - **FAISS**: Facebook AI Similarity Search for vector storage
-- **Google Gemini 2.0 Flash**: Powerful LLM for text generation
-- **Python 3.13**: Latest Python features
+- **Google Gemini 2.5 Flash**: Powerful LLM for text generation
+- **Python 3.13**
 
 ### Frontend
-- **React 18**: Modern UI library
+- **React 19**: Modern UI library
 - **CSS3**: Custom styling with theme support
 - **Fetch API**: For backend communication
 
@@ -76,7 +76,7 @@ cp .env.example .env
 python ingest.py
 
 # Start the FastAPI server
-uvicorn main:app --reload --port 8001
+python -m uvicorn main:app --reload --port 8001
 ```
 
 Backend will run on `http://localhost:8001`
@@ -102,8 +102,8 @@ Frontend will run on `http://localhost:5173`
 
 1. **Start the RAG backend** (Terminal 1):
    ```bash
-   cd Rag-chatbot-assistent/backend
-   uvicorn main:app --reload --port 8001
+  cd Rag-chatbot-assistent/backend
+  python -m uvicorn main:app --reload --port 8001
    ```
 
 2. **Start the CKD frontend** (Terminal 2):
@@ -171,7 +171,7 @@ Detailed health check
 {
   "status": "healthy",
   "vectorstore": "loaded",
-  "qa_chain": "initialized"
+  "llm": "initialized"
 }
 ```
 
@@ -232,7 +232,7 @@ The chatbot's knowledge base (`backend/data.txt`) includes comprehensive informa
 ### Backend Configuration
 
 Edit `backend/main.py` to customize:
-- LLM model (currently using `gemini-2.0-flash-exp`)
+- LLM model (currently using `gemini-2.5-flash`)
 - Vector search parameters (k=3 for retrieval)
 - CORS settings (configured for localhost:5173)
 - Temperature (set to 0 for consistent responses)

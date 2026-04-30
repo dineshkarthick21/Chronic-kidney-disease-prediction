@@ -1296,7 +1296,7 @@ def predict():
         confidence = float(max(prediction_proba))
         
         # Convert prediction to readable format
-        result = 'CKD' if prediction == 1 else 'No CKD'
+        result = 'CKD' if prediction == 0 else 'No CKD'
         
         # Save prediction to database
         prediction_record = {

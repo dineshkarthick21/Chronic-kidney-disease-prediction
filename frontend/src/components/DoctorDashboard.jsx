@@ -27,6 +27,11 @@ function DoctorDashboard({ doctor, onLogout }) {
   const token = localStorage.getItem('doctorToken')
 
   useEffect(() => {
+    if (!token) {
+      onLogout()
+      return
+    }
+
     fetchInitialData()
     connectSocket()
 
@@ -51,12 +56,17 @@ function DoctorDashboard({ doctor, onLogout }) {
 
   const fetchInitialData = async () => {
     try {
-      const headers = { Authorization: `Bearer ${token}` }
+      const headers = token ? { Authorization: `Bearer ${token}` } : {}
       const [statsRes, patientsRes, conversationsRes] = await Promise.all([
         fetch(`${API_BASE}/api/doctor/stats`, { headers }),
         fetch(`${API_BASE}/api/doctor/patients`, { headers }),
         fetch(`${API_BASE}/api/chat/doctor/conversations`, { headers })
       ])
+
+      if ([statsRes, patientsRes, conversationsRes].some((res) => res.status === 401)) {
+        onLogout()
+        return
+      }
 
       if (statsRes.ok) {
         setStats(await statsRes.json())
@@ -79,6 +89,10 @@ function DoctorDashboard({ doctor, onLogout }) {
   }
 
   const connectSocket = () => {
+    if (!token) {
+      return
+    }
+
     const socket = io(API_BASE, {
       transports: ['websocket', 'polling'],
       upgrade: true,
@@ -140,6 +154,9 @@ function DoctorDashboard({ doctor, onLogout }) {
 
     socket.on('socket_error', (error) => {
       console.error('Doctor socket error:', error)
+      if (error?.message === 'Invalid doctor token') {
+        onLogout()
+      }
     })
 
     socketRef.current = socket
@@ -148,10 +165,13 @@ function DoctorDashboard({ doctor, onLogout }) {
   const fetchPatientPredictions = async (userId) => {
     try {
       const response = await fetch(`${API_BASE}/api/doctor/patient-predictions/${userId}`, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
+        headers: token ? { Authorization: `Bearer ${token}` } : {}
       })
+
+      if (response.status === 401) {
+        onLogout()
+        return
+      }
 
       if (response.ok) {
         const data = await response.json()
