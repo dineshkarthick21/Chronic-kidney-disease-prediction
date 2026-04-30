@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useTheme } from '../context/ThemeContext'
 import './Header.css'
 
-function Header({ user, onLogout, onNavigateToProfile, onNavigateToSettings, onNavigateToReports, onOpenAIChat, onNavigateToConsultation, onNavigateToEducation }) {
+function Header({ user, onLogout, onNavigateToProfile, onNavigateToSettings, onNavigateToReports, onOpenAIChat, onNavigateToConsultation, onNavigateToEducation, onNavigateToAppointment }) {
   const [showDropdown, setShowDropdown] = useState(false)
   const [showMoreDropdown, setShowMoreDropdown] = useState(false)
   const { theme, toggleTheme } = useTheme()
@@ -141,6 +141,15 @@ function Header({ user, onLogout, onNavigateToProfile, onNavigateToSettings, onN
               </button>
               {showMoreDropdown && (
                 <div className="more-dropdown">
+                  <button className="dropdown-item" onClick={() => { onNavigateToAppointment?.(); setShowMoreDropdown(false); }}>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                      <path d="M8 2v3M16 2v3M3 8h18" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      <path d="M5 5h14a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      <path d="M7 12h5" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      <path d="M7 16h9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                    Appointment Booking
+                  </button>
                   <button className="dropdown-item" onClick={() => { onNavigateToEducation(); setShowMoreDropdown(false); }}>
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                       <path d="M22 10v6M2 10l10-5 10 5-10 5z" strokeWidth="2"/>
@@ -153,7 +162,7 @@ function Header({ user, onLogout, onNavigateToProfile, onNavigateToSettings, onN
                       <polygon points="23 7 16 12 23 17 23 7" strokeWidth="2"/>
                       <rect x="1" y="5" width="15" height="14" rx="2" ry="2" strokeWidth="2"/>
                     </svg>
-                    Appointment Booking
+                    Doctor Consultation
                   </button>
                   <button className="dropdown-item" onClick={() => { onOpenAIChat(); setShowMoreDropdown(false); }}>
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor">

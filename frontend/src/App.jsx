@@ -21,6 +21,7 @@ import AIChatAssistant from './components/AIChatAssistant'
 import Reports from './components/Reports'
 import DoctorConsultation from './components/DoctorConsultation'
 import HealthEducation from './components/HealthEducation'
+import AppointmentBooking from './components/AppointmentBooking'
 
 function App() {
   const [activeTab, setActiveTab] = useState('single')
@@ -31,7 +32,7 @@ function App() {
   const [authView, setAuthView] = useState('login') // 'login', 'signup', 'adminLogin', 'adminSignup', 'doctorLogin', 'doctorSignup'
   const [showLanding, setShowLanding] = useState(true) // Show landing page by default
   const [loggingOut, setLoggingOut] = useState(false)
-  const [currentView, setCurrentView] = useState('main') // 'main', 'profile', 'settings', 'reports', 'consultation', 'education'
+  const [currentView, setCurrentView] = useState('main') // 'main', 'profile', 'settings', 'reports', 'consultation', 'education', 'appointment'
   const [showAIChat, setShowAIChat] = useState(false) // AI Chat Assistant state
 
   const handleLogin = (userData) => {
@@ -240,11 +241,17 @@ function App() {
           user={user}
           onBack={() => setCurrentView('main')}
         />
+      ) : currentView === 'appointment' ? (
+        <AppointmentBooking
+          user={user}
+          onBack={() => setCurrentView('main')}
+        />
       ) : (
         <>
           <Header 
             user={user} 
             onNavigateToEducation={() => setCurrentView('education')}
+            onNavigateToAppointment={() => setCurrentView('appointment')}
             onLogout={handleLogout}
             onNavigateToProfile={() => setCurrentView('profile')}
             onNavigateToSettings={() => setCurrentView('settings')}
