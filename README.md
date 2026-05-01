@@ -208,7 +208,7 @@ CKD-Prediction/
 
 ### Predictions
 - `POST /api/predict` - Make single prediction (includes patient_name field)
-- `POST /api/predict/batch` - Batch predictions from CSV
+- `POST /api/predict-batch` - Batch predictions from CSV
 - `GET /api/predictions/history` - Get user's prediction history with patient names
 
 ### User Profile Management

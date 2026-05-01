@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { io } from 'socket.io-client'
 import { jsPDF } from 'jspdf'
 import autoTable from 'jspdf-autotable'
+import Loader from './Loader'
 import './DoctorDashboard.css'
 
 const API_BASE = 'http://localhost:5000'
@@ -363,7 +364,7 @@ function DoctorDashboard({ doctor, onLogout }) {
   }, [conversations, selectedPatient])
 
   if (loading) {
-    return <div className="doctor-dashboard-loading">Loading doctor dashboard...</div>
+    return <Loader message="Loading doctor dashboard..." subMessage="" />
   }
 
   return (

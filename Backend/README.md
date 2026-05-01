@@ -134,6 +134,17 @@ Health check endpoint
   "status": "healthy",
   "message": "API and MongoDB are running"
 }
+
+### Predictions
+
+#### **POST** `/api/predict`
+Make a single CKD prediction
+
+#### **POST** `/api/predict-batch`
+Make batch CKD predictions from a CSV upload
+
+#### **GET** `/api/predictions/history`
+Get the authenticated user's prediction history
 ```
 
 ## Doctor Authentication

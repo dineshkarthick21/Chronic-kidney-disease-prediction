@@ -262,13 +262,6 @@
   font-size: 0.9rem;
 }
 
-.doctor-dashboard-loading {
-  min-height: 100vh;
-  display: grid;
-  place-items: center;
-  background: #f8fafc;
-}
-
 @media (max-width: 1100px) {
   .doctor-main-grid {
     grid-template-columns: 1fr;

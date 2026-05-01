@@ -17,7 +17,7 @@ Frontend runs on `http://localhost:5173`.
 - Authentication flows (user/admin/doctor)
 - Prediction forms + CSV upload
 - Reports dashboard with filters
-- Health Education center with YouTube videos + custom add flow
+- Health Education center with local CKD videos
 - AI Chat Assistant overlay (RAG backend on port 8001)
 - Profile and Settings pages with localStorage persistence
 
