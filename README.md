@@ -1,4 +1,4 @@
-#+#+#+#+markdown
+
 # CKD Prediction System
 
 A full-stack web application with machine learning to predict Chronic Kidney Disease (CKD), a doctor consultation module, a health education video hub, and a RAG-based AI chat assistant.
